@@ -1006,17 +1006,16 @@ async function initRuleta(router) {
   const couple = await db.getMyCouple().catch(() => null);
 
   const FILTER_GROUPS = [
-    { label: 'DURACIÓN', key: 'duration_label', options: [
-      { label: 'Express (<1h)',    value: 'express'  },
-      { label: 'Estándar (2-3h)', value: 'estandar' },
-      { label: 'Larga duración',  value: 'larga'    },
+    { label: 'LUGAR', key: 'location_type', options: [
+      { label: '🏠 En casa',      value: 'home'    },
+      { label: '🌳 Al aire libre', value: 'outside' },
     ]},
     { label: 'COSTO', key: 'cost_type', options: [
       { label: 'Gratis',    value: 'free'    },
       { label: 'Económico', value: 'budget'  },
       { label: 'Premium',   value: 'premium' },
     ]},
-    { label: 'ESTADO DE ÁNIMO', key: 'mood_type', options: [
+    { label: 'AMBIENTE', key: 'mood_type', options: [
       { label: 'Relajado',   value: 'relaxed'   },
       { label: 'Energético', value: 'energetic' },
       { label: 'Romántico',  value: 'romantic'  },
@@ -1209,40 +1208,19 @@ async function initRuleta(router) {
     if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
 
     try {
-      // Traducir filtros activos a texto para el contexto de la IA
-      const LOC_MAP  = { home: 'en casa', outside: 'fuera de casa' };
-      const COST_MAP = { free: 'gratuito', budget: 'económico', premium: 'especial/premium' };
-      const MOOD_MAP = { relaxed: 'relajado y tranquilo', energetic: 'activo y dinámico', romantic: 'romántico e íntimo' };
+      const allPlans = await db.getDatePlans();
+      let filtered = allPlans;
+      if (activeFilters.location_type)
+        filtered = filtered.filter(p => p.location_type === activeFilters.location_type);
+      if (activeFilters.cost_type)
+        filtered = filtered.filter(p => p.cost_type === activeFilters.cost_type);
+      if (activeFilters.mood_type)
+        filtered = filtered.filter(p => p.mood_type === activeFilters.mood_type);
 
-      const aiFilters = {
-        locationFilter: activeFilters.location_type ? LOC_MAP[activeFilters.location_type]   : undefined,
-        costFilter:     activeFilters.cost_type      ? COST_MAP[activeFilters.cost_type]       : undefined,
-        moodFilter:     activeFilters.mood_type      ? MOOD_MAP[activeFilters.mood_type]       : undefined,
-      };
-
-      // Intentar siempre con IA primero
-      let winner = null;
-      try {
-        const partner = await db.getPartner().catch(() => null);
-        const ctx     = await buildContext(user, couple, partner, aiFilters);
-        winner = await aiGenerate('date_plan', ctx);
-        console.log('[AI] Plan generado (raw):', winner)
-
-        // Forzar los campos de filtro: la IA solo genera title/description/emoji
-        if (activeFilters.location_type) winner.location_type = activeFilters.location_type;
-        if (activeFilters.cost_type)     winner.cost_type     = activeFilters.cost_type;
-        if (activeFilters.mood_type)     winner.mood_type     = activeFilters.mood_type;
-        if (!winner.location_type) winner.location_type = 'outside';
-        if (!winner.cost_type)     winner.cost_type     = 'budget';
-        if (!winner.mood_type)     winner.mood_type     = 'relaxed';
-
-        console.log('[AI] Plan final (con filtros):', winner)
-      } catch (aiErr) {
-        console.warn('[Ruleta] IA falló, usando fallback Supabase:', aiErr);
-      }
-
-      if (winner) {
-        // Plan generado por IA — animar con títulos ficticios variados
+      if (!filtered || filtered.length === 0) {
+        showToast('Sin planes para esa combinación. Prueba con menos filtros.', 'neutral', 4000);
+        _ruletaInitBarrel(['Sin resultados', 'Prueba con', 'menos filtros']);
+      } else {
         const NOISE_TITLES = [
           'Noche de juegos', 'Paseo romántico', 'Cena especial',
           'Tarde de películas', 'Aventura juntos', 'Momento íntimo',
@@ -1250,30 +1228,11 @@ async function initRuleta(router) {
           'Noche de estrellas', 'Rincón favorito', 'Nueva experiencia',
           'Momento mágico', 'Plan perfecto',
         ];
-        const noise = NOISE_TITLES.map(t => ({ title: t }));
+        const shuffled = _shuffleArray(filtered);
+        const winner   = shuffled[_cryptoRandInt(shuffled.length)];
+        const noise    = NOISE_TITLES.map(t => ({ title: t }));
         await _ruletaSpin([...noise, winner]);
         _ruletaShowResult(winner, couple);
-      } else {
-        // Fallback: planes de Supabase filtrados client-side
-        const allPlans = await db.getDatePlans();
-        let filtered = allPlans;
-        if (activeFilters.cost_type)
-          filtered = filtered.filter(p => p.cost_type === activeFilters.cost_type);
-        if (activeFilters.mood_type)
-          filtered = filtered.filter(p => p.mood_type === activeFilters.mood_type);
-        if (activeFilters.duration_label)
-          filtered = filtered.filter(p => p.duration_label === activeFilters.duration_label);
-
-        if (!filtered || filtered.length === 0) {
-          showToast('Sin planes para esa combinación. Prueba con menos filtros.', 'neutral', 4000);
-          _ruletaInitBarrel(['Sin resultados', 'Prueba con', 'menos filtros']);
-        } else {
-          const shuffled    = _shuffleArray(filtered);
-          const fallback    = shuffled[_cryptoRandInt(shuffled.length)];
-          const noise       = _shuffleArray([...filtered, ...filtered, ...filtered]).slice(0, 14);
-          await _ruletaSpin([...noise, fallback]);
-          _ruletaShowResult(fallback, couple);
-        }
       }
     } catch (err) {
       console.error('[Ruleta] Error al girar:', err);
