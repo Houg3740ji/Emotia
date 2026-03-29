@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: { extend: { colors: { "primary": "#0d968b", "background-light": "#F5F0E8" }, fontFamily: { "sans": ["Inter","sans-serif"] } } }
+    }
+</script>
+<style>
+    body { min-height: max(884px, 100dvh); }
+    .text-input-giant { font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; color: #0f172a; background: transparent; border: none; padding: 0; width: 100%; }
+</style>
+</head>
+<body class="bg-[#F5F0E8] min-h-screen flex flex-col items-center">
+<div class="max-w-md w-full flex flex-col min-h-screen px-8 py-8 relative">
+
+  <!-- Header vacío -->
+  <header class="flex items-center justify-center mb-8">
+  </header>
+
+  <!-- Avatar upload area -->
+  <div class="mb-10 flex flex-col items-start">
+    <div class="relative inline-block" id="avatar-wrapper">
+      <!-- Círculo con borde punteado -->
+      <div id="avatar-circle"
+           class="size-24 rounded-full border-2 border-dashed border-slate-300 bg-white/60
+                  flex items-center justify-center cursor-pointer hover:border-primary
+                  transition-all active:scale-95 overflow-hidden group">
+        <span id="avatar-icon" class="material-symbols-outlined text-slate-300 text-4xl group-hover:text-primary transition-colors">add_a_photo</span>
+        <img id="avatar-preview" class="w-full h-full object-cover hidden" alt="Tu foto de perfil"/>
+      </div>
+      <!-- Badge + -->
+      <div class="absolute -bottom-0.5 -right-0.5 size-7 bg-primary rounded-full
+                  border-2 border-[#F5F0E8] flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-base">add</span>
+      </div>
+    </div>
+    <!-- Input file oculto -->
+    <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/webp" class="hidden"/>
+  </div>
+
+  <!-- Contenido principal -->
+  <main class="flex-grow flex flex-col gap-8">
+    <section>
+      <label class="text-[11px] font-bold tracking-[0.25em] text-slate-400 uppercase">Añade tu foto</label>
+      <h2 class="text-4xl font-extrabold text-slate-900 leading-tight mt-2">
+        Para que tu<br/>pareja te reconozca
+      </h2>
+      <p class="text-slate-500 text-sm mt-3 leading-relaxed">
+        Tu foto solo la ve tu pareja en Emotia. No la compartiremos con nadie más.
+      </p>
+    </section>
+
+    <!-- Estado de carga del upload -->
+    <div id="upload-status" class="hidden flex items-center gap-2 text-sm text-primary font-medium">
+      <span class="material-symbols-outlined text-base animate-spin">progress_activity</span>
+      <span>Subiendo foto...</span>
+    </div>
+    <p id="upload-error" class="hidden text-red-500 text-sm"></p>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 pb-10">
+    <div class="flex flex-col gap-4 items-center">
+      <!-- Indicador de progreso: paso 4 de 5 -->
+      <div class="flex items-center gap-2 mb-2">
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+        <div class="h-1 w-8 rounded-full bg-primary"></div>
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+      </div>
+
+      <button id="skip-photo-btn"
+              class="text-slate-400 text-sm font-medium py-2 text-center">
+        Saltar por ahora
+      </button>
+
+      <button id="continue-btn"
+              class="w-full bg-primary hover:bg-[#0a857b] text-white font-bold h-16
+                     rounded-full flex items-center justify-center gap-3
+                     shadow-xl shadow-primary/10 transition-all active:scale-[0.98]">
+        <span class="text-lg">Continuar</span>
+        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Blur decorativo de fondo -->
+  <div class="fixed top-1/2 -right-20 size-80 bg-primary/5 blur-[100px] rounded-full -z-10 pointer-events-none"></div>
+</div>
+</body>
+</html>

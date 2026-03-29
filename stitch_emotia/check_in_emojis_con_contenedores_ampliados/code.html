@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Emotia - Check-in Emocional</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d968b",
+                        "background-light": "#F5F0E8",
+                        "background-dark": "#102220",
+                        "card-cream": "#FFFFFF",
+                        "navy-custom": "#0A1917",
+                        "soft-teal": "#E0F2F1"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "1.25rem",
+                        "3xl": "2.25rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .emoji-grid-item {
+            transition: transform 0.2s ease-in-out;
+        }
+        .emoji-grid-item:active {
+            transform: scale(0.9);
+        }
+        .ios-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+        }
+        .very-soft-shadow {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        }
+        body {
+            height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: -webkit-fill-available;
+        }
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 24px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 flex flex-col">
+<header class="px-6 pt-10 pb-2">
+<div class="flex items-center mb-8">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-white/10 shadow-sm">
+<span class="material-symbols-outlined text-slate-900 dark:text-slate-100 text-xl">arrow_back</span>
+</button>
+</div>
+<h1 class="text-[32px] font-bold leading-tight tracking-tight text-slate-900 dark:text-slate-100">
+            ¿Cómo te sientes hoy?
+        </h1>
+</header>
+<main class="flex-1 flex flex-col px-6 pb-6 overflow-y-auto">
+<!-- Emoji Grid - Increased size and spacing -->
+<div class="grid grid-cols-5 py-8 gap-[11px]">
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent hover:border-primary cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😊</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-primary cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😍</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">🤩</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😌</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">🥰</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">🤔</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😢</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😰</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😤</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😴</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😟</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">🤗</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">😏</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">🫠</span>
+</div>
+<div class="flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl ios-shadow border-2 border-transparent cursor-pointer p-1 emoji-grid-item" style="width: 61px; height: 61px;">
+<span class="text-4xl">💪</span>
+</div>
+</div>
+<div class="text-center py-6">
+<h2 class="text-[28px] font-bold text-primary tracking-tight">Enamorado/a</h2>
+</div>
+<!-- Two Column Square Cards Layout - Pushed down with extra top margin -->
+<div class="grid grid-cols-2 gap-5 mt-8 mb-10">
+<!-- Left Square: APOYO -->
+<div class="aspect-square bg-soft-teal rounded-3xl p-6 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1">favorite</span>
+</div>
+<div>
+<p class="text-[11px] font-bold text-primary/50 tracking-[0.05em] uppercase mb-1.5">APOYO</p>
+<p class="text-primary font-bold text-[17px] leading-[1.2]">¿Necesitas un respiro?</p>
+</div>
+</div>
+<!-- Right Square: MATEO -->
+<div class="aspect-square bg-white dark:bg-slate-800 rounded-3xl p-6 flex flex-col justify-between very-soft-shadow">
+<div class="relative w-10 h-10">
+<img alt="Mateo" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVPB602Lr6GGQqxRs7zqnXZtMzHiyrJ0fkbWyFFRFn0xSBe6P9MwaUXMKhLDh1uwnSG4XNlBVJmHOiLbnnWqRu7s1ZHOB2iQCK1bUFAMw9vtt87lVGPv5WO-9FlhpMlm1wHGkq3-qPT1CkCbT_ynZlzDu7VdIV0QjMkNVILE6EJV9uJhZoIT_sPghB3yf4rsnmL-semzXehIVkCtYBeCi8S9j-2KaOMBN2oG4AbJyhnG1dWblwbJWZb6CdCbMYpYme4vjFw5mAyOg"/>
+<div class="absolute -bottom-1 -right-1 bg-white dark:bg-slate-900 rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-sm">
+                        😊
+                    </div>
+</div>
+<div>
+<p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.05em] uppercase mb-1.5">MATEO</p>
+<p class="text-slate-900 dark:text-slate-100 font-bold text-[17px] leading-[1.2]">Radiante</p>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="mt-auto pt-4 pb-4 safe-bottom">
+<button class="w-full bg-primary hover:bg-primary/95 text-white font-semibold py-4.5 rounded-full shadow-lg transition-all active:scale-[0.98] text-lg h-[64px]">
+                Confirmar estado
+            </button>
+</div>
+</main>
+</body></html>

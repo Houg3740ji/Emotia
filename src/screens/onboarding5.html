@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: { extend: {
+      colors: { primary: "#0d968b", "background-light": "#F5F0E8" },
+      fontFamily: { sans: ["Inter","sans-serif"] }
+    }}
+  }
+</script>
+<style>
+  body { min-height: max(884px, 100dvh); }
+
+  /* Cuadro de código — display (propio) */
+  .code-char {
+    width: 44px; height: 56px;
+    border-radius: 14px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; color: #0d968b;
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    letter-spacing: 0;
+    transition: border-color 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  /* Input de código — pareja */
+  .code-input-box {
+    width: 44px; height: 56px;
+    border-radius: 14px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    text-align: center;
+    font-size: 22px; font-weight: 900;
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    color: #0f172a;
+    text-transform: uppercase;
+    outline: none;
+    caret-color: #0d968b;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .code-input-box:focus {
+    border-color: #0d968b;
+    box-shadow: 0 0 0 3px rgba(13,150,139,0.12);
+  }
+  .code-input-box.filled  { border-color: #0d968b; }
+  .code-input-box.error   { border-color: #ef4444; }
+  .code-input-box.success { border-color: #22c55e; background: #f0fdf4; color: #16a34a; }
+</style>
+</head>
+<body class="bg-[#F5F0E8] min-h-screen flex flex-col items-center">
+<div class="max-w-md w-full flex flex-col min-h-screen px-6 py-8 relative">
+
+  <!-- Header -->
+  <header class="flex items-center justify-center mb-8"></header>
+
+  <!-- Contenido principal -->
+  <main class="flex-grow flex flex-col gap-8">
+
+    <!-- Título -->
+    <section>
+      <label class="text-[11px] font-bold tracking-[0.25em] text-slate-400 uppercase">
+        Conecta con tu pareja
+      </label>
+      <h2 class="text-4xl font-extrabold text-slate-900 leading-tight mt-2">
+        Vincúlate con<br/>quien más importa
+      </h2>
+      <p class="text-slate-500 text-sm mt-3 leading-relaxed">
+        Comparte tu código con tu pareja o introduce el suyo para empezar juntos.
+      </p>
+    </section>
+
+    <!-- Tu código propio — 6 cuadros display -->
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+      <p class="text-[11px] font-bold tracking-[0.2em] text-slate-400 uppercase mb-4">Tu código</p>
+      <div class="flex items-center justify-between gap-3">
+        <!-- 6 cajas display -->
+        <div id="my-code-boxes" class="flex gap-2">
+          <div class="code-char">·</div>
+          <div class="code-char">·</div>
+          <div class="code-char">·</div>
+          <div class="code-char">·</div>
+          <div class="code-char">·</div>
+          <div class="code-char">·</div>
+        </div>
+        <!-- Botones acción -->
+        <div class="flex flex-col gap-2 flex-shrink-0">
+          <button id="copy-code-btn"
+                  class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10
+                         text-primary text-xs font-semibold active:scale-95 transition-transform">
+            <span class="material-symbols-outlined" style="font-size:14px">content_copy</span>
+            Copiar
+          </button>
+          <button id="share-code-btn"
+                  class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100
+                         text-slate-500 text-xs font-semibold active:scale-95 transition-transform">
+            <span class="material-symbols-outlined" style="font-size:14px">share</span>
+            Compartir
+          </button>
+        </div>
+      </div>
+      <p class="text-slate-400 text-xs mt-3">
+        Comparte este código con tu pareja para vincularse
+      </p>
+    </div>
+
+    <!-- Separador -->
+    <div class="flex items-center gap-4">
+      <div class="h-px flex-1 bg-slate-200"></div>
+      <span class="text-slate-400 text-xs font-medium uppercase tracking-widest">o</span>
+      <div class="h-px flex-1 bg-slate-200"></div>
+    </div>
+
+    <!-- Código de la pareja — 6 inputs individuales -->
+    <div class="flex flex-col gap-4">
+      <label class="text-[11px] font-bold tracking-[0.2em] text-slate-400 uppercase">
+        Introduce el código de tu pareja
+      </label>
+
+      <!-- 6 cajas input -->
+      <div id="partner-code-boxes" class="flex gap-2 justify-center">
+        <input class="code-input-box" maxlength="1" inputmode="text" autocomplete="one-time-code" data-idx="0" />
+        <input class="code-input-box" maxlength="1" inputmode="text" autocomplete="off" data-idx="1" />
+        <input class="code-input-box" maxlength="1" inputmode="text" autocomplete="off" data-idx="2" />
+        <input class="code-input-box" maxlength="1" inputmode="text" autocomplete="off" data-idx="3" />
+        <input class="code-input-box" maxlength="1" inputmode="text" autocomplete="off" data-idx="4" />
+        <input class="code-input-box" maxlength="1" inputmode="text" autocomplete="off" data-idx="5" />
+      </div>
+
+      <!-- Feedback -->
+      <div id="partner-feedback" class="min-h-5 px-1">
+        <p id="partner-code-error"   class="hidden text-red-500 text-xs flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">error</span>
+          <span id="partner-error-msg">Código no encontrado. Revísalo con tu pareja.</span>
+        </p>
+        <p id="partner-code-success" class="hidden text-green-600 text-xs flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">check_circle</span>
+          <span>¡Pareja encontrada! Vinculando…</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="link-loading" class="hidden flex items-center gap-2 text-sm text-primary font-medium">
+      <span class="material-symbols-outlined text-base animate-spin">progress_activity</span>
+      <span>Vinculando con tu pareja...</span>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-8 pb-10">
+    <div class="flex flex-col gap-4 items-center">
+
+      <!-- Indicador de progreso: paso 5 de 5 -->
+      <div class="flex items-center gap-2 mb-2">
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+        <div class="h-1 w-8 rounded-full bg-primary"></div>
+      </div>
+
+      <button id="link-btn"
+              class="w-full bg-primary text-white font-bold h-16 rounded-full
+                     flex items-center justify-center gap-3
+                     shadow-xl shadow-primary/10 transition-all active:scale-[0.98]
+                     disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+              disabled>
+        <span class="material-symbols-outlined text-xl">link</span>
+        <span class="text-lg">Vincular con mi pareja</span>
+      </button>
+
+      <button id="skip-link-btn"
+              class="text-slate-400 text-sm font-medium py-2 text-center">
+        Mi pareja aún no tiene la app
+      </button>
+
+    </div>
+  </footer>
+
+  <!-- Blur decorativo -->
+  <div class="fixed top-1/2 -right-20 size-80 bg-primary/5 blur-[100px] rounded-full -z-10 pointer-events-none"></div>
+</div>
+</body>
+</html>

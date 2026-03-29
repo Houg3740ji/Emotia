@@ -1,0 +1,237 @@
+/**
+ * EMOTIA — Router SPA
+ *
+ * Gestiona la navegación entre pantallas sin recargar la página.
+ * Cada pantalla es HTML extraído de los archivos Stitch + lógica JS.
+ */
+
+import { auth, db } from '../supabase.js';
+import { hideLoadingOverlay, showToast } from './auth.js';
+
+// Rutas públicas (no requieren sesión activa)
+// Las rutas 3-5 son parte del flujo de registro: si la confirmación de email
+// está activa en Supabase, signUp() devuelve session=null y el guard bloquearía
+// la navegación. RLS en Supabase protege los datos de cada pantalla.
+const PUBLIC_ROUTES = new Set([
+  '/onboarding/1',
+  '/onboarding/2',
+  '/onboarding/3',
+  '/onboarding/4',
+  '/onboarding/5',
+]);
+
+// ── Extrae el contenido del <body> de un HTML crudo ──────────
+function extractScreen(rawHtml) {
+  const parser = new DOMParser();
+  const doc    = parser.parseFromString(rawHtml, 'text/html');
+  return {
+    bodyClass: doc.body.getAttribute('class') || '',
+    content:   doc.body.innerHTML,
+  };
+}
+
+// ── Carga lazy de módulos de pantalla ─────────────────────────
+// Cada módulo exporta ROUTE_MAP: { [path]: { html, init } }
+const MODULE_LOADERS = {
+  '/onboarding/1': () => import('./screens/onboarding.js'),
+  '/onboarding/2': () => import('./screens/onboarding.js'),
+  '/onboarding/3': () => import('./screens/onboarding.js'),
+  '/onboarding/4': () => import('./screens/onboarding.js'),
+  '/onboarding/5': () => import('./screens/onboarding.js'),
+  '/home':            () => import('./screens/home.js'),
+  '/checkin':         () => import('./screens/checkin.js'),
+  '/reflexion':       () => import('./screens/secondary.js'),
+  '/capsulas':             () => import('./screens/secondary.js'),
+  '/capsulas/grabar':      () => import('./screens/secondary.js'),
+  '/capsulas/reproducir':  () => import('./screens/secondary.js'),
+  '/intimo':          () => import('./screens/secondary.js'),
+  '/ruleta':          () => import('./screens/secondary.js'),
+  '/tareas':          () => import('./screens/secondary.js'),
+};
+
+// ── Router principal ─────────────────────────────────────────
+export const router = {
+  currentRoute: null,
+  _params:      {},
+
+  /**
+   * Navega a una ruta SPA.
+   * @param {string} path  - Ruta, e.g. '/home', '/onboarding/1'
+   * @param {Object} params - Parámetros opcionales para la pantalla
+   */
+  async navigate(path, params = {}) {
+    this._params = params;
+
+    // ── Guard de autenticación ────────────────────────────────
+    if (!PUBLIC_ROUTES.has(path)) {
+      const session = await auth.getSession();
+      if (!session) {
+        console.log('[Router] Sin sesión → onboarding/1');
+        return this.navigate('/onboarding/1');
+      }
+    }
+
+    // ── Cargar módulo de pantalla ─────────────────────────────
+    const loader = MODULE_LOADERS[path];
+    if (!loader) {
+      console.error('[Router] Ruta desconocida:', path);
+      return this.navigate('/home');
+    }
+
+    try {
+      const module = await loader();
+      const route  = module.ROUTE_MAP?.[path];
+
+      if (!route) {
+        console.error('[Router] No hay ROUTE_MAP para:', path);
+        return;
+      }
+
+      const { html, init } = route;
+      const { bodyClass, content } = extractScreen(html);
+
+      // ── Inyectar HTML ─────────────────────────────────────────
+      const app = document.getElementById('app');
+      // Aplicar clases del <body> original al contenedor
+      app.className = `screen-enter ${bodyClass}`;
+      app.innerHTML  = content;
+
+      // Tailwind CDN puede necesitar un re-scan tras inyección dinámica
+      if (typeof window.tailwind?.refresh === 'function') {
+        window.tailwind.refresh();
+      }
+
+      this.currentRoute = path;
+
+      // Actualizar hash sin disparar popstate (histórico)
+      const hashPath = '#' + path;
+      if (window.location.hash !== hashPath) {
+        history.pushState({ path }, '', hashPath);
+      }
+
+      // ── Ejecutar init de la pantalla ──────────────────────────
+      if (typeof init === 'function') {
+        await init(this, params);
+      }
+
+      // Activar tab bar si la pantalla tiene nav
+      this._syncTabBar(path);
+
+    } catch (err) {
+      console.error('[Router] Error cargando pantalla:', path, err);
+      // Mostrar error mínimo al usuario
+      document.getElementById('app').innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100vh;padding:2rem;text-align:center;">
+          <div>
+            <p style="color:#dc2626;font-weight:700;margin-bottom:0.5rem;">Error al cargar la pantalla</p>
+            <p style="color:#64748b;font-size:0.875rem;">${err.message || 'Error desconocido'}</p>
+            <button onclick="window.location.reload()" style="margin-top:1rem;padding:0.5rem 1.5rem;background:#0d968b;color:white;border:none;border-radius:9999px;cursor:pointer;font-weight:600;">
+              Reintentar
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  },
+
+  /**
+   * Determina la ruta inicial en función del estado de autenticación.
+   * Llamado una sola vez al arrancar la app.
+   */
+  async start() {
+    try {
+      const session = await auth.getSession();
+
+      if (!session) {
+        hideLoadingOverlay();
+        return this.navigate('/onboarding/1');
+      }
+
+      // Sesión activa — verificar si el perfil está completo
+      const profile = await db.getMyProfile();
+      if (!profile?.name || profile.name.length < 2) {
+        hideLoadingOverlay();
+        return this.navigate('/onboarding/3');
+      }
+
+      // Verificar si tiene pareja vinculada
+      const couple = await db.getMyCouple();
+      if (!couple) {
+        hideLoadingOverlay();
+        return this.navigate('/onboarding/5');
+      }
+
+      hideLoadingOverlay();
+      return this.navigate('/home');
+
+    } catch (err) {
+      console.error('[Router] Error en start():', err);
+      hideLoadingOverlay();
+      return this.navigate('/onboarding/1');
+    }
+  },
+
+  /** Devuelve los parámetros de la navegación actual */
+  getParams() { return this._params; },
+
+  /**
+   * Sincroniza el estado activo del tab bar según la ruta actual.
+   * Itera nav.children (incluye el botón FAB) para que los índices
+   * coincidan con el orden real del HTML: a·a·button·a·a
+   */
+  _syncTabBar(path) {
+    // Índices sobre nav.children: 0=home, 1=capsulas, 2=FAB(button), 3=intimo, 4=ruleta
+    const TAB_INDEX = {
+      '/home':            0,
+      '/capsulas':        1,
+      '/capsulas/grabar': 1,
+      '/intimo':          3,
+      '/ruleta':          4,
+    };
+    const nav = document.querySelector('#app nav');
+    if (!nav) return;
+
+    const activeIdx = TAB_INDEX[path] ?? -1;
+    Array.from(nav.children).forEach((el, i) => {
+      if (el.tagName === 'BUTTON') return; // FAB — sin estado activo
+      el.classList.toggle('text-primary',   i === activeIdx);
+      el.classList.toggle('text-slate-400', i !== activeIdx);
+      const icon = el.querySelector('.material-symbols-outlined');
+      if (icon) {
+        icon.classList.toggle('fill-icon', i === activeIdx);
+      }
+    });
+  },
+
+  /**
+   * Conecta los elementos del tab bar al router.
+   * Usa nav.children (a·a·button·a·a) para respetar el orden real del HTML.
+   * Mapa: 0=home, 1=capsulas, 2=FAB(sin acción), 3=intimo, 4=ruleta
+   */
+  wireTabBar() {
+    const nav = document.querySelector('#app nav');
+    if (!nav) return;
+
+    const ROUTE_BY_INDEX = ['/home', '/capsulas', null, '/intimo', '/ruleta'];
+
+    Array.from(nav.children).forEach((el, i) => {
+      if (el.tagName === 'BUTTON') {
+        // FAB central — sin acción asignada por ahora
+        return;
+      }
+      const route = ROUTE_BY_INDEX[i];
+      if (!route) return;
+      el.href = 'javascript:void(0)';
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.navigate(route);
+      });
+    });
+  },
+};
+
+// ── Manejar botón Atrás del navegador ───────────────────────
+window.addEventListener('popstate', (e) => {
+  const path = e.state?.path || window.location.hash.slice(1) || '/home';
+  router.navigate(path);
+});

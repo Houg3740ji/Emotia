@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d9488",
+                        "background-light": "#FFFBF7",
+                        "navy-custom": "#1E293B",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #FFFBF7;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 300;
+        }
+        .ios-bottom-sheet {
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+        }
+        .setting-row {
+            @apply flex items-center justify-between py-1.5 active:bg-slate-50 transition-colors cursor-pointer;
+        }
+        .setting-row:not(:last-child) {
+            @apply border-b border-slate-50;
+        }
+        .section-card {
+            @apply bg-white rounded-2xl p-3 shadow-sm border border-slate-100 mb-6;
+        }
+    </style>
+<style>
+        body {
+            min-height: 100dvh;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-slate-900 font-display">
+<div class="relative flex min-h-screen w-full max-w-md mx-auto flex-col overflow-x-hidden bg-background-light">
+<div class="flex-1 flex flex-col pt-4">
+<div class="ios-bottom-sheet bg-white flex-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border-t border-slate-200/50 flex flex-col">
+<div class="flex justify-center pt-3 pb-1">
+<div class="w-10 h-1.5 bg-slate-200 rounded-full"></div>
+</div>
+<div class="flex items-center justify-between px-6 py-3">
+<h2 class="text-xl font-bold text-slate-900">Ajustes</h2>
+<button class="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto px-6 pb-12">
+<div class="flex items-center gap-3 mb-5 p-1">
+<div class="relative">
+<div class="size-12 rounded-full bg-slate-100 border-2 border-primary/20 p-0.5">
+<img alt="Profile" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDtDgN1mLe4XxMSvQtsDfA7OrCSc5o0W3PPfkvBayYzgT9m8d-bhLLuFKRPr0pPtMPCRPk-NyCWej3JuiICqLPBvrFIudyU6M82gT9YeyXH6aLwdyFJzsdDB57tlryUGRDqBj9We9jFbNqhbh1Sup6amkLdCpHwtOvcqEzWAaQpqYEOIwHLlkjbWgL1ynUqh8cV0q4cjqP3opeNBsmS1dGdNrSUNx1Pytk7M2-q13jIiwxsqHIu3KzpcZqyPiD5rzv5Di1TJc9WL8"/>
+</div>
+<button class="absolute -bottom-0.5 -right-0.5 size-4 bg-primary rounded-full border border-white flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[10px]">edit</span>
+</button>
+</div>
+<div>
+<h3 class="text-sm font-bold text-slate-900 leading-tight">Juan Pérez</h3>
+<p class="text-[9px] font-medium text-primary">Juntos desde hace 14 meses y 5 días</p>
+</div>
+</div>
+<div class="section-card">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Mi Perfil</span>
+</div>
+<div class="space-y-0">
+<div class="setting-row !py-1">
+<span class="text-sm font-medium text-slate-700">Editar nombre</span>
+<span class="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+</div>
+<div class="setting-row !py-1">
+<span class="text-sm font-medium text-slate-700">Cambiar foto</span>
+<span class="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Mi Pareja</span>
+</div>
+<div class="space-y-0">
+<div class="setting-row !py-1">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-700">Tu código: <span class="text-primary font-mono">EM82X9</span></span>
+</div>
+<button class="text-primary">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+</div>
+<div class="setting-row !py-1">
+<div class="flex items-center gap-2">
+<div class="size-5 rounded-full bg-slate-100 overflow-hidden">
+<img alt="Partner" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrrjEO3wbprKxBGl_FsN2jqEm6kLY9RjHmIXiIhBfFRYyeN7uuY0RYsyMWhUH5uzmy0B9sa3nNbfpOh1ZX7eaYP77JSIVHZyKVp-PTsdvGt8-aO15pQwWjYlKEfMqCB7ynRNFp_jZBBRDoiI10ZJSXqxtFukKSqnv_0EqAofGoDA6GrhK-1y23bZamTy87GpBb3svilXANCmgg6AenKiFI5CHjVCrhRNAn2rC3ibg1tWLnIgegIU9DoR9MRM0nfI0JE_HPu0VRNic"/>
+</div>
+<span class="text-sm font-medium text-slate-700">María</span>
+</div>
+<span class="text-[10px] font-bold text-red-500">Desvincular</span>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Modo Íntimo</span>
+</div>
+<div class="space-y-0">
+<div class="setting-row !py-1">
+<span class="text-sm font-medium text-slate-700">Cambiar PIN</span>
+<span class="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+</div>
+<div class="setting-row !py-1">
+<span class="text-sm font-medium text-slate-700">Usar Face ID</span>
+<div class="w-8 h-4.5 bg-primary rounded-full relative flex items-center px-0.5">
+<div class="size-3.5 bg-white rounded-full shadow-sm ml-auto"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Notificaciones</span>
+</div>
+<div class="space-y-0">
+<div class="setting-row !py-1">
+<span class="text-sm font-medium text-slate-700">Pregunta del día</span>
+<div class="w-8 h-4.5 bg-primary rounded-full relative flex items-center px-0.5">
+<div class="size-3.5 bg-white rounded-full shadow-sm ml-auto"></div>
+</div>
+</div>
+<div class="setting-row !py-1">
+<span class="text-sm font-medium text-slate-700">Check-in emocional</span>
+<div class="w-8 h-4.5 bg-primary rounded-full relative flex items-center px-0.5">
+<div class="size-3.5 bg-white rounded-full shadow-sm ml-auto"></div>
+</div>
+</div>
+<div class="setting-row !py-1">
+<span class="text-sm font-medium text-slate-700">Cápsulas de audio</span>
+<div class="w-8 h-4.5 bg-primary rounded-full relative flex items-center px-0.5">
+<div class="size-3.5 bg-white rounded-full shadow-sm ml-auto"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section-card">
+<div class="space-y-3">
+<div>
+<p class="text-[8px] text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Idioma</p>
+<select class="w-full h-8 py-0 px-3 bg-slate-50 border-none rounded-lg text-xs font-medium focus:ring-primary">
+<option>Español</option>
+<option>English</option>
+<option>Français</option>
+</select>
+</div>
+<div>
+<p class="text-[8px] text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Tema</p>
+<div class="bg-slate-100 p-0.5 rounded-lg flex gap-0.5">
+<button class="flex-1 py-1 text-[9px] font-bold bg-white rounded-md shadow-sm">Claro</button>
+<button class="flex-1 py-1 text-[9px] font-bold text-slate-500">Oscuro</button>
+<button class="flex-1 py-1 text-[9px] font-bold text-slate-500">Auto</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2 mb-8">
+<button class="w-full py-2 text-sm font-bold text-primary border border-primary/20 rounded-xl bg-white active:bg-primary/5">
+                            Cerrar sesión
+                        </button>
+<button class="w-full py-1.5 text-xs font-bold text-red-500 active:opacity-60">
+                            Eliminar cuenta
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-2 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-slate-900/10 rounded-full z-50"></div>
+</div>
+
+</body></html>

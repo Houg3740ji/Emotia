@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d968b",
+                        "background-light": "#F5F0E8",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-[#F5F0E8] text-slate-900 antialiased;
+                font-feature-settings: "ss01", "ss02", "cv01", "cv11";
+            }
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        input:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        .text-input-giant {
+            @apply text-[56px] sm:text-[64px] font-extrabold leading-none tracking-tight text-slate-900 placeholder:text-slate-200 bg-transparent border-none p-0 w-full;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col items-center">
+<div class="max-w-md w-full flex flex-col min-h-screen px-8 py-8 relative">
+<header class="flex items-center justify-center mb-10">
+</header>
+<div class="mb-14">
+<div class="relative inline-block">
+<div class="size-20 rounded-full border border-slate-200 bg-white/50 flex items-center justify-center cursor-pointer hover:border-primary transition-all active:scale-95 overflow-hidden group">
+<span class="material-symbols-outlined text-slate-300 text-3xl group-hover:text-primary transition-colors" style="">person</span>
+</div>
+<div class="absolute -bottom-0.5 -right-0.5 size-6 bg-primary rounded-full border-2 border-[#F5F0E8] flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[14px] font-bold" style="">add</span>
+</div>
+</div>
+</div>
+<main class="flex-grow flex flex-col gap-20">
+<section class="space-y-2">
+<label class="text-[11px] font-bold tracking-[0.25em] text-slate-400 uppercase" style="">¿Cómo te llamas?</label>
+<div class="relative">
+<input class="text-input-giant" placeholder="Nombre" type="text" value="Sara">
+<div class="mt-1 flex items-center">
+<span class="text-primary font-medium text-xs tracking-tight opacity-80" style="">Hola, Sara 👋</span>
+</div>
+</div>
+</section>
+<section class="space-y-2">
+<label class="text-[11px] font-bold tracking-[0.25em] text-slate-400 uppercase" style="">Empezamos el...</label>
+<div class="relative group">
+<div class="flex items-center border-b border-slate-200 hover:border-primary transition-colors pb-2">
+<input class="text-input-giant !text-[44px] flex-grow" placeholder="DD/MM/AAAA" type="text" value="12/11/2021">
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors text-2xl ml-2" style="">calendar_today</span>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<div class="size-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px]" style="">
+                            💚
+                        </div>
+<p class="text-slate-500 text-sm font-medium" style="">Lleváis juntos <span class="text-primary font-bold" style="">2 años y 4 meses</span></p>
+</div>
+</div>
+</section>
+</main>
+<footer class="mt-12 pb-10">
+<div class="flex flex-col gap-6 items-center">
+<p class="text-center text-slate-400 text-[11px] font-medium px-10 leading-relaxed opacity-80" style=""><br></p>
+<div class="flex items-center gap-2 mb-2">
+<div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+<div class="h-1 w-8 rounded-full bg-primary"></div>
+</div>
+<button class="w-full bg-primary hover:bg-[#0a857b] text-white font-bold h-16 rounded-full flex items-center justify-center gap-3 shadow-xl shadow-primary/10 transition-all active:scale-[0.98]" style="">
+<span class="text-lg" style="">Continuar</span>
+<span class="material-symbols-outlined text-xl" style="">arrow_forward</span>
+</button>
+</div>
+</footer>
+<div class="fixed top-1/2 -right-20 size-80 bg-primary/5 blur-[100px] rounded-full -z-10 pointer-events-none"></div>
+</div>
+
+</body></html>

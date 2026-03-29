@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#0d9488",
+                "navy-dark": "#1e293b",
+                "background-light": "#f5f0e8",
+                "background-dark": "#102220",
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.25rem", "2xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light text-navy-dark font-display antialiased min-h-screen flex flex-col">
+<header class="sticky top-0 z-20 bg-background-light/80 backdrop-blur-md px-4 pt-12 pb-4 flex items-center justify-between gap-2">
+<button class="flex-shrink-0 flex items-center justify-center w-10 h-10 bg-white rounded-full shadow-sm border border-navy-dark/5 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-navy-dark text-xl">arrow_back</span>
+</button>
+<h1 class="font-bold tracking-tight text-navy-dark flex-1 text-center whitespace-nowrap overflow-hidden text-ellipsis text-2xl">Tareas Conjuntas</h1>
+<div class="w-10 flex-shrink-0"></div>
+</header>
+<main class="px-6 flex-grow pb-12">
+<div class="flex gap-3 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+<div class="flex-1 min-w-[100px] bg-white rounded-2xl p-4 shadow-sm border border-navy-dark/5">
+<p class="text-xs font-medium text-navy-dark/60 mb-1">Pendientes</p>
+<p class="text-2xl font-bold text-navy-dark">8</p>
+</div>
+<div class="flex-1 min-w-[100px] bg-white rounded-2xl p-4 shadow-sm border border-navy-dark/5">
+<p class="text-xs font-medium text-navy-dark/60 mb-1">Hechas hoy</p>
+<p class="text-2xl font-bold text-primary">3</p>
+</div>
+<div class="flex-1 min-w-[100px] bg-white rounded-2xl p-4 shadow-sm border border-navy-dark/5">
+<p class="text-xs font-medium text-navy-dark/60 mb-1">Nuevas</p>
+<p class="text-2xl font-bold text-amber-500">2</p>
+</div>
+</div>
+<div class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-xl font-bold">Pendientes</h2>
+<button class="text-primary text-sm font-semibold">Ver todas</button>
+</div>
+<div class="space-y-4">
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-navy-dark/5 flex items-start gap-4">
+<button class="mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-primary/30 flex items-center justify-center">
+</button>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-bold text-lg text-navy-dark leading-snug">Hacer la compra</h3>
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-600">Alta</span>
+</div>
+<div class="flex items-center gap-2">
+<img alt="Small circular profile avatar of Maria" class="w-5 h-5 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC05gwGtCZLRse_3cGWrpe57Zc7VftP97pRUJQ9JzfG6KuxJJxL4JEYOyRxb6UwOYvz4MUE6nWzKEVJ_S6YzWHU2kjvb845AgRzXF3pOY3wqoUaWHDeiQF3rarTaQsrWLNvBxBGJhLmHu8oPKaUYVBWGts2Qqc8rsaY6FBIhfjFOPC9axJlSRaoItZDIDxQKEj2Mtt3rYKYbZzSk5LECMO0eJj1xoUljwdTSSRQ32MDRLK3Sr3QsLHWv0GaxxK4EV0LfBLF1Uw-gyw"/>
+<p class="text-sm text-navy-dark/60">Asignada a: <span class="font-medium">María</span></p>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-navy-dark/5 flex items-start gap-4">
+<button class="mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-primary/30 flex items-center justify-center">
+</button>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-bold text-lg text-navy-dark leading-snug">Reservar cena aniversario</h3>
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-600">Media</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img alt="Avatar image of Maria" class="w-5 h-5 rounded-full ring-2 ring-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB45BC9MaXp-rsgID760ZiA288kQf3Lk6B2XP-VEgtv3I2LnFXlbmyRIyOkzA3LZoMlzUzPFYCi4Lw0LkbtSdOysVVhSmEsAayED3o7anU34HgAc94gEwMKyihLsboWsXCxJWQTok0EH8pAMfFSZ4pGuVWsdFchDjkUT4vz9NGfInLiaR1ErmSpf2UcnDjcWhSCVZ9ZskyPcM5HF8KAw3iDzinWyO_TVnGshzqLgC4XGisQ0fGybELuxA0b8msEuTCg8a5PYyt1hgc"/>
+<img alt="Avatar image of Juan" class="w-5 h-5 rounded-full ring-2 ring-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlDv0gVZ0jD11v9c0L0z_40jEsX94r5gjF-HBnqZf4iiAlEAotyll0K6hUcoow8ULUm7UYjwI8kAAVfegOrh-FJUNuiJRu0m8yG3N4sKACTM_lJmdy-47cf7osJSHeRpDsS9u6gIvjixBV9obo1SOhrUssaN20G3ZmSzEBeDxTeQ-1gyJUzIrievlo1THVulLSPQF5Y6Afr8-wIkJdLDHZfeNIXbI7j1Ymj6rk29pI2Z0aNc9CLJnIS-hIR37nmpftx7UkuvD_ix4"/>
+</div>
+<p class="text-sm text-navy-dark/60 font-medium">Ambos</p>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-navy-dark/5 flex items-start gap-4">
+<button class="mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-primary/30 flex items-center justify-center">
+</button>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-bold text-lg text-navy-dark leading-snug">Llevar ropa a tintorería</h3>
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-600">Baja</span>
+</div>
+<div class="flex items-center gap-2">
+<img alt="Profile avatar for Juan" class="w-5 h-5 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBhKvgjAXk6oPteHdYNLOUatuvEqHat6155wA2mIAnqOvkVWty4TCCtMYsbEBi5cW0yFqBhkLaXe5Wvq0muTDm4BYB5mKqz9UMjGu0pUUZkCZzBP3dxN692xzRQZ7R4RJLL5XPnGsnNrz1PpOAJ3XmRfH_VyBxqzLpRxiB8ytZ0RS7usFR53xk9BwjCI5-fqHqdXid4UukB3Txzk-JLHyzJIy7z9_B70VtkdqURbSV1jlI6JNPL-JbdEp9bfygL_gElFhbEgDAcEI"/>
+<p class="text-sm text-navy-dark/60">Asignada a: <span class="font-medium">Juan</span></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mb-12">
+<h2 class="text-xl font-bold mb-4">Completadas recientemente</h2>
+<div class="bg-white/40 rounded-2xl p-4 border border-navy-dark/5 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-full">check_circle</span>
+<div>
+<p class="text-navy-dark font-semibold line-through opacity-50">Regar las plantas</p>
+<p class="text-xs text-navy-dark/40">Completada por Juan a las 10:30</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-center mb-10">
+<button class="flex items-center gap-2 bg-primary text-white px-10 py-4 rounded-full font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined text-xl">add</span>
+                Nueva Tarea
+            </button>
+</div>
+</main>
+</body></html>

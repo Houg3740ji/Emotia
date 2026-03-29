@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d968b",
+                        "background-light": "#F8FAFC",
+                        "background-dark": "#0F172A",
+                        "navy-custom": "#1E293B",
+                        "widget-bg": "#FFFFFF",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 300;
+        }
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: auto;
+            gap: 0.75rem;
+        }
+        .widget-span-2 {
+            grid-column: span 2;
+        }
+        body {
+            min-height: 100dvh;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light text-slate-900 font-display">
+<div class="relative flex min-h-screen w-full max-w-md mx-auto flex-col shadow-2xl overflow-x-hidden pb-32">
+<header class="flex items-center px-6 py-8 justify-between sticky top-0 bg-background-light/90 backdrop-blur-xl z-30 border-b border-slate-200/60">
+<div class="flex flex-col">
+<h1 class="text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">Buenas tardes, <br/>Juan 🌤</h1>
+</div>
+<button class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 active:scale-95 transition-transform shrink-0">
+<span class="text-[10px] font-bold uppercase tracking-wider">Ajustes</span>
+<span class="material-symbols-outlined text-lg">settings</span>
+</button>
+</header>
+<main class="px-4 pt-6">
+<div class="command-grid">
+<div class="widget-span-2 bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+<div>
+<p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Estado Emocional</p>
+<div class="flex items-center gap-3">
+<span class="text-3xl font-black text-slate-800 tracking-tight">Calmado</span>
+<span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+</div>
+</div>
+<div class="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-4xl fill-icon">sentiment_satisfied</span>
+</div>
+</div>
+<div class="widget-span-2 bg-gradient-to-br from-primary to-teal-800 rounded-3xl p-6 min-h-[280px] text-white shadow-md group active:scale-[0.98] transition-transform flex flex-col items-center text-center">
+<div class="flex justify-between items-start w-full mb-6">
+<span class="bg-white/20 text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-tighter">Módulo de Reflexión</span>
+<span class="material-symbols-outlined text-lg opacity-50">open_in_full</span>
+</div>
+<div class="flex-1 flex flex-col justify-center w-full">
+<h3 class="text-xs font-bold opacity-80 uppercase tracking-widest mb-3">Pregunta del Día</h3>
+<p class="text-xl font-bold leading-tight mb-8">¿Qué pequeña victoria celebraste hoy, y qué te hizo sentir agradecido por ella?</p>
+</div>
+<button class="w-full bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl py-4 px-4 flex items-center justify-center gap-3 transition-colors">
+<span class="material-symbols-outlined text-xl">edit_note</span>
+<span class="text-sm font-semibold">Escribe tu reflexión aquí</span>
+</button>
+</div>
+<div class="widget-span-2 bg-slate-900 rounded-2xl p-4 flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-xl bg-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">checklist</span>
+</div>
+<div>
+<p class="text-white text-sm font-bold">Actividad de Tareas</p>
+<p class="text-white/40 text-[10px]">2 nuevas • 1 completada hoy</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-white/20 group-hover:text-white transition-colors">arrow_forward_ios</span>
+</div>
+<div class="bg-navy-custom rounded-2xl p-4 shadow-lg text-white relative overflow-hidden flex flex-col justify-between">
+<div>
+<p class="text-[10px] font-bold text-white/40 uppercase mb-1">Racha</p>
+<div class="flex items-baseline gap-1">
+<span class="text-3xl font-bold">5</span>
+<span class="text-xs font-medium text-white/60">días</span>
+</div>
+</div>
+<div class="mt-4 flex gap-1">
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+</div>
+<span class="material-symbols-outlined absolute -bottom-2 -right-2 text-white/5 text-6xl">local_fire_department</span>
+</div>
+<div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between">
+<p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Notas Guardadas</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-xl">inventory_2</span>
+<span class="text-sm font-bold text-slate-800">12 entradas</span>
+</div>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[340px] bg-white/95 backdrop-blur-md border border-slate-200/50 rounded-full px-6 py-3 flex items-center justify-between z-50 shadow-xl shadow-slate-200/50">
+<a class="flex items-center justify-center text-primary" href="#">
+<span class="material-symbols-outlined text-2xl fill-icon">home</span>
+</a>
+<a class="flex items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">checklist</span>
+</a>
+<button class="bg-primary size-12 rounded-full flex items-center justify-center text-white shadow-lg shadow-primary/30 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'wght' 500;">add</span>
+</button>
+<a class="flex items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">auto_awesome</span>
+</a>
+<a class="flex items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+</a>
+</nav>
+</div>
+
+</body></html>
