@@ -1209,18 +1209,13 @@ async function initRuleta(router) {
 
     try {
       const allPlans = await db.getDatePlans();
-      let filtered = allPlans;
-      if (activeFilters.location_type)
-        filtered = filtered.filter(p => p.location_type === activeFilters.location_type);
-      if (activeFilters.cost_type)
-        filtered = filtered.filter(p => p.cost_type === activeFilters.cost_type);
-      if (activeFilters.mood_type)
-        filtered = filtered.filter(p => p.mood_type === activeFilters.mood_type);
+      const { plans: filtered, relaxed } = _findBestMatch(allPlans, activeFilters);
 
       if (!filtered || filtered.length === 0) {
         showToast('Sin planes para esa combinación. Prueba con menos filtros.', 'neutral', 4000);
         _ruletaInitBarrel(['Sin resultados', 'Prueba con', 'menos filtros']);
       } else {
+        if (relaxed) showToast('No hay planes exactos, mostrando el más cercano', 'neutral', 2500);
         const NOISE_TITLES = [
           'Noche de juegos', 'Paseo romántico', 'Cena especial',
           'Tarde de películas', 'Aventura juntos', 'Momento íntimo',
@@ -1242,6 +1237,46 @@ async function initRuleta(router) {
     spinning = false;
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
   });
+}
+
+// ── Selecciona el mejor conjunto de planes según filtros activos ──
+// Devuelve { plans, relaxed } donde relaxed=true indica que se
+// relajaron los filtros para encontrar resultados.
+function _findBestMatch(allPlans, activeFilters) {
+  const loc  = activeFilters.location_type;
+  const cost = activeFilters.cost_type;
+  const mood = activeFilters.mood_type;
+
+  const by = (useLoc, useCost, useMood) => {
+    let r = allPlans;
+    if (useLoc  && loc)  r = r.filter(p => p.location_type === loc);
+    if (useCost && cost) r = r.filter(p => p.cost_type     === cost);
+    if (useMood && mood) r = r.filter(p => p.mood_type     === mood);
+    return r;
+  };
+
+  // 1. Los 3 filtros activos
+  let plans = by(true, true, true);
+  if (plans.length > 0) return { plans, relaxed: false };
+
+  // 2. Sin LUGAR
+  plans = by(false, true, true);
+  if (plans.length > 0) return { plans, relaxed: true };
+
+  // 3. Sin AMBIENTE
+  plans = by(true, true, false);
+  if (plans.length > 0) return { plans, relaxed: true };
+
+  // 4. Sin COSTO
+  plans = by(true, false, true);
+  if (plans.length > 0) return { plans, relaxed: true };
+
+  // 5. Solo COSTO
+  plans = by(false, true, false);
+  if (plans.length > 0) return { plans, relaxed: true };
+
+  // 6. Sin filtros
+  return { plans: allPlans, relaxed: !!(loc || cost || mood) };
 }
 
 // ── Rellena el barrel con 3 items de placeholder ─────────────
