@@ -1242,8 +1242,15 @@ async function initRuleta(router) {
       }
 
       if (winner) {
-        // Plan generado por IA — animarlo directamente
-        const noise = Array(14).fill(winner);
+        // Plan generado por IA — animar con títulos ficticios variados
+        const NOISE_TITLES = [
+          'Noche de juegos', 'Paseo romántico', 'Cena especial',
+          'Tarde de películas', 'Aventura juntos', 'Momento íntimo',
+          'Plan sorpresa', 'Tarde creativa', 'Escapada rápida',
+          'Noche de estrellas', 'Rincón favorito', 'Nueva experiencia',
+          'Momento mágico', 'Plan perfecto',
+        ];
+        const noise = NOISE_TITLES.map(t => ({ title: t }));
         await _ruletaSpin([...noise, winner]);
         _ruletaShowResult(winner, couple);
       } else {
