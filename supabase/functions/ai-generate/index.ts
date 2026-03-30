@@ -71,12 +71,17 @@ Responde ÚNICAMENTE con este JSON exacto, sin nada más:
 
     const today = new Date().toISOString().split('T')[0]
 
-    return `Genera un plan de cita en español para ${user1Name} y ${user2Name}.
-Características: ${locDesc}, ${costDesc}, ${moodDesc}.
-Sé creativo y diferente cada vez. Hoy: ${today}.
-Responde EXACTAMENTE en este formato (nada más):
-TITULO: [título máx 35 caracteres]
-DESCRIPCION: [descripción 1-2 frases máx 100 caracteres]`
+    return `Responde SOLO con estas dos líneas, sin nada más:
+TITULO: [máx 5 palabras]
+DESCRIPCION: [máx 15 palabras]
+
+Plan de cita para pareja: ${locDesc}, ${costDesc}, ${moodDesc}.
+
+Ejemplo de respuesta correcta:
+TITULO: Cena con velas en casa
+DESCRIPCION: Cocinar juntos una receta especial con música suave de fondo.
+
+Ahora genera uno diferente al ejemplo. Solo las dos líneas.`
   }
 
   throw new Error(`Módulo desconocido: ${module}`)
@@ -121,7 +126,7 @@ Deno.serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'gemma2-9b-it',
         max_tokens: 400,
         temperature: 0.9,
         messages: [
