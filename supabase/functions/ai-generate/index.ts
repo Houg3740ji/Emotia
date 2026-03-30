@@ -81,7 +81,8 @@ Ejemplo de respuesta correcta:
 TITULO: Cena con velas en casa
 DESCRIPCION: Cocinar juntos una receta especial con música suave de fondo.
 
-Ahora genera uno diferente al ejemplo. Solo las dos líneas.`
+Ahora genera uno diferente al ejemplo. Solo las dos líneas.
+Semilla de variedad: ${Math.floor(Math.random() * 99999)}`
   }
 
   throw new Error(`Módulo desconocido: ${module}`)
@@ -126,9 +127,9 @@ Deno.serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gemma2-9b-it',
+        model: 'llama-3.1-8b-instant',
         max_tokens: 400,
-        temperature: 0.9,
+        temperature: 1.0,
         messages: [
           { role: 'user', content: prompt }
         ],
