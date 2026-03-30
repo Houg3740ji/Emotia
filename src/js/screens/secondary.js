@@ -1006,9 +1006,10 @@ async function initRuleta(router) {
   const couple = await db.getMyCouple().catch(() => null);
 
   const FILTER_GROUPS = [
-    { label: 'LUGAR', key: 'location_type', options: [
-      { label: '🏠 En casa',      value: 'home'    },
-      { label: '🌳 Al aire libre', value: 'outside' },
+    { label: 'TIEMPO', key: 'duration_label', options: [
+      { label: 'Express (<1h)',    value: 'express'  },
+      { label: 'Estándar (2-3h)', value: 'estandar' },
+      { label: 'Larga duración',  value: 'larga'    },
     ]},
     { label: 'COSTO', key: 'cost_type', options: [
       { label: 'Gratis',    value: 'free'    },
@@ -1243,15 +1244,19 @@ async function initRuleta(router) {
 // Devuelve { plans, relaxed } donde relaxed=true indica que se
 // relajaron los filtros para encontrar resultados.
 function _findBestMatch(allPlans, activeFilters) {
-  const loc  = activeFilters.location_type;
+  const dur  = activeFilters.duration_label;
   const cost = activeFilters.cost_type;
   const mood = activeFilters.mood_type;
 
-  const by = (useLoc, useCost, useMood) => {
+  // Mapea duration_label → cost_type equivalente para filtrado client-side
+  const durCostMap = { express: 'free', estandar: 'budget', larga: 'premium' };
+  const durCost = dur ? durCostMap[dur] : null;
+
+  const by = (useDur, useCost, useMood) => {
     let r = allPlans;
-    if (useLoc  && loc)  r = r.filter(p => p.location_type === loc);
-    if (useCost && cost) r = r.filter(p => p.cost_type     === cost);
-    if (useMood && mood) r = r.filter(p => p.mood_type     === mood);
+    if (useDur  && durCost) r = r.filter(p => p.cost_type === durCost);
+    if (useCost && cost)    r = r.filter(p => p.cost_type === cost);
+    if (useMood && mood)    r = r.filter(p => p.mood_type === mood);
     return r;
   };
 
@@ -1259,7 +1264,7 @@ function _findBestMatch(allPlans, activeFilters) {
   let plans = by(true, true, true);
   if (plans.length > 0) return { plans, relaxed: false };
 
-  // 2. Sin LUGAR
+  // 2. Sin TIEMPO
   plans = by(false, true, true);
   if (plans.length > 0) return { plans, relaxed: true };
 
@@ -1276,7 +1281,7 @@ function _findBestMatch(allPlans, activeFilters) {
   if (plans.length > 0) return { plans, relaxed: true };
 
   // 6. Sin filtros
-  return { plans: allPlans, relaxed: !!(loc || cost || mood) };
+  return { plans: allPlans, relaxed: !!(dur || cost || mood) };
 }
 
 // ── Rellena el barrel con 3 items de placeholder ─────────────
