@@ -1208,28 +1208,58 @@ async function initRuleta(router) {
     const btn = document.getElementById('girar-btn');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
 
-    try {
-      const allPlans = await db.getDatePlans();
-      const { plans: filtered, relaxed } = _findBestMatch(allPlans, activeFilters);
+    const NOISE_TITLES = [
+      'Noche de juegos', 'Paseo romántico', 'Cena especial',
+      'Tarde de películas', 'Aventura juntos', 'Momento íntimo',
+      'Plan sorpresa', 'Tarde creativa', 'Escapada rápida',
+      'Noche de estrellas', 'Rincón favorito', 'Nueva experiencia',
+      'Momento mágico', 'Plan perfecto',
+    ];
 
-      if (!filtered || filtered.length === 0) {
-        showToast('Sin planes para esa combinación. Prueba con menos filtros.', 'neutral', 4000);
-        _ruletaInitBarrel(['Sin resultados', 'Prueba con', 'menos filtros']);
-      } else {
-        if (relaxed) showToast('No hay planes exactos, mostrando el más cercano', 'neutral', 2500);
-        const NOISE_TITLES = [
-          'Noche de juegos', 'Paseo romántico', 'Cena especial',
-          'Tarde de películas', 'Aventura juntos', 'Momento íntimo',
-          'Plan sorpresa', 'Tarde creativa', 'Escapada rápida',
-          'Noche de estrellas', 'Rincón favorito', 'Nueva experiencia',
-          'Momento mágico', 'Plan perfecto',
-        ];
-        const shuffled = _shuffleArray(filtered);
-        const winner   = shuffled[_cryptoRandInt(shuffled.length)];
-        const noise    = NOISE_TITLES.map(t => ({ title: t }));
-        await _ruletaSpin([...noise, winner]);
-        _ruletaShowResult(winner, couple);
+    try {
+      // Mapear filtros UI → contexto para la IA
+      const durCostMap = { express: 'gratuito', estandar: 'económico', larga: 'especial/premium' };
+      const costLabelMap = { free: 'gratuito', budget: 'económico', premium: 'especial/premium' };
+      const moodLabelMap = {
+        relaxed:   'tranquilo y relajado',
+        energetic: 'activo y divertido',
+        romantic:  'romántico e íntimo',
+      };
+      const aiFilters = {
+        costFilter: durCostMap[activeFilters.duration_label]
+                 || costLabelMap[activeFilters.cost_type]
+                 || undefined,
+        moodFilter: moodLabelMap[activeFilters.mood_type] || undefined,
+      };
+
+      let winner = null;
+      try {
+        const partner = await db.getPartner().catch(() => null);
+        const ctx     = await buildContext(user, couple, partner, aiFilters);
+        winner        = await aiGenerate('date_plan', ctx);
+      } catch (aiErr) {
+        console.warn('[Ruleta] IA no disponible, usando Supabase:', aiErr.message);
       }
+
+      if (!winner) {
+        // Fallback: planes de Supabase
+        const allPlans = await db.getDatePlans();
+        const { plans: filtered, relaxed } = _findBestMatch(allPlans, activeFilters);
+        if (!filtered || filtered.length === 0) {
+          showToast('Sin planes para esa combinación. Prueba con menos filtros.', 'neutral', 4000);
+          _ruletaInitBarrel(['Sin resultados', 'Prueba con', 'menos filtros']);
+          spinning = false;
+          if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+          return;
+        }
+        if (relaxed) showToast('No hay planes exactos, mostrando el más cercano', 'neutral', 2500);
+        const shuffled = _shuffleArray(filtered);
+        winner = shuffled[_cryptoRandInt(shuffled.length)];
+      }
+
+      const noise = NOISE_TITLES.map(t => ({ title: t }));
+      await _ruletaSpin([...noise, winner]);
+      _ruletaShowResult(winner, couple);
     } catch (err) {
       console.error('[Ruleta] Error al girar:', err);
       showToast('Error al obtener planes', 'error');

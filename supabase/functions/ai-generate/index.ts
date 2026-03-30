@@ -25,6 +25,15 @@ function cleanJSON(text: string): string {
     .trim()
 }
 
+function _getEmoji(mood?: string, loc?: string): string {
+  if (mood === 'romántico e íntimo')   return '🌹'
+  if (mood === 'activo y divertido' && loc !== 'en casa') return '🏃'
+  if (mood === 'activo y divertido')   return '🎮'
+  if (mood === 'tranquilo y relajado' && loc !== 'en casa') return '🌿'
+  if (mood === 'tranquilo y relajado') return '☕'
+  return '✨'
+}
+
 function buildPrompt(module: string, ctx: RequestBody['context']): string {
   const { user1Name, user2Name, daysTogether, season, lastEmotion,
           locationFilter, costFilter, moodFilter } = ctx
@@ -55,24 +64,19 @@ Responde ÚNICAMENTE con este JSON exacto, sin nada más:
                    : costFilter === 'económico'         ? 'con presupuesto moderado'
                    : costFilter === 'especial/premium'  ? 'con presupuesto generoso'
                    : 'cualquier presupuesto'
-    const moodDesc = moodFilter === 'relajado y tranquilo' ? 'tranquilo y relajado'
-                   : moodFilter === 'activo y dinámico'    ? 'activo y divertido'
+    const moodDesc = moodFilter === 'tranquilo y relajado' ? 'tranquilo y relajado'
+                   : moodFilter === 'activo y divertido'   ? 'activo y divertido'
                    : moodFilter === 'romántico e íntimo'   ? 'romántico e íntimo'
                    : 'cualquier ambiente'
 
     const today = new Date().toISOString().split('T')[0]
 
-    return `Eres un asistente creativo para parejas. Genera UN plan de cita
-en español para ${user1Name} y ${user2Name}.
-
-Características del plan:
-- Lugar: ${locDesc}
-- Presupuesto: ${costDesc}
-- Ambiente: ${moodDesc}
-
-Sé creativo y original. Cada vez que generes un plan debe ser diferente. Hoy es ${today}.
-Responde ÚNICAMENTE con este formato JSON exacto, sin nada más:
-{"title":"[título corto y atractivo, máx 40 caracteres]","description":"[descripción de 1-2 frases, máx 120 caracteres]","emoji":"[1 emoji relevante]"}`
+    return `Genera un plan de cita en español para ${user1Name} y ${user2Name}.
+Características: ${locDesc}, ${costDesc}, ${moodDesc}.
+Sé creativo y diferente cada vez. Hoy: ${today}.
+Responde EXACTAMENTE en este formato (nada más):
+TITULO: [título máx 35 caracteres]
+DESCRIPCION: [descripción 1-2 frases máx 100 caracteres]`
   }
 
   throw new Error(`Módulo desconocido: ${module}`)
@@ -138,8 +142,27 @@ Deno.serve(async (req: Request) => {
 
     if (module === 'daily_question') {
       result = { question: rawContent.trim() }
+    } else if (module === 'date_plan') {
+      const titleMatch = rawContent.match(/TITULO:\s*(.+)/i)
+      const descMatch  = rawContent.match(/DESCRIPCION:\s*(.+)/i)
+      if (!titleMatch || !descMatch) {
+        throw new Error(`La IA no devolvió el formato esperado: ${rawContent}`)
+      }
+      const { locationFilter, costFilter, moodFilter } = context
+      result = {
+        title:         titleMatch[1].trim(),
+        description:   descMatch[1].trim(),
+        emoji:         _getEmoji(moodFilter, locationFilter),
+        location_type: locationFilter === 'en casa' ? 'home' : 'outside',
+        cost_type:     costFilter === 'sin gastar dinero'      ? 'free'
+                     : costFilter === 'con presupuesto moderado' ? 'budget'
+                     : 'premium',
+        mood_type:     moodFilter === 'tranquilo y relajado' ? 'relaxed'
+                     : moodFilter === 'activo y divertido'   ? 'energetic'
+                     : 'romantic',
+      }
     } else {
-      // fantasy y date_plan devuelven JSON (Groq a veces lo envuelve en ```json```)
+      // fantasy devuelve JSON (Groq a veces lo envuelve en ```json```)
       try {
         result = JSON.parse(cleanJSON(rawContent))
       } catch {
