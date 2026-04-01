@@ -536,7 +536,7 @@ async function initIntimo(router) {
       </div>`;
     if (tab === 'descubrir')    await _intimoDescubrir(content, couple, user);
     else if (tab === 'matches') await _intimoMatches(content, couple);
-    else                             _intimoHistorial(content);
+    else                        await _intimoHistorial(content, couple);
   };
 
   document.querySelectorAll('#app .intimo-tab').forEach(btn =>
@@ -544,6 +544,25 @@ async function initIntimo(router) {
   );
 
   await switchTab('descubrir');
+}
+
+// ── LocalStorage: IDs vistos (TTL 7 días) ────────────────────
+const _SEEN_KEY = 'emotia_seen_fantasies';
+function _getSeenMap() {
+  try {
+    const raw = localStorage.getItem(_SEEN_KEY);
+    if (!raw) return {};
+    const map    = JSON.parse(raw);
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return Object.fromEntries(Object.entries(map).filter(([, ts]) => ts > cutoff));
+  } catch { return {}; }
+}
+function _markSeenId(id) {
+  try {
+    const map = _getSeenMap();
+    map[String(id)] = Date.now();
+    localStorage.setItem(_SEEN_KEY, JSON.stringify(map));
+  } catch {}
 }
 
 // ── Tab: Descubrir ────────────────────────────────────────────
@@ -558,63 +577,74 @@ async function _intimoDescubrir(container, couple, user) {
     return;
   }
 
-  let fantasies = [];
-  try { fantasies = await db.getUnswiped(couple.id); } catch (_) {}
+  // Excluir IDs ya vistos en localStorage (TTL 7 días)
+  const seenIds = Object.keys(_getSeenMap());
 
-  const state = { index: 0 };
+  let fantasies = [];
+  try {
+    let all = await db.getUnswiped(couple.id);
+    if (seenIds.length > 0) all = all.filter(f => !seenIds.includes(String(f.id)));
+    fantasies = all;
+  } catch (_) {}
+
+  const state = { index: 0, aiLoading: false, aiFailed: false };
+
+  // Generación IA en segundo plano
+  async function _triggerAI() {
+    if (state.aiLoading) return;
+    state.aiLoading = true;
+    state.aiFailed  = false;
+    try {
+      const partner = await db.getPartner().catch(() => null);
+      const ctx     = await buildContext(user, couple, partner);
+      const result  = await aiGenerate('fantasy', ctx);
+      if (!result.intensity_label) result.intensity_label = 'suave';
+      if (!result.category)        result.category        = 'romantico';
+      fantasies.push({ ...result, id: `ai-${Date.now()}`, _isAI: true });
+    } catch (_) {
+      state.aiFailed = true;
+    } finally {
+      state.aiLoading = false;
+      // Si el usuario ya llegó al final, re-renderizar con la nueva carta
+      if (state.index >= fantasies.length) renderStack();
+    }
+  }
 
   function renderStack() {
+    // Disparar IA en segundo plano cuando queden ≤ 3 cartas
+    const remaining = fantasies.length - state.index;
+    if (remaining <= 3 && !state.aiLoading && !state.aiFailed) {
+      _triggerAI();
+    }
+
+    // Sin más cartas en el array
     if (state.index >= fantasies.length) {
-      container.innerHTML = `
-        <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-16">
-          <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-            <span class="text-4xl">✨</span>
-          </div>
-          <p class="font-bold text-lg text-slate-700">Has visto todo</p>
-          <p class="text-sm text-slate-400">Vuelve más tarde o revisa tus matches</p>
-          <button id="gen-fantasy-btn"
-                  class="mt-2 px-6 py-3 rounded-full font-semibold text-sm text-white
-                         active:scale-95 transition-transform flex items-center gap-2"
-                  style="background:linear-gradient(135deg,#0d9488,#14213D)">
-            <span class="material-symbols-outlined text-base"
-                  style="font-variation-settings:'FILL' 1">auto_awesome</span>
-            Generar con IA
-          </button>
-          <button id="go-matches"
-                  class="px-6 py-3 rounded-full font-semibold text-sm text-slate-600
-                         border border-slate-200 active:scale-95 transition-transform">
-            Ver Matches
-          </button>
-        </div>`;
-
-      document.getElementById('gen-fantasy-btn')?.addEventListener('click', async () => {
-        const genBtn = document.getElementById('gen-fantasy-btn');
-        if (genBtn) { genBtn.disabled = true; genBtn.textContent = 'Generando…'; }
-        try {
-          const partner  = await db.getPartner().catch(() => null);
-          const ctx      = await buildContext(user, couple, partner);
-          const result   = await aiGenerate('fantasy', ctx);
-          // La IA solo genera title/description/emoji — asignar defaults para el resto
-          if (!result.intensity_label) result.intensity_label = 'suave';
-          if (!result.category)        result.category        = 'romantico';
-          // RLS impide INSERT en fantasies — usamos el plan temporal con id local
-          const tempPlan = { ...result, id: `ai-${Date.now()}` };
-          fantasies.push(tempPlan);
-          renderStack();
-        } catch (err) {
-          showToast(err.message || 'Error al generar fantasía', 'error');
-          if (genBtn) {
-            genBtn.disabled = false;
-            genBtn.innerHTML = `<span class="material-symbols-outlined text-base"
-                                      style="font-variation-settings:'FILL' 1">auto_awesome</span>
-                                Generar con IA`;
-          }
-        }
-      });
-
-      document.getElementById('go-matches')?.addEventListener('click', () =>
-        document.querySelector('#app .intimo-tab[data-tab="matches"]')?.click()
-      );
+      if (state.aiLoading) {
+        container.innerHTML = `
+          <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8 py-20">
+            <span class="material-symbols-outlined text-primary text-4xl animate-spin">
+              progress_activity
+            </span>
+            <p class="text-sm text-slate-500 font-medium">Cargando más ideas...</p>
+          </div>`;
+      } else {
+        container.innerHTML = `
+          <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-16">
+            <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+              <span class="text-4xl">✨</span>
+            </div>
+            <p class="font-bold text-lg text-slate-700">Has visto todo</p>
+            <p class="text-sm text-slate-400">Vuelve más tarde o revisa tus matches</p>
+            <button id="go-matches"
+                    class="mt-2 px-6 py-3 rounded-full font-semibold text-sm text-slate-600
+                           border border-slate-200 active:scale-95 transition-transform">
+              Ver Matches
+            </button>
+          </div>`;
+        document.getElementById('go-matches')?.addEventListener('click', () =>
+          document.querySelector('#app .intimo-tab[data-tab="matches"]')?.click()
+        );
+      }
       return;
     }
 
@@ -649,6 +679,12 @@ async function _intimoDescubrir(container, couple, user) {
                 <span class="text-[90px] opacity-20 select-none">${_fantasyEmoji(cur.category)}</span>
               </div>
               <div class="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent"></div>
+
+              ${cur._isAI ? `
+              <span class="absolute top-3 right-3 z-20 flex items-center gap-1 bg-primary/90
+                           text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md">
+                ✨ IA
+              </span>` : ''}
 
               <!-- Indicadores de swipe -->
               <div id="ind-like" class="absolute top-8 left-6 opacity-0 pointer-events-none">
@@ -803,15 +839,115 @@ async function _intimoMatches(container, couple) {
 }
 
 // ── Tab: Historial ────────────────────────────────────────────
-function _intimoHistorial(container) {
+async function _intimoHistorial(container, couple) {
+  if (!couple) {
+    container.innerHTML = `
+      <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8 py-20">
+        <p class="text-slate-400 text-sm">Vincula tu pareja para ver el historial</p>
+      </div>`;
+    return;
+  }
+
+  const user = await auth.getUser().catch(() => null);
+  if (!user) { container.innerHTML = ''; return; }
+
   container.innerHTML = `
-    <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-20">
-      <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-2">
-        <span class="material-symbols-outlined text-3xl text-slate-300">history</span>
-      </div>
-      <p class="font-bold text-lg text-slate-700">Historial próximamente</p>
-      <p class="text-sm text-slate-400">Aquí verás el registro de todas tus decisiones</p>
+    <div class="flex-1 flex items-center justify-center py-12">
+      <span class="material-symbols-outlined text-slate-300 text-4xl animate-spin">
+        progress_activity
+      </span>
     </div>`;
+
+  try {
+    // Mis swipes right
+    const { data: mySwipes, error: e1 } = await supabase
+      .from('fantasy_swipes')
+      .select('fantasy_id, created_at')
+      .eq('user_id', user.id)
+      .eq('couple_id', couple.id)
+      .eq('direction', 'right');
+    if (e1) throw e1;
+
+    if (!mySwipes?.length) {
+      container.innerHTML = `
+        <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-20">
+          <span class="text-5xl">💫</span>
+          <p class="font-bold text-lg text-slate-700">Sin matches todavía</p>
+          <p class="text-sm text-slate-400">Aún no tenéis matches. ¡Seguid explorando!</p>
+        </div>`;
+      return;
+    }
+
+    const myIds       = mySwipes.map(s => s.fantasy_id);
+    const swipeDateOf = Object.fromEntries(mySwipes.map(s => [s.fantasy_id, s.created_at]));
+
+    // Swipes right de la pareja — solo en las fantasías que yo ya aprobé
+    const partnerId = couple.user1_id === user.id ? couple.user2_id : couple.user1_id;
+    const { data: partnerSwipes } = await supabase
+      .from('fantasy_swipes')
+      .select('fantasy_id')
+      .eq('user_id', partnerId)
+      .eq('couple_id', couple.id)
+      .eq('direction', 'right')
+      .in('fantasy_id', myIds);
+
+    const partnerSet = new Set((partnerSwipes || []).map(s => s.fantasy_id));
+    const matchIds   = myIds.filter(id => partnerSet.has(id));
+
+    if (!matchIds.length) {
+      container.innerHTML = `
+        <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-20">
+          <span class="text-5xl">💫</span>
+          <p class="font-bold text-lg text-slate-700">Sin matches mutuos todavía</p>
+          <p class="text-sm text-slate-400">Aún no tenéis matches. ¡Seguid explorando!</p>
+        </div>`;
+      return;
+    }
+
+    // Cargar datos de las fantasías con match mutuo
+    const { data: fantasies, error: e3 } = await supabase
+      .from('fantasies')
+      .select('id, title, category, emoji')
+      .in('id', matchIds);
+    if (e3) throw e3;
+
+    const fantasyMap = Object.fromEntries((fantasies || []).map(f => [f.id, f]));
+
+    container.innerHTML = `
+      <div class="px-5 py-3">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[.15em] mb-4">
+          ${matchIds.length} match${matchIds.length !== 1 ? 'es' : ''} mutuos
+        </p>
+        <div class="flex flex-col gap-3">
+          ${matchIds.map(id => {
+            const f    = fantasyMap[id] || {};
+            const date = swipeDateOf[id]
+              ? new Date(swipeDateOf[id]).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+              : '';
+            return `
+              <div class="bg-white rounded-2xl px-4 py-3 flex items-center gap-3
+                          border border-slate-100 shadow-sm">
+                <span class="text-3xl">${f.emoji || _fantasyEmoji(f.category)}</span>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-sm text-slate-800 truncate">
+                    ${_esc(f.title || 'Fantasía')}
+                  </p>
+                  ${date ? `<p class="text-[11px] text-slate-400 mt-0.5">${date}</p>` : ''}
+                </div>
+                <span class="flex-shrink-0 bg-green-100 text-green-700 text-[10px]
+                             font-bold px-2.5 py-1 rounded-full">
+                  Match ✓
+                </span>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  } catch (_) {
+    container.innerHTML = `
+      <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8 py-20">
+        <p class="text-slate-400 text-sm">Error al cargar el historial</p>
+      </div>`;
+  }
 }
 
 // ── Gesture: swipe touch + mouse ─────────────────────────────
@@ -894,11 +1030,23 @@ function _animateCardOut(direction, callback) {
 // ── Registra el swipe en Supabase y avanza al siguiente ───────
 async function _recordSwipe(direction, fantasy, couple, state, renderStack) {
   state.index++;
+  _markSeenId(fantasy.id);
+
+  // Cartas generadas por IA: sin INSERT en BD
+  if (String(fantasy.id).startsWith('ai-')) {
+    if (direction === 'right') {
+      _showMatchAnimation(fantasy, renderStack);
+    } else {
+      renderStack();
+    }
+    return;
+  }
+
   try {
     await db.swipeFantasy(couple.id, fantasy.id, direction);
     if (direction === 'right') {
-      const matches  = await db.getMatches(couple.id);
-      const isMatch  = matches.some(m => String(m.id) === String(fantasy.id));
+      const matches = await db.getMatches(couple.id);
+      const isMatch = matches.some(m => String(m.id) === String(fantasy.id));
       if (isMatch) {
         _showMatchAnimation(fantasy, renderStack);
         return;
