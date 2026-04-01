@@ -617,19 +617,22 @@ async function _intimoDescubrir(container, couple, user) {
     try {
       const partner = await db.getPartner().catch(() => null);
       const ctx     = await buildContext(user, couple, partner);
-      const result  = await Promise.race([
-        aiGenerate('fantasy', ctx),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000)),
+      const aiResult = await Promise.race([
+        aiGenerate('fantasy', ctx).catch(() => null),
+        new Promise(resolve => setTimeout(() => resolve(null), 5000)),
       ]);
-      if (!result.intensity_label) result.intensity_label = 'suave';
-      if (!result.category)        result.category        = 'romantico';
-      fantasies.push({ ...result, id: `ai-${Date.now()}`, _isAI: true });
+      if (aiResult) {
+        if (!aiResult.intensity_label) aiResult.intensity_label = 'suave';
+        if (!aiResult.category)        aiResult.category        = 'romantico';
+        fantasies.push({ ...aiResult, id: `ai-${Date.now()}`, _isAI: true });
+      } else {
+        state.aiFailed = true;
+      }
     } catch (_) {
       state.aiFailed = true;
     } finally {
       state.aiLoading = false;
       // Siempre re-renderizar si el usuario estaba esperando al final del stack
-      // (tanto en caso de éxito como de fallo o timeout)
       if (wasAtEnd) renderStack();
     }
   }
@@ -703,12 +706,6 @@ async function _intimoDescubrir(container, couple, user) {
                 <span class="text-[90px] opacity-20 select-none">${_fantasyEmoji(cur.category)}</span>
               </div>
               <div class="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent"></div>
-
-              ${cur._isAI ? `
-              <span class="absolute top-3 right-3 z-20 flex items-center gap-1 bg-primary/90
-                           text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md">
-                ✨ IA
-              </span>` : ''}
 
               <!-- Indicadores de swipe -->
               <div id="ind-like" class="absolute top-8 left-6 opacity-0 pointer-events-none">
@@ -1051,13 +1048,19 @@ function _animateCardOut(direction, callback) {
   setTimeout(callback, 360);
 }
 
+// ── Valida que un id sea UUID real (no temporal) ─────────────
+function _isRealId(id) {
+  return typeof id === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+}
+
 // ── Registra el swipe en Supabase y avanza al siguiente ───────
 async function _recordSwipe(direction, fantasy, couple, state, renderStack) {
   state.index++;
   _markSeenId(fantasy.id);
 
-  // Cartas generadas por IA: sin INSERT en BD
-  if (String(fantasy.id).startsWith('ai-')) {
+  // IDs temporales (fallbacks 'fb-X', IA 'ai-X', etc.): sin INSERT en BD
+  if (!_isRealId(fantasy.id)) {
     if (direction === 'right') {
       _showMatchAnimation(fantasy, renderStack);
     } else {
