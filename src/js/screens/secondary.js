@@ -589,11 +589,21 @@ async function _intimoDescubrir(container, couple, user) {
 
   const state = { index: 0, aiLoading: false, aiFailed: false };
 
-  // Generación IA en segundo plano
+  // Generación IA en segundo plano (timeout total de 8 s)
   async function _triggerAI() {
     if (state.aiLoading) return;
     state.aiLoading = true;
     state.aiFailed  = false;
+
+    // Timeout de 8 s en el lado de la UI — si la IA tarda más, mostramos "Has visto todo"
+    const uiTimeout = setTimeout(() => {
+      if (state.aiLoading) {
+        state.aiLoading = false;
+        state.aiFailed  = true;
+        if (state.index >= fantasies.length) renderStack();
+      }
+    }, 8000);
+
     try {
       const partner = await db.getPartner().catch(() => null);
       const ctx     = await buildContext(user, couple, partner);
@@ -604,8 +614,9 @@ async function _intimoDescubrir(container, couple, user) {
     } catch (_) {
       state.aiFailed = true;
     } finally {
+      clearTimeout(uiTimeout);
       state.aiLoading = false;
-      // Si el usuario ya llegó al final, re-renderizar con la nueva carta
+      // Si el usuario ya llegó al final, re-renderizar con la nueva carta (o estado vacío)
       if (state.index >= fantasies.length) renderStack();
     }
   }

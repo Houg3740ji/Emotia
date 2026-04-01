@@ -20,15 +20,25 @@ const ANON_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY
  */
 export async function aiGenerate(module, context) {
   console.log('[AI] Request body:', JSON.stringify({ module, context }))
-  const res = await fetch(EDGE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${ANON_KEY}`,
-      'apikey': ANON_KEY,
-    },
-    body: JSON.stringify({ module, context }),
-  })
+  const controller = new AbortController()
+  const timeout    = setTimeout(() => controller.abort(), 10000)
+  let res
+  try {
+    res = await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ANON_KEY}`,
+        'apikey': ANON_KEY,
+      },
+      body: JSON.stringify({ module, context }),
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+  } catch (err) {
+    clearTimeout(timeout)
+    throw new Error(err.name === 'AbortError' ? 'Timeout de IA' : (err.message || 'Error de red'))
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
