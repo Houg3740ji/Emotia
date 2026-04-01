@@ -565,6 +565,18 @@ function _markSeenId(id) {
   } catch {}
 }
 
+// ── Fantasías de respaldo cuando BD devuelve vacío ────────────
+const FALLBACK_FANTASIES = [
+  { id: 'fb-1', title: 'Masaje a la luz de velas', description: 'Preparad velas, aceite y música suave. Turnaos dando un masaje completo de espalda sin prisa.', category: 'masaje', intensity_label: 'suave', duration_label: '45 min' },
+  { id: 'fb-2', title: 'Cena temática en casa', description: 'Elegid un país, preparad su gastronomía juntos y cenad con música típica. Sin móviles.', category: 'romantico', intensity_label: 'suave', duration_label: '2 h' },
+  { id: 'fb-3', title: 'Cartas de deseos secretos', description: 'Cada uno escribe 3 deseos íntimos en un papel. Intercambiad y elegid uno para cumplir esta semana.', category: 'juego', intensity_label: 'medio', duration_label: '30 min' },
+  { id: 'fb-4', title: 'Baño de espuma compartido', description: 'Llenad la bañera con espuma y sales. Champán, música y ninguna prisa.', category: 'sensual', intensity_label: 'suave', duration_label: '1 h' },
+  { id: 'fb-5', title: 'Role-play: primera cita', description: 'Fingid que os conocéis esta noche por primera vez. Quedadais en un bar y actuad como si fuera de verdad.', category: 'role_play', intensity_label: 'medio', duration_label: '2 h' },
+  { id: 'fb-6', title: 'Picnic nocturno en casa', description: 'Extendad una manta en el salón, apagad las luces y cenad a la luz de una linterna bajo las estrellas de una proyección.', category: 'romantico', intensity_label: 'suave', duration_label: '1 h' },
+  { id: 'fb-7', title: 'Tarde de juegos de mesa eróticos', description: 'Buscad un juego de cartas o dados para parejas y dejad que el azar decida la noche.', category: 'juego', intensity_label: 'medio', duration_label: '1 h' },
+  { id: 'fb-8', title: 'Foto sesión íntima', description: 'Vestíos con vuestra ropa favorita y haceos fotos el uno al otro. El objetivo: capturar por qué os enamorasteis.', category: 'romantico', intensity_label: 'suave', duration_label: '1 h' },
+];
+
 // ── Tab: Descubrir ────────────────────────────────────────────
 async function _intimoDescubrir(container, couple, user) {
   if (!couple) {
@@ -584,40 +596,41 @@ async function _intimoDescubrir(container, couple, user) {
   try {
     let all = await db.getUnswiped(couple.id);
     if (seenIds.length > 0) all = all.filter(f => !seenIds.includes(String(f.id)));
+    // Si la BD devuelve vacío, usar fallbacks hardcodeados (también filtrando ya vistos)
+    if (!all.length) {
+      all = FALLBACK_FANTASIES.filter(f => !seenIds.includes(String(f.id)));
+    }
     fantasies = all;
-  } catch (_) {}
+  } catch (_) {
+    fantasies = FALLBACK_FANTASIES.filter(f => !seenIds.includes(String(f.id)));
+  }
 
   const state = { index: 0, aiLoading: false, aiFailed: false };
 
-  // Generación IA en segundo plano (timeout total de 8 s)
+  // Generación IA en segundo plano
   async function _triggerAI() {
     if (state.aiLoading) return;
     state.aiLoading = true;
     state.aiFailed  = false;
-
-    // Timeout de 8 s en el lado de la UI — si la IA tarda más, mostramos "Has visto todo"
-    const uiTimeout = setTimeout(() => {
-      if (state.aiLoading) {
-        state.aiLoading = false;
-        state.aiFailed  = true;
-        if (state.index >= fantasies.length) renderStack();
-      }
-    }, 8000);
-
+    // Capturar ANTES de las llamadas async si el usuario ya llegó al final
+    const wasAtEnd = state.index >= fantasies.length;
     try {
       const partner = await db.getPartner().catch(() => null);
       const ctx     = await buildContext(user, couple, partner);
-      const result  = await aiGenerate('fantasy', ctx);
+      const result  = await Promise.race([
+        aiGenerate('fantasy', ctx),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000)),
+      ]);
       if (!result.intensity_label) result.intensity_label = 'suave';
       if (!result.category)        result.category        = 'romantico';
       fantasies.push({ ...result, id: `ai-${Date.now()}`, _isAI: true });
     } catch (_) {
       state.aiFailed = true;
     } finally {
-      clearTimeout(uiTimeout);
       state.aiLoading = false;
-      // Si el usuario ya llegó al final, re-renderizar con la nueva carta (o estado vacío)
-      if (state.index >= fantasies.length) renderStack();
+      // Siempre re-renderizar si el usuario estaba esperando al final del stack
+      // (tanto en caso de éxito como de fallo o timeout)
+      if (wasAtEnd) renderStack();
     }
   }
 
