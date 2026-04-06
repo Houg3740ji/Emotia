@@ -91,55 +91,124 @@ Ahora genera una diferente al ejemplo. Solo las dos líneas.
 Semilla: ${Math.floor(Math.random() * 99999)}`
 
     } else if (module === 'date_plan') {
-      // Construir descripción de cada filtro
-      const durDesc  = durationFilter === 'menos de 1 hora' ? 'que dure menos de 1 hora'
-                     : durationFilter === '2 a 3 horas'     ? 'que dure entre 2 y 3 horas'
-                     : durationFilter === 'medio día o más' ? 'que sea de medio día o más'
+
+      // ── Banco de ejemplos por coste × ambiente ─────────────────────────────
+      // Clave: "coste|ambiente" (undefined = "cualquiera")
+      const EXAMPLE_BANK: Record<string, string[]> = {
+        'gratis|relajado':    [
+          'Netflix + palomitas — Elegir serie nueva, hacer palomitas y taparos con mantas.',
+          'Juegos de mesa — Sacar todos los juegos de casa y perder el tiempo riendo.',
+          'Dibujo juntos — Poner papel, lápices y reíros de lo que sale.',
+          'Cocinar lo que hay — Improvisar cena con lo que queda en la nevera.',
+        ],
+        'gratis|activo':      [
+          'Fotos por el barrio — Salir con el móvil a buscar las imágenes más raras.',
+          'Frisbee en el parque — Llevar un frisbee y jugar hasta cansaros.',
+          'Explorar a pie — Elegir dirección aleatoria y ver qué encontráis.',
+          'Yoga en casa — Seguir un vídeo de YouTube y hacer el ridículo juntos.',
+        ],
+        'gratis|romántico':   [
+          'Picnic en el parque — Manta, comida de casa y lista de canciones vuestra.',
+          'Baile en el salón — Hacer playlist de vuestras canciones y bailar en casa.',
+          'Cartas a mano — Escribiros una carta y leerlas en voz alta.',
+          'Estrellas en la terraza — Tumbarse con mantas a mirar el cielo.',
+        ],
+        'economico|relajado': [
+          'Cine de barrio — Ir al cine más cercano a ver lo que echen.',
+          'Cafetería nueva — Buscar una cafetería que no hayáis probado y pedir de todo.',
+          'Mercadillo — Pasear por un rastro y ver quién encuentra la cosa más rara.',
+          'Escape room económico — El más barato de la ciudad.',
+        ],
+        'economico|activo':   [
+          'Bolos + cañas — Dos partidas de bolos y luego tomar algo en el bar.',
+          'Karting — Echar unas vueltas y competir a ver quién es más peligroso.',
+          'Paintball — Buscar oferta de grupo y pasar la tarde disparándoos.',
+          'Bolera + pizza — Bolos y luego pedir pizza en el local de al lado.',
+        ],
+        'economico|romántico':[
+          'Sushi casero — Comprar ingredientes, hacer makis y poner velas.',
+          'Cena en sitio nuevo — Restaurante que no hayáis probado, pedir capricho.',
+          'Taller de cerámica — Apuntarse a clase corta y hacer algo juntos.',
+          'Cóctel en casa — Buscar recetas, comprar ingredientes y montar barra en casa.',
+        ],
+        'premium|relajado':   [
+          'Spa en pareja — Reservar circuito de aguas y pasar la tarde relajados.',
+          'Hotel con jacuzzi — Noche en hotel con bañera de hidromasaje.',
+          'Masaje a domicilio — Pedir masajista profesional que venga a casa para los dos.',
+          'Suite con vistas — Reservar habitación con terraza y no salir en todo el día.',
+        ],
+        'premium|activo':     [
+          'Parapente biplaza — Vuelo en parapente sobre el paisaje.',
+          'Kayak de alquiler — Medio día en kayak en un lago o río cercano.',
+          'Escape room premium — El más elaborado y caro de la ciudad.',
+          'Clase de surf — Apuntarse a clase de surf para principiantes.',
+        ],
+        'premium|romántico':  [
+          'Menú degustación — Reservar en restaurante con menú degustación y maridaje.',
+          'Escapada a otra ciudad — Noche de hotel especial en ciudad nueva.',
+          'Cata de vinos guiada — Cata con sommelier y tabla de quesos.',
+          'Cena privada con chef — Contratar chef que cocine en casa para los dos.',
+        ],
+      }
+
+      // Seleccionar ejemplos relevantes
+      const costKey = costFilter === 'gratuito'         ? 'gratis'
+                    : costFilter === 'económico'        ? 'economico'
+                    : costFilter === 'especial/premium' ? 'premium'
+                    : null
+      const moodKey = moodFilter === 'tranquilo y relajado' ? 'relajado'
+                    : moodFilter === 'activo y divertido'   ? 'activo'
+                    : moodFilter === 'romántico e íntimo'   ? 'romántico'
+                    : null
+
+      // Primero busca match exacto, luego solo coste, luego solo mood, luego cualquiera
+      const bankKey = costKey && moodKey ? `${costKey}|${moodKey}`
+                    : costKey            ? `${costKey}|relajado`
+                    : moodKey            ? `gratis|${moodKey}`
+                    : 'economico|relajado'
+      const examples = EXAMPLE_BANK[bankKey] ?? EXAMPLE_BANK['economico|relajado']
+
+      // Líneas de restricción MUY concretas
+      const durLine  = durationFilter === 'menos de 1 hora' ? '- Duración MÁXIMA: 1 hora (algo rápido, sin desplazamientos largos)'
+                     : durationFilter === '2 a 3 horas'     ? '- Duración: entre 2 y 3 horas'
+                     : durationFilter === 'medio día o más' ? '- Duración MÍNIMA: 4 horas o más (excursión, evento de todo el día, etc.)'
+                     : null
+      const costLine = costFilter === 'gratuito'         ? '- Coste: CERO euros, usando solo lo que ya tenéis en casa o espacios públicos gratuitos'
+                     : costFilter === 'económico'        ? '- Coste: entre 10 y 30€ en total para los dos'
+                     : costFilter === 'especial/premium' ? '- Coste: más de 30€, algo fuera de lo habitual'
+                     : null
+      const moodLine = moodFilter === 'tranquilo y relajado' ? '- Ambiente: RELAJADO, sin esfuerzo físico, sentados o tumbados'
+                     : moodFilter === 'activo y divertido'   ? '- Ambiente: ACTIVO, con movimiento físico, competición o energía'
+                     : moodFilter === 'romántico e íntimo'   ? '- Ambiente: ROMÁNTICO, íntimo, con detalles especiales'
                      : null
 
-      const costDesc = costFilter === 'gratuito'          ? 'completamente gratuito (sin gastar dinero)'
-                     : costFilter === 'económico'         ? 'con presupuesto moderado (10-30€)'
-                     : costFilter === 'especial/premium'  ? 'con presupuesto generoso (más de 30€)'
-                     : null
-
-      const moodDesc = moodFilter === 'tranquilo y relajado' ? 'de ambiente tranquilo y relajado'
-                     : moodFilter === 'activo y divertido'   ? 'activo, dinámico y divertido'
-                     : moodFilter === 'romántico e íntimo'   ? 'romántico e íntimo'
-                     : null
-
-      const constraints = [durDesc, costDesc, moodDesc].filter(Boolean)
-      const constraintLine = constraints.length > 0
-        ? `El plan debe ser: ${constraints.join(', ')}.`
-        : 'Sin restricciones especiales de tipo.'
+      const restrictions = [durLine, costLine, moodLine].filter(Boolean)
+      const restrictBlock = restrictions.length > 0
+        ? `RESTRICCIONES OBLIGATORIAS:\n${restrictions.join('\n')}`
+        : 'Sin restricciones.'
 
       const avoidLine = previousPlan
-        ? `Importante: NO repitas ni algo parecido a "${previousPlan}". Genera algo completamente distinto.`
+        ? `NO uses nada parecido a: "${previousPlan}"`
         : ''
 
       prompt =
-`Responde SOLO con estas dos líneas, sin nada más:
-TITULO: [máx 6 palabras, nombre concreto del plan]
-DESCRIPCION: [máx 15 palabras, qué harían exactamente]
+`Genera un plan de cita para una pareja española.
 
-Genera un plan de cita real y concreto para una pareja.
-${constraintLine}
+${restrictBlock}
 ${avoidLine}
 
-Reglas:
-- Debe ser algo que la gente haría de verdad, cotidiano pero especial
-- El título debe sonar natural, no genérico (evita "noche mágica", "momento especial", etc.)
-- La descripción debe decir exactamente qué van a hacer
+EJEMPLOS del tipo correcto (usa como referencia de estilo y tipo):
+${examples.join('\n')}
 
-Ejemplos de planes buenos según ambiente:
-Relajado: "Tarde de alfarería en casa" / "Comprar arcilla y hacer cuencos juntos mientras escucháis música."
-Relajado: "Maratón de serie nueva" / "Elegir una serie desconocida, hacer palomitas y taparos con mantas."
-Activo: "Ruta en bici al mirador" / "Pedalear hasta el mirador, llevar bocadillos y hacer fotos."
-Activo: "Noche de bolos y cervezas" / "Jugar dos partidas de bolos y tomarse unas cañas después."
-Romántico: "Sushi casero desde cero" / "Comprar ingredientes, hacer makis juntos y poner velas."
-Romántico: "Picnic nocturno en la terraza" / "Mantas, luces de hada, queso, vino y música suave."
+Genera UN plan NUEVO y DIFERENTE a los ejemplos de arriba.
+El título debe ser directo (2-4 palabras, la actividad concreta, sin adjetivos floridos).
+La descripción debe decir exactamente qué harían.
 
-Ahora genera UNO diferente a todos los ejemplos. Solo las dos líneas.
-Semilla aleatoria: ${Math.floor(Math.random() * 999999)}`
+Responde SOLO con estas dos líneas:
+TITULO: [2-4 palabras]
+DESCRIPCION: [máx 15 palabras]
+
+Semilla: ${Math.floor(Math.random() * 999999)}`
 
     } else {
       return new Response(
