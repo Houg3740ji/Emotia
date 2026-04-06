@@ -1243,55 +1243,49 @@ async function initRuleta(router) {
         </section>
 
         <!-- Paso 2: Ruleta -->
-        <section class="px-4 py-8" style="background:rgba(232,222,209,.4)">
-          <div class="flex items-center gap-2 mb-7">
+        <section class="px-4 py-6" style="background:rgba(232,222,209,.4)">
+          <style>
+            @keyframes _btn-pulse {
+              0%,100%{box-shadow:0 8px 24px rgba(13,150,139,.32)}
+              50%{box-shadow:0 8px 36px rgba(13,150,139,.58),0 0 24px rgba(13,150,139,.18)}
+            }
+            #girar-btn:not(:disabled){animation:_btn-pulse 2.2s ease-in-out infinite}
+            #girar-btn:disabled{animation:none}
+          </style>
+          <div class="flex items-center gap-2 mb-5">
             <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center
                          justify-center text-xs font-bold flex-shrink-0">2</span>
             <h2 class="font-bold text-lg">Descubre tu cita</h2>
           </div>
-          <div class="flex flex-col items-center gap-8">
+          <div class="flex flex-col items-center gap-5">
 
-            <!-- Círculo con barrel -->
-            <div class="relative flex items-center">
-              <!-- Puntero -->
-              <div class="absolute z-20 w-7 h-7 bg-primary rotate-45 rounded-sm shadow-md"
-                   style="right:-14px;box-shadow:0 4px 10px rgba(13,150,139,.35)"></div>
+            <!-- Puntero -->
+            <div id="wheel-pointer"
+                 style="width:0;height:0;
+                        border-left:14px solid transparent;
+                        border-right:14px solid transparent;
+                        border-top:26px solid #0D968B;
+                        filter:drop-shadow(0 4px 8px rgba(13,150,139,.45));
+                        transition:transform 0.08s ease;
+                        position:relative;z-index:10;margin-bottom:-6px"></div>
 
-              <!-- Círculo principal -->
-              <div class="relative w-64 h-64 rounded-full bg-white overflow-hidden
-                          border-8 border-primary/10"
-                   style="box-shadow:0 10px 25px -5px rgba(13,150,139,.22),
-                                     0 8px 10px -6px rgba(13,150,139,.18)">
-                <!-- Líneas decorativas -->
-                <div class="absolute inset-0 opacity-10 pointer-events-none">
-                  <div class="absolute inset-0 border-r-2 border-primary"></div>
-                  <div class="absolute inset-0 rotate-45 border-r-2 border-primary"></div>
-                  <div class="absolute inset-0 rotate-90 border-r-2 border-primary"></div>
-                  <div class="absolute inset-0 rotate-135 border-r-2 border-primary"></div>
-                </div>
-
-                <!-- Barrel (slot machine vertical) -->
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-full overflow-hidden" style="height:132px">
-                    <div id="barrel" class="flex flex-col"></div>
-                  </div>
-                </div>
-
-                <!-- Gradiente profundidad -->
-                <div class="absolute inset-0 pointer-events-none"
-                     style="background:linear-gradient(to bottom,
-                       white 0%, transparent 28%, transparent 72%, white 100%)">
-                </div>
-              </div>
+            <!-- Rueda -->
+            <div id="wheel-wrap"
+                 style="position:relative;width:288px;height:288px;
+                        transition:filter 0.5s ease">
+              <canvas id="wheel-canvas"
+                      style="border-radius:50%;display:block;
+                             box-shadow:0 12px 36px rgba(13,150,139,.2),
+                                        0 0 0 5px rgba(13,150,139,.08)"></canvas>
             </div>
 
             <!-- Botón GIRAR -->
             <button id="girar-btn"
-                    class="flex min-w-[200px] items-center justify-center rounded-xl h-14
+                    class="flex min-w-[210px] items-center justify-center rounded-xl h-14
                            px-8 bg-primary text-white text-lg font-bold
-                           active:scale-95 transition-all select-none"
+                           active:scale-95 transition-transform select-none"
                     style="box-shadow:0 8px 24px rgba(13,150,139,.32)">
-              <span class="material-symbols-outlined mr-2 text-2xl">refresh</span>
+              <span class="material-symbols-outlined mr-2 text-2xl">casino</span>
               GIRAR
             </button>
           </div>
@@ -1350,8 +1344,8 @@ async function initRuleta(router) {
     el.addEventListener('click', () => router.navigate(el.dataset.nav))
   );
 
-  // Init barrel con placeholder
-  _ruletaInitBarrel(['Aquí aparecerá', 'tu cita perfecta', 'Toca GIRAR ↓']);
+  // Init rueda
+  _ruletaInitWheel();
 
   // Filter chips — toggle único por grupo
   document.querySelectorAll('#app .filter-chip').forEach(btn => {
@@ -1431,7 +1425,6 @@ async function initRuleta(router) {
         const { plans: filtered, relaxed } = _findBestMatch(allPlans, activeFilters);
         if (!filtered || filtered.length === 0) {
           showToast('Sin planes para esa combinación. Prueba con menos filtros.', 'neutral', 4000);
-          _ruletaInitBarrel(['Sin resultados', 'Prueba con', 'menos filtros']);
           spinning = false;
           if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
           return;
@@ -1499,54 +1492,178 @@ function _findBestMatch(allPlans, activeFilters) {
   return { plans: allPlans, relaxed: !!(dur || cost || mood) };
 }
 
-// ── Rellena el barrel con 3 items de placeholder ─────────────
-function _ruletaInitBarrel(labels) {
-  const barrel = document.getElementById('barrel');
-  if (!barrel) return;
-  barrel.style.transition = 'none';
-  barrel.style.transform  = 'translateY(0)';
-  barrel.innerHTML = labels.map((t, i) => `
-    <div class="flex items-center justify-center text-center px-8" style="height:44px">
-      <span class="${i === 1
-        ? 'text-primary text-sm font-bold bg-primary/10 px-4 py-1 rounded-lg'
-        : 'text-slate-300 text-xs font-medium line-through opacity-60'}">
-        ${_esc(t)}
-      </span>
-    </div>`).join('');
+// ── RULETA: estado y constantes ───────────────────────────────
+let _wheelCtx = null;
+let _wheelDpr = 1;
+let _wheelRot = 0;          // grados acumulados (nunca se resetea, para continuidad)
+let _wheelLastSeg = -1;     // para detectar cruce de segmento
+
+const _WHEEL_N      = 8;
+const _WHEEL_DEG    = 360 / _WHEEL_N;
+const _WHEEL_SIZE   = 288;
+const _WHEEL_LABELS = ['🍕 Cena','🎬 Peli','🎮 Juegos','🌿 Paseo','❤️ Íntimo','🏃 Activo','🎭 Arte','✨ Sorpresa'];
+const _WHEEL_COLORS = ['#0D968B','#0A7568','#0D968B','#0A7568','#0D968B','#0A7568','#0D968B','#0A7568'];
+
+// ── Inicializa el canvas con DPR correcto y dibuja la rueda ───
+function _ruletaInitWheel() {
+  const canvas = document.getElementById('wheel-canvas');
+  if (!canvas) return;
+  _wheelDpr = Math.min(window.devicePixelRatio || 1, 3);
+  canvas.width  = _WHEEL_SIZE * _wheelDpr;
+  canvas.height = _WHEEL_SIZE * _wheelDpr;
+  canvas.style.width  = _WHEEL_SIZE + 'px';
+  canvas.style.height = _WHEEL_SIZE + 'px';
+  _wheelCtx = canvas.getContext('2d');
+  _wheelCtx.scale(_wheelDpr, _wheelDpr);
+  _wheelRot = 0;
+  _ruletaDrawWheel(0);
 }
 
-// ── Animación slot-machine: termina con el ganador centrado ───
-function _ruletaSpin(tape) {
-  const barrel = document.getElementById('barrel');
-  if (!barrel) return Promise.resolve();
+// ── Dibuja la rueda entera en el ángulo dado ──────────────────
+function _ruletaDrawWheel(deg) {
+  const ctx = _wheelCtx;
+  if (!ctx) return;
+  const S = _WHEEL_SIZE;
+  const cx = S / 2, cy = S / 2;
+  const r  = S / 2 - 6;
 
-  const ITEM_H = 44;
-  const WIN_I  = tape.length - 1;
+  ctx.clearRect(0, 0, S, S);
 
-  // Construir toda la cinta
-  barrel.style.transition = 'none';
-  barrel.style.transform  = 'translateY(0)';
-  barrel.innerHTML = tape.map((plan, i) => {
-    const title = typeof plan === 'string' ? plan : (plan.title || '');
-    return `
-      <div class="flex items-center justify-center text-center px-8" style="height:${ITEM_H}px">
-        <span class="${i === WIN_I
-          ? 'text-primary font-bold text-sm'
-          : 'text-slate-400 text-xs font-medium'}">
-          ${_esc(title)}
-        </span>
-      </div>`;
-  }).join('');
+  // ── Segmentos ────────────────────────────────────────────────
+  for (let i = 0; i < _WHEEL_N; i++) {
+    const a0 = (i       * _WHEEL_DEG + deg - 90) * Math.PI / 180;
+    const a1 = ((i + 1) * _WHEEL_DEG + deg - 90) * Math.PI / 180;
+    const am = (i * _WHEEL_DEG + _WHEEL_DEG / 2 + deg - 90) * Math.PI / 180;
 
-  // Esperar 2 frames para que el DOM procese el HTML
+    // Relleno
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, a0, a1);
+    ctx.closePath();
+    ctx.fillStyle = _WHEEL_COLORS[i];
+    ctx.fill();
+
+    // Borde separador suave
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // ── Etiqueta (emoji + texto) ─────────────────────────────
+    const lx = cx + Math.cos(am) * (r * 0.62);
+    const ly = cy + Math.sin(am) * (r * 0.62);
+    ctx.save();
+    ctx.translate(lx, ly);
+    ctx.rotate(am + Math.PI / 2);
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    const [emoji, ...words] = _WHEEL_LABELS[i].split(' ');
+    // Emoji
+    ctx.font      = '14px system-ui,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.fillText(emoji, 0, -7);
+    // Texto
+    ctx.font      = 'bold 8.5px system-ui,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.fillText(words.join(' ').toUpperCase(), 0, 5.5);
+    ctx.restore();
+  }
+
+  // ── Puntos decorativos en las líneas de segmento ────────────
+  for (let i = 0; i < _WHEEL_N; i++) {
+    const a = (i * _WHEEL_DEG + deg - 90) * Math.PI / 180;
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fill();
+  }
+
+  // ── Borde exterior ──────────────────────────────────────────
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // ── Aro interior decorativo ─────────────────────────────────
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.3, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // ── Capuchón central ────────────────────────────────────────
+  ctx.beginPath();
+  ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+
+  ctx.font          = '15px system-ui';
+  ctx.textAlign     = 'center';
+  ctx.textBaseline  = 'middle';
+  ctx.fillText('🎯', cx, cy + 1);
+}
+
+// ── Animación de giro: rápido→lento, con rebote de puntero ───
+function _ruletaSpin(/* tape ignorada — el ganador ya viene de fuera */) {
+  if (!_wheelCtx) return Promise.resolve();
+
+  const EXTRA_ROTS = 5 + Math.floor(Math.random() * 3);   // 5-7 vueltas
+  const END_DEG    = _wheelRot + EXTRA_ROTS * 360 + Math.random() * 360;
+  const DURATION   = 3100 + Math.random() * 400;           // 3.1-3.5 s
+
   return new Promise(resolve => {
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      // Posición destino: WIN_I centrado en el slot del medio (slot 1 = y:44px desde top)
-      const targetY = -(WIN_I * ITEM_H - ITEM_H);
-      barrel.style.transition = 'transform 2.4s cubic-bezier(0.08, 0.9, 0.35, 1.0)';
-      barrel.style.transform  = `translateY(${targetY}px)`;
-      setTimeout(resolve, 2450);
-    }));
+    const t0       = performance.now();
+    const startDeg = _wheelRot;
+    _wheelLastSeg  = Math.floor(((_wheelRot % 360 + 360) % 360 + 90) / _WHEEL_DEG) % _WHEEL_N;
+
+    // Ease-out quintik: frenazo suave largo
+    const ease = t => 1 - Math.pow(1 - t, 5);
+
+    function tick(now) {
+      const progress = Math.min((now - t0) / DURATION, 1);
+      const deg = startDeg + (END_DEG - startDeg) * ease(progress);
+
+      _ruletaDrawWheel(deg % 360);
+
+      // Rebote de puntero cuando cruza un segmento (solo en la 2ª mitad de la animación)
+      if (progress > 0.45) {
+        const seg = Math.floor(((deg % 360 + 360) % 360 + 90) / _WHEEL_DEG) % _WHEEL_N;
+        if (seg !== _wheelLastSeg) {
+          _wheelLastSeg = seg;
+          const ptr = document.getElementById('wheel-pointer');
+          if (ptr) {
+            ptr.style.transform = 'scaleY(0.6) translateY(4px)';
+            setTimeout(() => { if (ptr) ptr.style.transform = ''; }, 90);
+          }
+        }
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        _wheelRot = END_DEG % 360;
+
+        // Flash de victoria en el wrap
+        const wrap = document.getElementById('wheel-wrap');
+        if (wrap) {
+          wrap.style.filter = 'drop-shadow(0 0 22px rgba(13,150,139,.7))';
+          const ptr = document.getElementById('wheel-pointer');
+          if (ptr) {
+            ptr.style.transform = 'scaleY(1.5) translateY(-5px)';
+            setTimeout(() => { if (ptr) ptr.style.transform = ''; }, 220);
+          }
+          setTimeout(() => { if (wrap) wrap.style.filter = ''; }, 700);
+        }
+        resolve();
+      }
+    }
+
+    requestAnimationFrame(tick);
   });
 }
 
