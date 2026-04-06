@@ -31,7 +31,7 @@ function getEmoji(mood?: string, loc?: string): string {
 
 function parseLines(raw: string): { title: string; description: string } {
   const titleMatch = raw.match(/TITULO:\s*(.+)/i)
-  const descMatch  = raw.match(/DESCRIPCION:\s*(.+)/i)
+  const descMatch  = raw.match(/DESCRIPCI[OÓ]N:\s*(.+)/i)
   if (!titleMatch || !descMatch) {
     throw new Error(`Formato inesperado en respuesta de Groq: ${raw}`)
   }
