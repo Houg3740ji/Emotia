@@ -1378,69 +1378,46 @@ async function initRuleta(router) {
     const btn = document.getElementById('girar-btn');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
 
-    const NOISE_TITLES = [
-      'Noche de juegos', 'Paseo romántico', 'Cena especial',
-      'Tarde de películas', 'Aventura juntos', 'Momento íntimo',
-      'Plan sorpresa', 'Tarde creativa', 'Escapada rápida',
-      'Noche de estrellas', 'Rincón favorito', 'Nueva experiencia',
-      'Momento mágico', 'Plan perfecto',
-    ];
-
     try {
       // Mapear filtros UI → contexto para la IA
-      const durationLabelMap = {
-        express:  'menos de 1 hora',
-        estandar: '2 a 3 horas',
-        larga:    'medio día o más',
-      };
-      const costLabelMap = {
-        free:    'gratuito',
-        budget:  'económico',
-        premium: 'especial/premium',
-      };
-      const moodLabelMap = {
-        relaxed:   'tranquilo y relajado',
-        energetic: 'activo y divertido',
-        romantic:  'romántico e íntimo',
-      };
       const aiFilters = {
-        durationFilter: durationLabelMap[activeFilters.duration_label] || undefined,
-        costFilter:     costLabelMap[activeFilters.cost_type]          || undefined,
-        moodFilter:     moodLabelMap[activeFilters.mood_type]          || undefined,
+        durationFilter: { express:'menos de 1 hora', estandar:'2 a 3 horas', larga:'medio día o más' }[activeFilters.duration_label] || undefined,
+        costFilter:     { free:'gratuito', budget:'económico', premium:'especial/premium' }[activeFilters.cost_type]                  || undefined,
+        moodFilter:     { relaxed:'tranquilo y relajado', energetic:'activo y divertido', romantic:'romántico e íntimo' }[activeFilters.mood_type] || undefined,
         previousPlan:   lastPlanTitle || undefined,
       };
 
-      let winner = null;
-      try {
-        const partner = await db.getPartner().catch(() => null);
-        const ctx     = await buildContext(user, couple, partner, aiFilters);
-        winner        = await aiGenerate('date_plan', ctx);
-      } catch (aiErr) {
-        console.warn('[Ruleta] IA no disponible, usando Supabase:', aiErr.message);
-      }
-
-      if (!winner) {
-        // Fallback: planes de Supabase
-        const allPlans = await db.getDatePlans();
-        const { plans: filtered, relaxed } = _findBestMatch(allPlans, activeFilters);
-        if (!filtered || filtered.length === 0) {
-          showToast('Sin planes para esa combinación. Prueba con menos filtros.', 'neutral', 4000);
-          spinning = false;
-          if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
-          return;
+      // Construir la promesa de la IA (arranca ya, sin await aquí)
+      const aiPromise = (async () => {
+        let winner = null;
+        try {
+          const partner = await db.getPartner().catch(() => null);
+          const ctx     = await buildContext(user, couple, partner, aiFilters);
+          winner        = await aiGenerate('date_plan', ctx);
+        } catch (aiErr) {
+          console.warn('[Ruleta] IA no disponible, usando Supabase:', aiErr.message);
         }
-        if (relaxed) showToast('No hay planes exactos, mostrando el más cercano', 'neutral', 2500);
-        const shuffled = _shuffleArray(filtered);
-        winner = shuffled[_cryptoRandInt(shuffled.length)];
-      }
+        if (!winner) {
+          const allPlans = await db.getDatePlans();
+          const { plans: filtered, relaxed } = _findBestMatch(allPlans, activeFilters);
+          if (!filtered || filtered.length === 0)
+            throw new Error('Sin planes para esa combinación. Prueba con menos filtros.');
+          if (relaxed) showToast('No hay planes exactos, mostrando el más cercano', 'neutral', 2500);
+          const sh = _shuffleArray(filtered);
+          winner = sh[_cryptoRandInt(sh.length)];
+        }
+        return winner;
+      })();
 
-      const noise = NOISE_TITLES.map(t => ({ title: t }));
-      await _ruletaSpin([...noise, winner]);
+      // La ruleta empieza a girar de inmediato; frena cuando llega el resultado
+      const winner = await _ruletaSpinWithResult(aiPromise);
       lastPlanTitle = winner.title || null;
       _ruletaShowResult(winner, couple);
     } catch (err) {
       console.error('[Ruleta] Error al girar:', err);
-      showToast('Error al obtener planes', 'error');
+      showToast(err.message?.includes('Sin planes') ? err.message : 'Error al obtener planes',
+                err.message?.includes('Sin planes') ? 'neutral' : 'error',
+                4000);
     }
 
     spinning = false;
@@ -1502,6 +1479,7 @@ const _WHEEL_N      = 8;
 const _WHEEL_DEG    = 360 / _WHEEL_N;
 const _WHEEL_SIZE   = 288;
 const _WHEEL_LABELS = ['🍕 Cena','🎬 Peli','🎮 Juegos','🌿 Paseo','❤️ Íntimo','🏃 Activo','🎭 Arte','✨ Sorpresa'];
+let _wheelSegments  = [..._WHEEL_LABELS]; // se baraja cada giro
 const _WHEEL_COLORS = ['#0D968B','#0A7568','#0D968B','#0A7568','#0D968B','#0A7568','#0D968B','#0A7568'];
 
 // ── Inicializa el canvas con DPR correcto y dibuja la rueda ───
@@ -1516,6 +1494,7 @@ function _ruletaInitWheel() {
   _wheelCtx = canvas.getContext('2d');
   _wheelCtx.scale(_wheelDpr, _wheelDpr);
   _wheelRot = 0;
+  _wheelSegments = [..._WHEEL_LABELS];
   _ruletaDrawWheel(0);
 }
 
@@ -1556,7 +1535,7 @@ function _ruletaDrawWheel(deg) {
     ctx.rotate(am + Math.PI / 2);
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    const [emoji, ...words] = _WHEEL_LABELS[i].split(' ');
+    const [emoji, ...words] = _wheelSegments[i].split(' ');
     // Emoji
     ctx.font      = '14px system-ui,sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.95)';
@@ -1608,62 +1587,134 @@ function _ruletaDrawWheel(deg) {
   ctx.fillText('🎯', cx, cy + 1);
 }
 
-// ── Animación de giro: rápido→lento, con rebote de puntero ───
-function _ruletaSpin(/* tape ignorada — el ganador ya viene de fuera */) {
-  if (!_wheelCtx) return Promise.resolve();
+// ── Mapeo mood_type → label de segmento que debe quedar apuntado ─
+const _MOOD_SEGMENT = {
+  romantic:  ['❤️ Íntimo'],
+  relaxed:   ['🌿 Paseo', '🎬 Peli', '🍕 Cena'],
+  energetic: ['🏃 Activo', '🎭 Arte'],
+};
 
-  const EXTRA_ROTS = 5 + Math.floor(Math.random() * 3);   // 5-7 vueltas
-  const END_DEG    = _wheelRot + EXTRA_ROTS * 360 + Math.random() * 360;
-  const DURATION   = 3100 + Math.random() * 400;           // 3.1-3.5 s
+// ── Calcula el ángulo que pone el segmento segIdx bajo el puntero ─
+function _targetDegForSeg(segIdx) {
+  return ((-(segIdx * _WHEEL_DEG + _WHEEL_DEG / 2)) % 360 + 360) % 360;
+}
 
-  return new Promise(resolve => {
-    const t0       = performance.now();
-    const startDeg = _wheelRot;
-    _wheelLastSeg  = Math.floor(((_wheelRot % 360 + 360) % 360 + 90) / _WHEEL_DEG) % _WHEEL_N;
+// ── Rebote del puntero al cruzar segmento ───────────────────────
+function _pointerBounce() {
+  const ptr = document.getElementById('wheel-pointer');
+  if (!ptr) return;
+  ptr.style.transform = 'scaleY(0.58) translateY(5px)';
+  setTimeout(() => { if (ptr) ptr.style.transform = ''; }, 85);
+}
 
-    // Ease-out quintik: frenazo suave largo
-    const ease = t => 1 - Math.pow(1 - t, 5);
+// ── Flash de victoria ────────────────────────────────────────────
+function _winFlash() {
+  const wrap = document.getElementById('wheel-wrap');
+  const ptr  = document.getElementById('wheel-pointer');
+  if (wrap) {
+    wrap.style.filter = 'drop-shadow(0 0 24px rgba(13,150,139,.75))';
+    setTimeout(() => { if (wrap) wrap.style.filter = ''; }, 750);
+  }
+  if (ptr) {
+    ptr.style.transform = 'scaleY(1.6) translateY(-6px)';
+    setTimeout(() => { if (ptr) ptr.style.transform = ''; }, 230);
+  }
+}
 
-    function tick(now) {
-      const progress = Math.min((now - t0) / DURATION, 1);
-      const deg = startDeg + (END_DEG - startDeg) * ease(progress);
+/**
+ * Giro de dos fases:
+ *  1) Giro libre inmediato (velocidad constante) mientras la IA trabaja
+ *  2) En cuanto llega el resultado, frena hasta el segmento correcto
+ *
+ * @param {Promise} aiPromise — promesa que resuelve con el plan ganador
+ * @returns {Promise<object>} — el plan ganador
+ */
+function _ruletaSpinWithResult(aiPromise) {
+  if (!_wheelCtx) return aiPromise; // sin canvas, devuelve directo
 
+  // ── Barajar segmentos para esta tirada (variedad visual) ──────
+  _wheelSegments = _shuffleArray([..._WHEEL_LABELS]);
+  _ruletaDrawWheel(_wheelRot % 360);
+
+  const FREE_SPEED   = 7;    // grados/frame ≈ 420 deg/s a 60 fps
+  const MIN_FREE_MS  = 1400; // mínimo tiempo de giro libre antes de frenar
+  const DECEL_MS     = 2400; // duración de la fase de frenado
+
+  let deg      = _wheelRot;
+  let phase    = 'free';     // 'free' | 'decel' | 'done'
+  let rafId    = null;
+  const t0Free = performance.now();
+
+  return new Promise((resolve, reject) => {
+    // ── Fase 1: giro libre ───────────────────────────────────────
+    function freeSpin() {
+      if (phase !== 'free') return;
+      deg += FREE_SPEED;
       _ruletaDrawWheel(deg % 360);
-
-      // Rebote de puntero cuando cruza un segmento (solo en la 2ª mitad de la animación)
-      if (progress > 0.45) {
-        const seg = Math.floor(((deg % 360 + 360) % 360 + 90) / _WHEEL_DEG) % _WHEEL_N;
-        if (seg !== _wheelLastSeg) {
-          _wheelLastSeg = seg;
-          const ptr = document.getElementById('wheel-pointer');
-          if (ptr) {
-            ptr.style.transform = 'scaleY(0.6) translateY(4px)';
-            setTimeout(() => { if (ptr) ptr.style.transform = ''; }, 90);
-          }
-        }
-      }
-
-      if (progress < 1) {
-        requestAnimationFrame(tick);
-      } else {
-        _wheelRot = END_DEG % 360;
-
-        // Flash de victoria en el wrap
-        const wrap = document.getElementById('wheel-wrap');
-        if (wrap) {
-          wrap.style.filter = 'drop-shadow(0 0 22px rgba(13,150,139,.7))';
-          const ptr = document.getElementById('wheel-pointer');
-          if (ptr) {
-            ptr.style.transform = 'scaleY(1.5) translateY(-5px)';
-            setTimeout(() => { if (ptr) ptr.style.transform = ''; }, 220);
-          }
-          setTimeout(() => { if (wrap) wrap.style.filter = ''; }, 700);
-        }
-        resolve();
-      }
+      rafId = requestAnimationFrame(freeSpin);
     }
+    rafId = requestAnimationFrame(freeSpin);
 
-    requestAnimationFrame(tick);
+    // ── Cuando llega el resultado de la IA ───────────────────────
+    aiPromise.then(winner => {
+      const elapsed = performance.now() - t0Free;
+      const waitMore = Math.max(0, MIN_FREE_MS - elapsed);
+
+      setTimeout(() => {
+        if (phase !== 'free') return;
+        phase = 'decel';
+        cancelAnimationFrame(rafId);
+
+        // Encontrar segmento objetivo según mood_type
+        const candidates = _MOOD_SEGMENT[winner.mood_type] || ['✨ Sorpresa'];
+        let segIdx = -1;
+        for (const label of candidates) {
+          const idx = _wheelSegments.indexOf(label);
+          if (idx !== -1) { segIdx = idx; break; }
+        }
+        if (segIdx === -1) segIdx = Math.floor(Math.random() * _WHEEL_N);
+
+        // Ángulo destino dentro de [0, 360)
+        const targetOffset = _targetDegForSeg(segIdx);
+        const currentMod   = ((deg % 360) + 360) % 360;
+        let   extra        = ((targetOffset - currentMod) % 360 + 360) % 360;
+        // Al menos 1.5 vueltas de frenado para que se vea bien
+        if (extra < 540) extra += 360 * Math.ceil((540 - extra) / 360);
+        const targetDeg  = deg + extra;
+        const startDeg   = deg;
+        const t0Decel    = performance.now();
+        _wheelLastSeg    = Math.floor((currentMod + 90) / _WHEEL_DEG) % _WHEEL_N;
+
+        const ease = t => 1 - Math.pow(1 - t, 4); // cuártica suave
+
+        // ── Fase 2: frenado hacia el segmento ───────────────────
+        function decelSpin(now) {
+          const t   = Math.min((now - t0Decel) / DECEL_MS, 1);
+          const cur = startDeg + (targetDeg - startDeg) * ease(t);
+          _ruletaDrawWheel(cur % 360);
+
+          // Rebote de puntero al cruzar segmento
+          const seg = Math.floor(((cur % 360 + 360) % 360 + 90) / _WHEEL_DEG) % _WHEEL_N;
+          if (seg !== _wheelLastSeg) { _wheelLastSeg = seg; _pointerBounce(); }
+
+          if (t < 1) {
+            requestAnimationFrame(decelSpin);
+          } else {
+            _wheelRot = targetDeg % 360;
+            phase = 'done';
+            _winFlash();
+            resolve(winner);
+          }
+        }
+        requestAnimationFrame(decelSpin);
+
+      }, waitMore);
+
+    }).catch(err => {
+      cancelAnimationFrame(rafId);
+      phase = 'done';
+      reject(err);
+    });
   });
 }
 
