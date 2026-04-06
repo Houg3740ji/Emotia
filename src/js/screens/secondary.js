@@ -1200,6 +1200,7 @@ async function initRuleta(router) {
 
   const activeFilters = {};
   let spinning = false;
+  let lastPlanTitle = null;
 
   app.innerHTML = `
     <div class="min-h-screen flex flex-col bg-[#F5F0E8] font-display text-slate-900">
@@ -1393,18 +1394,26 @@ async function initRuleta(router) {
 
     try {
       // Mapear filtros UI → contexto para la IA
-      const durCostMap = { express: 'gratuito', estandar: 'económico', larga: 'especial/premium' };
-      const costLabelMap = { free: 'gratuito', budget: 'económico', premium: 'especial/premium' };
+      const durationLabelMap = {
+        express:  'menos de 1 hora',
+        estandar: '2 a 3 horas',
+        larga:    'medio día o más',
+      };
+      const costLabelMap = {
+        free:    'gratuito',
+        budget:  'económico',
+        premium: 'especial/premium',
+      };
       const moodLabelMap = {
         relaxed:   'tranquilo y relajado',
         energetic: 'activo y divertido',
         romantic:  'romántico e íntimo',
       };
       const aiFilters = {
-        costFilter: durCostMap[activeFilters.duration_label]
-                 || costLabelMap[activeFilters.cost_type]
-                 || undefined,
-        moodFilter: moodLabelMap[activeFilters.mood_type] || undefined,
+        durationFilter: durationLabelMap[activeFilters.duration_label] || undefined,
+        costFilter:     costLabelMap[activeFilters.cost_type]          || undefined,
+        moodFilter:     moodLabelMap[activeFilters.mood_type]          || undefined,
+        previousPlan:   lastPlanTitle || undefined,
       };
 
       let winner = null;
@@ -1434,6 +1443,7 @@ async function initRuleta(router) {
 
       const noise = NOISE_TITLES.map(t => ({ title: t }));
       await _ruletaSpin([...noise, winner]);
+      lastPlanTitle = winner.title || null;
       _ruletaShowResult(winner, couple);
     } catch (err) {
       console.error('[Ruleta] Error al girar:', err);

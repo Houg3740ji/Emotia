@@ -13,8 +13,10 @@ interface RequestBody {
     season: string
     lastEmotion: string
     locationFilter?: string
+    durationFilter?: string
     costFilter?: string
     moodFilter?: string
+    previousPlan?: string
   }
 }
 
@@ -60,7 +62,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const { user1Name, user2Name, daysTogether, season, lastEmotion,
-            locationFilter, costFilter, moodFilter } = context
+            locationFilter, durationFilter, costFilter, moodFilter, previousPlan } = context
 
     // ── Prompts ──────────────────────────────────────────────────────────────
 
@@ -89,31 +91,55 @@ Ahora genera una diferente al ejemplo. Solo las dos líneas.
 Semilla: ${Math.floor(Math.random() * 99999)}`
 
     } else if (module === 'date_plan') {
-      const locDesc  = locationFilter === 'en casa'       ? 'en casa'
-                     : locationFilter === 'fuera de casa' ? 'fuera de casa'
-                     : 'en casa o fuera'
-      const costDesc = costFilter === 'gratuito'          ? 'sin gastar dinero'
-                     : costFilter === 'económico'         ? 'con presupuesto moderado'
-                     : costFilter === 'especial/premium'  ? 'con presupuesto generoso'
-                     : 'cualquier presupuesto'
-      const moodDesc = moodFilter === 'tranquilo y relajado' ? 'tranquilo y relajado'
-                     : moodFilter === 'activo y divertido'   ? 'activo y divertido'
+      // Construir descripción de cada filtro
+      const durDesc  = durationFilter === 'menos de 1 hora' ? 'que dure menos de 1 hora'
+                     : durationFilter === '2 a 3 horas'     ? 'que dure entre 2 y 3 horas'
+                     : durationFilter === 'medio día o más' ? 'que sea de medio día o más'
+                     : null
+
+      const costDesc = costFilter === 'gratuito'          ? 'completamente gratuito (sin gastar dinero)'
+                     : costFilter === 'económico'         ? 'con presupuesto moderado (10-30€)'
+                     : costFilter === 'especial/premium'  ? 'con presupuesto generoso (más de 30€)'
+                     : null
+
+      const moodDesc = moodFilter === 'tranquilo y relajado' ? 'de ambiente tranquilo y relajado'
+                     : moodFilter === 'activo y divertido'   ? 'activo, dinámico y divertido'
                      : moodFilter === 'romántico e íntimo'   ? 'romántico e íntimo'
-                     : 'cualquier ambiente'
+                     : null
+
+      const constraints = [durDesc, costDesc, moodDesc].filter(Boolean)
+      const constraintLine = constraints.length > 0
+        ? `El plan debe ser: ${constraints.join(', ')}.`
+        : 'Sin restricciones especiales de tipo.'
+
+      const avoidLine = previousPlan
+        ? `Importante: NO repitas ni algo parecido a "${previousPlan}". Genera algo completamente distinto.`
+        : ''
 
       prompt =
 `Responde SOLO con estas dos líneas, sin nada más:
-TITULO: [máx 5 palabras]
-DESCRIPCION: [máx 12 palabras]
+TITULO: [máx 6 palabras, nombre concreto del plan]
+DESCRIPCION: [máx 15 palabras, qué harían exactamente]
 
-Plan de cita para pareja: ${locDesc}, ${costDesc}, ${moodDesc}.
+Genera un plan de cita real y concreto para una pareja.
+${constraintLine}
+${avoidLine}
 
-Ejemplo:
-TITULO: Cena con velas en casa
-DESCRIPCION: Cocinar juntos una receta especial con música suave.
+Reglas:
+- Debe ser algo que la gente haría de verdad, cotidiano pero especial
+- El título debe sonar natural, no genérico (evita "noche mágica", "momento especial", etc.)
+- La descripción debe decir exactamente qué van a hacer
 
-Ahora genera uno diferente al ejemplo. Solo las dos líneas.
-Semilla: ${Math.floor(Math.random() * 99999)}`
+Ejemplos de planes buenos según ambiente:
+Relajado: "Tarde de alfarería en casa" / "Comprar arcilla y hacer cuencos juntos mientras escucháis música."
+Relajado: "Maratón de serie nueva" / "Elegir una serie desconocida, hacer palomitas y taparos con mantas."
+Activo: "Ruta en bici al mirador" / "Pedalear hasta el mirador, llevar bocadillos y hacer fotos."
+Activo: "Noche de bolos y cervezas" / "Jugar dos partidas de bolos y tomarse unas cañas después."
+Romántico: "Sushi casero desde cero" / "Comprar ingredientes, hacer makis juntos y poner velas."
+Romántico: "Picnic nocturno en la terraza" / "Mantas, luces de hada, queso, vino y música suave."
+
+Ahora genera UNO diferente a todos los ejemplos. Solo las dos líneas.
+Semilla aleatoria: ${Math.floor(Math.random() * 999999)}`
 
     } else {
       return new Response(
@@ -136,7 +162,7 @@ Semilla: ${Math.floor(Math.random() * 99999)}`
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
         max_tokens: 150,
-        temperature: 1.0,
+        temperature: 1.1,
         messages: [{ role: 'user', content: prompt }],
       }),
     })
@@ -168,13 +194,21 @@ Semilla: ${Math.floor(Math.random() * 99999)}`
         title,
         description,
         emoji:         getEmoji(moodFilter, locationFilter),
-        location_type: locationFilter === 'en casa' ? 'home' : 'outside',
-        cost_type:     costFilter === 'gratuito'        ? 'free'
-                     : costFilter === 'económico'       ? 'budget'
-                     : 'premium',
+        location_type: locationFilter === 'en casa'       ? 'home'
+                     : locationFilter === 'fuera de casa' ? 'outside'
+                     : undefined,
+        cost_type:     costFilter === 'gratuito'         ? 'free'
+                     : costFilter === 'económico'        ? 'budget'
+                     : costFilter === 'especial/premium' ? 'premium'
+                     : undefined,
         mood_type:     moodFilter === 'tranquilo y relajado' ? 'relaxed'
                      : moodFilter === 'activo y divertido'   ? 'energetic'
-                     : 'romantic',
+                     : moodFilter === 'romántico e íntimo'   ? 'romantic'
+                     : undefined,
+        duration_label: durationFilter === 'menos de 1 hora' ? '<1h'
+                      : durationFilter === '2 a 3 horas'     ? '2-3h'
+                      : durationFilter === 'medio día o más' ? 'Larga'
+                      : undefined,
       }
     }
 
