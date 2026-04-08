@@ -67,6 +67,7 @@ Deno.serve(async (req: Request) => {
     // ── Prompts ──────────────────────────────────────────────────────────────
 
     let prompt: string
+    let selectedFantasyCategory: string | undefined
 
     if (module === 'daily_question') {
       prompt =
@@ -76,18 +77,88 @@ que llevan ${daysTogether} días juntos. Temporada: ${season}. Estado emocional:
 La pregunta debe invitar a la reflexión genuina. Responde SOLO con la pregunta, sin comillas.`
 
     } else if (module === 'fantasy') {
+      // Banco de categorías con ejemplos concretos y excitantes
+      const FANTASY_CATS = [
+        {
+          key: 'sensorial',
+          examples: [
+            { t: 'Venda y sorpresa total',      d: 'Un@ lleva los ojos vendados. El otro guía cada toque durante 20 minutos sin hablar ni revelar qué viene.' },
+            { t: 'Hielo y aceite caliente',     d: 'Alternad cubitos de hielo y aceite templado sobre la piel. Quien recibe cierra los ojos y no sabe qué viene.' },
+            { t: 'Solo con una pluma',          d: 'Diez minutos de exploración solo con una pluma de marabú. Sin manos, sin hablar. Turnaos.' },
+            { t: 'Masaje con vela de masaje',   d: 'Gotead cera de vela de masaje (baja temperatura) y masajead después. Veinte minutos cada uno. Sin prisa.' },
+          ]
+        },
+        {
+          key: 'role_play',
+          examples: [
+            { t: 'Extraños en el bar',          d: 'Quedadais en un bar y fingid no conoceros. Ligaros desde cero como si fuera la primera vez que os veis.' },
+            { t: 'Servicio a habitación',       d: 'Un@ hace el pedido por teléfono. El otro llega como camarero del hotel. Toda la noche en personaje sin romperlo.' },
+            { t: 'Masajista de lujo',           d: 'Un@ es cliente de spa exclusivo, el otro el masajista. Mesa, aceite, música ambient. Sin romper el personaje en ningún momento.' },
+            { t: 'Vecinos que se lían',         d: 'Un@ llama a la puerta con cualquier excusa. El otro abre. Fingid que os veis por primera vez y dejadlo fluir.' },
+          ]
+        },
+        {
+          key: 'juego',
+          examples: [
+            { t: 'Ruleta de deseos secretos',   d: 'Cada uno escribe 6 deseos en papeles, doblados. Mezcladlos y sacad uno al azar por turnos. Lo que salga, se cumple esa noche.' },
+            { t: 'Verdad o reto íntimo',        d: 'Por turnos: verdad es confesar una fantasía nunca dicha. Reto es que el otro decida qué hacéis durante tres minutos exactos.' },
+            { t: 'Strip trivial en pareja',     d: 'Preguntas de cultura general. Cada error: una prenda menos. El perdedor final cumple un deseo del ganador sin límites.' },
+            { t: 'Dados de instrucciones',      d: 'Cada uno escribe 6 instrucciones y las numera del 1 al 6. Tirad un dado por turnos y cumplidlas sin negociar.' },
+          ]
+        },
+        {
+          key: 'aventura',
+          examples: [
+            { t: 'Fuera de la cama esta noche', d: 'Ningún espacio habitual esta noche. Elegid juntos dónde, pero tiene que ser un lugar nuevo: cocina, terraza, escalera, lo que sea.' },
+            { t: 'En el coche de noche',        d: 'Aparcamiento solitario, asientos reclinados, música baja. Como cuando erais jóvenes y no teníais otro sitio.' },
+            { t: 'Terraza a medianoche',        d: 'Solo vosotros, la oscuridad y las estrellas. Llevar una manta. Sin planear nada más. Improvisar el resto.' },
+            { t: 'Hotel de improviso',          d: 'Reservad esta noche un hotel cercano. Nada planeado más allá de eso. Los móviles en silencio al entrar.' },
+          ]
+        },
+        {
+          key: 'conexion',
+          examples: [
+            { t: '4 minutos mirándoos',         d: 'Sentaos frente a frente, sin hablar, sin reír. Solo miraros a los ojos cuatro minutos exactos. Es más íntimo de lo que parece.' },
+            { t: 'Carta erótica en papel',      d: 'Cada uno escribe en papel lo que desea del otro esta noche. Intercambiad las cartas. Cumplidlas en el orden que salgan.' },
+            { t: 'Sin palabras, media hora',    d: 'Comunicaros solo con el cuerpo durante treinta minutos. Sin hablar. Decidid lo que queráis sin abrir la boca.' },
+            { t: 'Confesión nunca dicha',       d: 'Por turnos, confesad una fantasía que nunca habéis dicho en voz alta. Sin juzgar, sin comentar. Solo escuchar y aceptar.' },
+          ]
+        },
+        {
+          key: 'desafio',
+          examples: [
+            { t: 'Solo palabras, una hora',     d: 'Sin contacto físico durante 60 minutos. Solo describid con palabras exactas lo que queréis haceros. La tensión acumulada es el juego.' },
+            { t: 'Fotos íntimas solo vuestras', d: 'Turnaos haciéndoos fotos el uno al otro. El fotógrafo decide la pose sin que el otro la vea venir. Las fotos son solo vuestras.' },
+            { t: 'Striptease planificado',      d: 'Un@ prepara una playlist y ejecuta un striptease. El otro solo puede mirar, sin tocar, hasta que el otro lo autorice.' },
+            { t: 'Lapso sin móviles',           d: 'Ocho horas sin pantallas. Solo vosotros dos. Sin plan fijo. Decidid en el momento qué queréis hacer.' },
+          ]
+        },
+      ]
+
+      const cat = FANTASY_CATS[Math.floor(Math.random() * FANTASY_CATS.length)]
+      const ex  = cat.examples[Math.floor(Math.random() * cat.examples.length)]
+      selectedFantasyCategory = cat.key
+
       prompt =
-`Responde SOLO con estas dos líneas, sin nada más:
-TITULO: [máx 5 palabras]
-DESCRIPCION: [máx 12 palabras]
+`Genera UNA fantasía íntima para adultos en una app de pareja.
+Categoría: ${cat.key}.
+Pareja: ${user1Name} y ${user2Name}, llevan ${daysTogether} días juntos.
 
-Idea íntima y romántica para la pareja ${user1Name} y ${user2Name}.
+REFERENCIA de estilo (no la copies, inspírate):
+TITULO: ${ex.t}
+DESCRIPCION: ${ex.d}
 
-Ejemplo:
-TITULO: Masaje a la luz de velas
-DESCRIPCION: Turnarse con aceites aromáticos y música suave de fondo.
+Requisitos estrictos:
+- TITULO: 3-6 palabras, evocador, que genere curiosidad o tensión
+- DESCRIPCION: 15-25 palabras exactas, instrucción concreta de qué hacer, con tensión sexual implícita pero sin ser explícito en exceso
+- Específico y accionable, nunca vago ni genérico
+- En español de España, tuteo (vosotros)
+- Completamente diferente a la referencia
 
-Ahora genera una diferente al ejemplo. Solo las dos líneas.
+Responde EXACTAMENTE con estas dos líneas, sin nada más, sin explicaciones:
+TITULO: [aquí]
+DESCRIPCION: [aquí]
+
 Semilla: ${Math.floor(Math.random() * 99999)}`
 
     } else if (module === 'date_plan') {
@@ -254,7 +325,7 @@ Semilla: ${Math.floor(Math.random() * 999999)}`
 
     } else if (module === 'fantasy') {
       const { title, description } = parseLines(raw)
-      result = { title, description, emoji: getEmoji(moodFilter) }
+      result = { title, description, emoji: getEmoji(moodFilter), category: selectedFantasyCategory }
 
     } else {
       // date_plan — tipos asignados por el servidor, no por Groq

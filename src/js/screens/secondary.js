@@ -567,14 +567,43 @@ function _markSeenId(id) {
 
 // ── Fantasías de respaldo cuando BD devuelve vacío ────────────
 const FALLBACK_FANTASIES = [
-  { id: 'fb-1', title: 'Masaje a la luz de velas', description: 'Preparad velas, aceite y música suave. Turnaos dando un masaje completo de espalda sin prisa.', category: 'masaje', intensity_label: 'suave', duration_label: '45 min' },
-  { id: 'fb-2', title: 'Cena temática en casa', description: 'Elegid un país, preparad su gastronomía juntos y cenad con música típica. Sin móviles.', category: 'romantico', intensity_label: 'suave', duration_label: '2 h' },
-  { id: 'fb-3', title: 'Cartas de deseos secretos', description: 'Cada uno escribe 3 deseos íntimos en un papel. Intercambiad y elegid uno para cumplir esta semana.', category: 'juego', intensity_label: 'medio', duration_label: '30 min' },
-  { id: 'fb-4', title: 'Baño de espuma compartido', description: 'Llenad la bañera con espuma y sales. Champán, música y ninguna prisa.', category: 'sensual', intensity_label: 'suave', duration_label: '1 h' },
-  { id: 'fb-5', title: 'Role-play: primera cita', description: 'Fingid que os conocéis esta noche por primera vez. Quedadais en un bar y actuad como si fuera de verdad.', category: 'role_play', intensity_label: 'medio', duration_label: '2 h' },
-  { id: 'fb-6', title: 'Picnic nocturno en casa', description: 'Extendad una manta en el salón, apagad las luces y cenad a la luz de una linterna bajo las estrellas de una proyección.', category: 'romantico', intensity_label: 'suave', duration_label: '1 h' },
-  { id: 'fb-7', title: 'Tarde de juegos de mesa eróticos', description: 'Buscad un juego de cartas o dados para parejas y dejad que el azar decida la noche.', category: 'juego', intensity_label: 'medio', duration_label: '1 h' },
-  { id: 'fb-8', title: 'Foto sesión íntima', description: 'Vestíos con vuestra ropa favorita y haceos fotos el uno al otro. El objetivo: capturar por qué os enamorasteis.', category: 'romantico', intensity_label: 'suave', duration_label: '1 h' },
+  // SENSORIAL
+  { id: 'fb-1',  title: 'Venda y sorpresa total',       description: 'Un@ lleva los ojos vendados. El otro guía cada toque durante 20 minutos sin hablar ni revelar qué viene después.', category: 'sensorial', intensity_label: 'medio',   duration_label: '20 min' },
+  { id: 'fb-2',  title: 'Hielo y aceite caliente',      description: 'Alternad cubitos de hielo y aceite templado sobre la piel. Quien recibe cierra los ojos y no sabe qué viene.', category: 'sensorial', intensity_label: 'medio',   duration_label: '30 min' },
+  { id: 'fb-3',  title: 'Solo con una pluma',           description: 'Diez minutos de exploración solo con una pluma de marabú. Sin manos, sin hablar. Turnaos sin límite de tiempo.', category: 'sensorial', intensity_label: 'suave',   duration_label: '20 min' },
+  { id: 'fb-4',  title: 'Masaje con vela de masaje',    description: 'Gotead cera de vela de masaje de baja temperatura y masajead la zona después. Veinte minutos cada uno.', category: 'sensorial', intensity_label: 'medio',   duration_label: '45 min' },
+  { id: 'fb-5',  title: 'Masaje facial lento',          description: 'Diez minutos de masaje facial cada uno: sienes, mandíbula, cuero cabelludo. Sin prisa. Sorprende la intimidad que genera.', category: 'sensorial', intensity_label: 'suave',   duration_label: '20 min' },
+  // ROLE PLAY
+  { id: 'fb-6',  title: 'Extraños en el bar',           description: 'Quedadais en un bar y fingid que no os conocéis. Ligaros desde cero como si fuera la primera vez que os veis.', category: 'role_play', intensity_label: 'medio',   duration_label: '2 h'   },
+  { id: 'fb-7',  title: 'Servicio a habitación',        description: 'Un@ hace un pedido por teléfono. El otro llega como camarero del hotel. Toda la noche en personaje sin romperlo en ningún momento.', category: 'role_play', intensity_label: 'intenso', duration_label: '1 h'   },
+  { id: 'fb-8',  title: 'Masajista de lujo',            description: 'Un@ es clienta de spa exclusivo, el otro el masajista profesional. Mesa, aceite, música ambient. Sin salir del personaje.', category: 'role_play', intensity_label: 'suave',   duration_label: '45 min' },
+  { id: 'fb-9',  title: 'Vecinos que se lían',          description: 'Un@ llama a la puerta con cualquier excusa. El otro abre. Fingid que os veis por primera vez y dejadlo fluir.', category: 'role_play', intensity_label: 'intenso', duration_label: '1 h'   },
+  // JUEGO
+  { id: 'fb-10', title: 'Ruleta de deseos secretos',    description: 'Cada uno escribe 6 deseos en papeles doblados. Mezcladlos. Lo que salga al azar se cumple esa noche, sin negociar.', category: 'juego',    intensity_label: 'intenso', duration_label: '1 h'   },
+  { id: 'fb-11', title: 'Verdad o reto íntimo',         description: 'Por turnos: verdad es confesar una fantasía nunca dicha. Reto es que el otro decida qué hacéis exactamente durante tres minutos.', category: 'juego',    intensity_label: 'medio',   duration_label: '45 min' },
+  { id: 'fb-12', title: 'Strip trivial',                description: 'Preguntas de cultura general. Cada error: una prenda menos. El perdedor final cumple un deseo del ganador sin límites.', category: 'juego',    intensity_label: 'intenso', duration_label: '1 h'   },
+  { id: 'fb-13', title: 'Dados de instrucciones',       description: 'Cada uno escribe 6 instrucciones numeradas del 1 al 6. Tirad un dado por turnos y cumplidlas sin negociar ni pedir cambios.', category: 'juego',    intensity_label: 'intenso', duration_label: '45 min' },
+  // AVENTURA
+  { id: 'fb-14', title: 'Fuera de la cama esta noche',  description: 'Ningún espacio habitual esta noche. Elegid juntos dónde, pero tiene que ser un lugar nuevo: cocina, terraza o donde sea.', category: 'aventura',  intensity_label: 'intenso', duration_label: '1 h'   },
+  { id: 'fb-15', title: 'En el coche de noche',         description: 'Aparcamiento solitario, asientos reclinados, música baja. Como cuando erais jóvenes y no teníais otro sitio adonde ir.', category: 'aventura',  intensity_label: 'intenso', duration_label: '1 h'   },
+  { id: 'fb-16', title: 'Terraza a medianoche',         description: 'Solo vosotros, la oscuridad y las estrellas. Llevar una manta. Sin planear nada más. Improvisar el resto.', category: 'aventura',  intensity_label: 'intenso', duration_label: '45 min' },
+  { id: 'fb-17', title: 'Hotel de improviso',           description: 'Reservad esta noche un hotel cercano. Nada planeado más allá de eso. Los móviles en silencio nada más entrar.', category: 'aventura',  intensity_label: 'medio',   duration_label: '12 h'  },
+  // CONEXIÓN
+  { id: 'fb-18', title: '4 minutos mirándoos',          description: 'Sentaos frente a frente, sin hablar ni reír. Solo miraros a los ojos cuatro minutos exactos. Es más íntimo de lo que parece.', category: 'conexion',  intensity_label: 'suave',   duration_label: '15 min' },
+  { id: 'fb-19', title: 'Carta erótica en papel',       description: 'Cada uno escribe en papel lo que desea del otro esta noche. Intercambiad las cartas. Cumplidlas en el orden que salgan.', category: 'conexion',  intensity_label: 'medio',   duration_label: '1 h'   },
+  { id: 'fb-20', title: 'Bailar pegados en silencio',   description: 'Abrazados en el salón, sin música. Uno lleva, el otro sigue. Diez minutos sin hablar ni mirar el teléfono.', category: 'conexion',  intensity_label: 'suave',   duration_label: '15 min' },
+  { id: 'fb-21', title: 'Preguntas que no hacemos',     description: 'Por turnos, haced preguntas íntimas que nunca os habéis atrevido a hacer. La regla: respuesta honesta obligatoria siempre.', category: 'conexion',  intensity_label: 'medio',   duration_label: '1 h'   },
+  // DESAFÍO
+  { id: 'fb-22', title: 'Solo palabras, una hora',      description: 'Sin contacto físico durante 60 minutos. Solo describid con palabras exactas lo que queréis haceros. La tensión acumulada es el juego.', category: 'desafio',   intensity_label: 'intenso', duration_label: '1 h'   },
+  { id: 'fb-23', title: 'Fotos íntimas solo vuestras',  description: 'Turnaos haciéndoos fotos el uno al otro. El fotógrafo decide la pose sin que el otro la vea venir. Las fotos son solo vuestras.', category: 'desafio',   intensity_label: 'intenso', duration_label: '45 min' },
+  { id: 'fb-24', title: 'Striptease planificado',       description: 'Un@ prepara una playlist y ejecuta un striptease. El otro solo puede mirar, sin tocar, hasta que quien actúa lo autorice.', category: 'desafio',   intensity_label: 'intenso', duration_label: '20 min' },
+  { id: 'fb-25', title: 'Confesión nunca dicha',        description: 'Por turnos, confesad una fantasía que nunca habéis dicho en voz alta. Sin juzgar, sin comentar. Solo escuchar y aceptar.', category: 'desafio',   intensity_label: 'intenso', duration_label: '30 min' },
+  // ROMÁNTICO
+  { id: 'fb-26', title: 'Baño de espuma y champán',     description: 'Llenad la bañera con espuma y sales. Champán, velas y música. Sin salir hasta que se vacíe la botella.', category: 'romantico', intensity_label: 'suave',   duration_label: '1 h'   },
+  { id: 'fb-27', title: 'Cena a oscuras con velas',     description: 'Cenad solo con velas, sin luz artificial. Sin móviles. Solo hablar de recuerdos favoritos que tenéis juntos.', category: 'romantico', intensity_label: 'suave',   duration_label: '1 h'   },
+  { id: 'fb-28', title: 'Leer erótica en voz alta',     description: 'Buscad un relato erótico y leedlo por párrafos alternos en voz alta. Quien escucha no puede interrumpir ni tocar.', category: 'romantico', intensity_label: 'medio',   duration_label: '30 min' },
+  { id: 'fb-29', title: 'Playlist íntima compartida',   description: 'Cada uno añade 10 canciones a una playlist nueva. Escuchadla juntos en silencio sin explicar por qué elegisteis cada una.', category: 'romantico', intensity_label: 'suave',   duration_label: '45 min' },
+  { id: 'fb-30', title: 'Sin ropa en casa toda la tarde', description: 'Pasad toda la tarde en casa sin ropa, haciendo cosas normales: cocinar, ver algo, hablar. Sin que sea obligatorio nada más.', category: 'desafio',   intensity_label: 'medio',   duration_label: '3 h'   },
 ];
 
 // ── Tab: Descubrir ────────────────────────────────────────────
@@ -726,7 +755,7 @@ async function _intimoDescubrir(container, couple, user) {
                 ${cur.category ? `
                 <span class="inline-flex items-center px-3 py-1 rounded-full bg-white/85
                              text-primary text-[10px] font-bold uppercase tracking-wider mb-2">
-                  ${_esc(cur.category)}
+                  ${_esc(_categoryLabel(cur.category))}
                 </span>` : ''}
                 <h2 class="text-2xl font-bold text-slate-900 leading-tight">
                   ${_esc(cur.title || '')}
@@ -1122,7 +1151,7 @@ function _showFantasySheet(fantasy) {
         ${fantasy.category ? `
         <span class="inline-flex px-3 py-1 rounded-full bg-primary/10 text-primary
                      text-[10px] font-bold uppercase tracking-wider">
-          ${_esc(fantasy.category)}
+          ${_esc(_categoryLabel(fantasy.category))}
         </span>` : ''}
         <h2 class="text-2xl font-bold text-slate-900">${_esc(fantasy.title || '')}</h2>
         <p class="text-slate-600 text-sm leading-relaxed">${_esc(fantasy.description || '')}</p>
@@ -1156,17 +1185,42 @@ function _showFantasySheet(fantasy) {
 // ── Emoji por categoría de fantasía ──────────────────────────
 function _fantasyEmoji(category) {
   const MAP = {
-    sensual: '🌹', romantico: '💕', romantica: '💕',
+    sensorial: '🔥', sensual: '🌹',
+    romantico: '💕', romantica: '💕',
     aventura: '⚡', adventurous: '⚡',
-    juego: '🎲', masaje: '✨', role_play: '🎭', roleplay: '🎭',
+    juego: '🎲', masaje: '✨',
+    role_play: '🎭', roleplay: '🎭',
     exterior: '🌙', outdoor: '🌙',
-    sorpresa: '🎁', desafio: '🔥',
+    sorpresa: '🎁',
+    desafio: '🫦', desafío: '🫦',
+    conexion: '💞', conexión: '💞',
   };
   const k = (category || '').toLowerCase()
     .replace(/\s+/g, '_')
     .replace(/[áà]/g,'a').replace(/[éè]/g,'e')
     .replace(/[íì]/g,'i').replace(/[óò]/g,'o').replace(/[úù]/g,'u');
   return MAP[k] || '💫';
+}
+
+// ── Etiqueta legible por categoría ───────────────────────────
+function _categoryLabel(category) {
+  const MAP = {
+    sensorial: 'Sensorial', sensual: 'Sensual',
+    romantico: 'Romántico', romantica: 'Romántico',
+    aventura: 'Aventura',
+    juego: 'Juego',
+    masaje: 'Masaje',
+    role_play: 'Rol', roleplay: 'Rol',
+    exterior: 'Aventura', outdoor: 'Aventura',
+    sorpresa: 'Sorpresa',
+    desafio: 'Desafío', desafío: 'Desafío',
+    conexion: 'Conexión', conexión: 'Conexión',
+  };
+  const k = (category || '').toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[áà]/g,'a').replace(/[éè]/g,'e')
+    .replace(/[íì]/g,'i').replace(/[óò]/g,'o').replace(/[úù]/g,'u');
+  return MAP[k] || category || '';
 }
 
 
