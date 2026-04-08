@@ -2328,27 +2328,13 @@ async function initCapsulaGrabar(router, params) {
         </button>
         <div>
           <h1 class="text-xl font-bold text-slate-900">Nueva cápsula</h1>
-          <p class="text-xs text-slate-400 mt-0.5">Elige categoría y graba</p>
+          <p class="text-xs text-slate-400 mt-0.5">
+            ${(() => { const c = CAPSULE_CATS.find(x => x.key === preselectedCat); return c ? `${c.emoji} ${_esc(c.label)}` : 'Sin categoría'; })()}
+          </p>
         </div>
       </header>
 
       <main class="flex-1 flex flex-col px-6 pb-10 gap-5">
-
-        <!-- Selector de categoría — chips horizontales -->
-        <div>
-          <div id="rec-cats" class="flex gap-2 overflow-x-auto pb-2" style="scrollbar-width:none">
-            ${CAPSULE_CATS.map(c => `
-              <button data-cat="${c.key}"
-                      class="cat-chip flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2
-                             rounded-full text-xs font-bold transition-all active:scale-95
-                             ${c.key === preselectedCat
-                               ? 'text-white shadow-md'
-                               : 'bg-white/80 text-slate-500 shadow-sm'}"
-                      ${c.key === preselectedCat ? 'style="background:#14213D"' : ''}>
-                <span>${c.emoji}</span><span>${_esc(c.label)}</span>
-              </button>`).join('')}
-          </div>
-        </div>
 
         <!-- Área central de grabación -->
         <div class="flex-1 flex flex-col items-center justify-center gap-7">
@@ -2456,21 +2442,6 @@ async function initCapsulaGrabar(router, params) {
   document.getElementById('rec-back')?.addEventListener('click', () => {
     _stopAllRecording(mediaRecorder, timerInterval, previewAudio);
     history.back();
-  });
-
-  // Selector de categoría
-  document.querySelectorAll('#app .cat-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#app .cat-chip').forEach(b => {
-        b.classList.remove('text-white', 'shadow-md');
-        b.classList.add('bg-white/80', 'text-slate-500', 'shadow-sm');
-        b.style.background = '';
-      });
-      btn.classList.remove('bg-white/80', 'text-slate-500', 'shadow-sm');
-      btn.classList.add('text-white', 'shadow-md');
-      btn.style.background = '#14213D';
-      selectedCat = btn.dataset.cat;
-    });
   });
 
   // ── Botón principal: grabar / parar ───────────────────────────
