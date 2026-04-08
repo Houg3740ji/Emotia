@@ -2307,87 +2307,126 @@ async function initCapsulaGrabar(router, params) {
   const app = document.getElementById('app');
   const preselectedCat = params?.category || 'sin_categoria';
 
+  // Color de acento por categoría preseleccionada
+  const CAT_ACCENT = {
+    gratitud:'#F59E0B', recuerdos:'#8B5CF6', carta:'#F43F5E',
+    humor:'#EAB308', animo:'#10B981', cancion:'#A855F7',
+    confesion:'#0EA5E9', buenos_dias:'#F97316', sin_categoria:'#94A3B8',
+  };
+  const accentColor = CAT_ACCENT[preselectedCat] || '#14213D';
+
   app.innerHTML = `
     <div class="min-h-screen flex flex-col bg-[#F5F0E8] font-display text-slate-900">
+
+      <!-- Header -->
       <header class="px-6 pt-10 pb-4 flex items-center gap-4">
         <button id="rec-back"
                 class="w-10 h-10 bg-white rounded-full flex items-center justify-center
-                       shadow-sm active:scale-95 transition-transform flex-shrink-0">
-          <span class="material-symbols-outlined text-slate-900 text-xl">arrow_back</span>
+                       shadow-sm active:scale-95 transition-transform flex-shrink-0"
+                style="box-shadow:0 2px 10px rgba(0,0,0,0.08)">
+          <span class="material-symbols-outlined text-slate-700 text-xl">arrow_back</span>
         </button>
-        <h1 class="text-xl font-bold">Nueva Cápsula</h1>
+        <div>
+          <h1 class="text-xl font-bold text-slate-900">Nueva cápsula</h1>
+          <p class="text-xs text-slate-400 mt-0.5">Elige categoría y graba</p>
+        </div>
       </header>
 
-      <main class="flex-1 flex flex-col px-6 pb-10 gap-6">
-        <!-- Selector de categoría -->
+      <main class="flex-1 flex flex-col px-6 pb-10 gap-5">
+
+        <!-- Selector de categoría — chips horizontales -->
         <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-3">Categoría</p>
-          <div id="rec-cats" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div id="rec-cats" class="flex gap-2 overflow-x-auto pb-2" style="scrollbar-width:none">
             ${CAPSULE_CATS.map(c => `
               <button data-cat="${c.key}"
-                      class="cat-chip flex-shrink-0 flex items-center gap-1.5 px-3 py-2
-                             rounded-full text-xs font-semibold border-2 transition-all active:scale-95
+                      class="cat-chip flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2
+                             rounded-full text-xs font-bold transition-all active:scale-95
                              ${c.key === preselectedCat
-                               ? 'bg-primary text-white border-primary'
-                               : 'bg-white text-slate-600 border-transparent shadow-sm'}">
+                               ? 'text-white shadow-md'
+                               : 'bg-white/80 text-slate-500 shadow-sm'}"
+                      ${c.key === preselectedCat ? 'style="background:#14213D"' : ''}>
                 <span>${c.emoji}</span><span>${_esc(c.label)}</span>
               </button>`).join('')}
           </div>
         </div>
 
         <!-- Área central de grabación -->
-        <div class="flex-1 flex flex-col items-center justify-center gap-6">
+        <div class="flex-1 flex flex-col items-center justify-center gap-7">
+
+          <!-- Timer -->
           <div class="text-center">
             <p id="rec-timer"
-               class="text-5xl font-bold text-slate-800 tracking-wider tabular-nums">00:00</p>
-            <p class="text-sm text-slate-400 mt-1">máx. 02:00</p>
+               class="text-6xl font-bold tracking-wider tabular-nums"
+               style="color:#14213D">00:00</p>
+            <p class="text-xs text-slate-400 mt-1.5 font-medium">máximo 02:00</p>
           </div>
 
-          <!-- Barras de onda (visibles solo durante grabación) -->
-          <div id="rec-wave" class="hidden flex items-end justify-center gap-1.5 h-10">
-            ${[16,28,20,36,24,32,18].map((h,i) => `
-              <div class="bg-primary/60 w-1.5 rounded-full animate-bounce"
-                   style="height:${h}px;animation-delay:${i*0.08}s"></div>`).join('')}
+          <!-- Onda de audio (solo en grabación) -->
+          <div id="rec-wave" class="hidden flex items-end justify-center gap-1 h-12">
+            ${[10,18,28,22,36,26,32,20,14,30,24,18,10].map((h,i) => `
+              <div class="w-1.5 rounded-full animate-bounce"
+                   style="height:${h}px;background:rgba(20,33,61,0.5);animation-delay:${i*0.07}s"></div>`).join('')}
           </div>
 
-          <button id="rec-main-btn"
-                  class="w-24 h-24 bg-primary rounded-full flex items-center justify-center
-                         shadow-xl shadow-primary/30 active:scale-95 transition-all">
-            <span id="rec-icon" class="material-symbols-outlined text-white text-5xl"
-                  style="font-variation-settings:'FILL' 1">mic</span>
-          </button>
+          <!-- Botón principal de grabación -->
+          <div class="relative flex items-center justify-center">
+            <!-- Anillo pulsante (solo durante grabación, oculto por defecto) -->
+            <div id="rec-ring-outer" class="hidden absolute w-36 h-36 rounded-full opacity-20"
+                 style="background:#14213D;animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite"></div>
+            <div id="rec-ring-inner" class="hidden absolute w-32 h-32 rounded-full opacity-30"
+                 style="background:#14213D;animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite 0.3s"></div>
+            <button id="rec-main-btn"
+                    class="w-24 h-24 rounded-full flex items-center justify-center
+                           active:scale-95 transition-all relative z-10"
+                    style="background:#14213D;box-shadow:0 16px 40px rgba(20,33,61,.35)">
+              <span id="rec-icon" class="material-symbols-outlined text-white text-5xl"
+                    style="font-variation-settings:'FILL' 1">mic</span>
+            </button>
+          </div>
 
-          <p id="rec-hint" class="text-sm text-slate-400">Toca para grabar</p>
+          <p id="rec-hint" class="text-sm text-slate-400 font-medium">Toca para grabar</p>
         </div>
 
         <!-- Previsualización (oculta hasta que se para la grabación) -->
         <div id="rec-preview" class="hidden flex flex-col gap-3">
-          <div class="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+          <div class="flex items-center gap-4 bg-white rounded-2xl p-4 border border-slate-100"
+               style="box-shadow:0 4px 16px rgba(0,0,0,0.06)">
             <button id="rec-play-btn"
-                    class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center
-                           flex-shrink-0 active:scale-95 transition-transform">
-              <span id="rec-play-icon" class="material-symbols-outlined text-primary text-2xl"
-                    style="font-variation-settings:'FILL' 1">play_arrow</span>
+                    class="w-12 h-12 rounded-full flex items-center justify-center
+                           flex-shrink-0 active:scale-95 transition-transform"
+                    style="background:#14213D1A">
+              <span id="rec-play-icon" class="material-symbols-outlined text-2xl"
+                    style="color:#14213D;font-variation-settings:'FILL' 1">play_arrow</span>
             </button>
-            <div class="flex-1">
-              <p class="font-semibold text-slate-800 text-sm">Vista previa</p>
-              <p id="rec-preview-dur" class="text-xs text-slate-400">00:00</p>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-slate-800 text-sm">Vista previa</p>
+              <p id="rec-preview-dur" class="text-xs text-slate-400 mt-0.5">00:00</p>
             </div>
             <button id="rec-discard"
-                    class="text-slate-300 hover:text-red-400 active:scale-90 transition-all">
+                    class="w-9 h-9 rounded-full flex items-center justify-center
+                           text-slate-300 active:text-red-400 active:scale-90 transition-all">
               <span class="material-symbols-outlined text-xl">delete</span>
             </button>
           </div>
+
           <button id="rec-send-btn"
-                  class="w-full bg-primary text-white font-bold py-4 rounded-full
-                         shadow-lg shadow-primary/20 active:scale-[0.98] transition-all
-                         flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-xl">send</span>
-            <span>Enviar Cápsula</span>
+                  class="w-full text-white font-bold py-4 rounded-full
+                         active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                  style="background:#14213D;box-shadow:0 8px 24px rgba(20,33,61,.25)">
+            <span class="material-symbols-outlined text-xl"
+                  style="font-variation-settings:'FILL' 1">send</span>
+            <span>Enviar cápsula</span>
           </button>
         </div>
+
       </main>
-    </div>`;
+    </div>
+
+    <style>
+      @keyframes ping {
+        75%, 100% { transform: scale(1.4); opacity: 0; }
+      }
+    </style>`;
 
   window.tailwind?.refresh?.();
 
@@ -2423,11 +2462,13 @@ async function initCapsulaGrabar(router, params) {
   document.querySelectorAll('#app .cat-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#app .cat-chip').forEach(b => {
-        b.classList.remove('bg-primary', 'text-white', 'border-primary');
-        b.classList.add('bg-white', 'text-slate-600', 'border-transparent', 'shadow-sm');
+        b.classList.remove('text-white', 'shadow-md');
+        b.classList.add('bg-white/80', 'text-slate-500', 'shadow-sm');
+        b.style.background = '';
       });
-      btn.classList.add('bg-primary', 'text-white', 'border-primary');
-      btn.classList.remove('bg-white', 'text-slate-600', 'border-transparent', 'shadow-sm');
+      btn.classList.remove('bg-white/80', 'text-slate-500', 'shadow-sm');
+      btn.classList.add('text-white', 'shadow-md');
+      btn.style.background = '#14213D';
       selectedCat = btn.dataset.cat;
     });
   });
@@ -2455,15 +2496,17 @@ async function initCapsulaGrabar(router, params) {
         mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
         mediaRecorder.onstop = () => {
           audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-          // Mostrar sección de preview
+          // Ocultar anillos y onda
+          document.getElementById('rec-ring-outer')?.classList.add('hidden');
+          document.getElementById('rec-ring-inner')?.classList.add('hidden');
           if (waveEl)    waveEl.classList.add('hidden');
+          // Mostrar preview
           if (previewEl) previewEl.classList.remove('hidden');
-          if (hintEl)    hintEl.textContent = 'Grabación lista';
-          if (btnIcon)   btnIcon.textContent = 'mic';
-          // Cambiar botón principal a "re-grabar"
-          mainBtn.classList.remove('bg-primary');
-          mainBtn.classList.add('bg-slate-200');
-          if (btnIcon) { btnIcon.textContent = 'refresh'; btnIcon.classList.remove('text-white'); btnIcon.classList.add('text-slate-500'); }
+          if (hintEl)    hintEl.textContent = 'Grabación lista — revisa antes de enviar';
+          // Botón a "re-grabar"
+          mainBtn.style.background = '#E2E8F0';
+          mainBtn.style.boxShadow  = '0 4px 12px rgba(0,0,0,.08)';
+          if (btnIcon) { btnIcon.textContent = 'refresh'; btnIcon.style.color = '#64748B'; }
           if (durEl)   durEl.textContent = _fmtSecs(secondsElapsed);
           // Preparar preview audio
           previewAudio = new Audio(URL.createObjectURL(audioBlob));
@@ -2475,10 +2518,13 @@ async function initCapsulaGrabar(router, params) {
         mediaRecorder.start(100);
 
         // UI: estado grabando
+        document.getElementById('rec-ring-outer')?.classList.remove('hidden');
+        document.getElementById('rec-ring-inner')?.classList.remove('hidden');
         if (waveEl)   waveEl.classList.remove('hidden');
-        if (hintEl)   hintEl.textContent = 'Grabando... toca para parar';
-        if (btnIcon)  { btnIcon.textContent = 'stop'; btnIcon.style.fontVariationSettings = "'FILL' 1"; }
-        mainBtn.classList.add('animate-pulse');
+        if (hintEl)   hintEl.textContent = 'Grabando… toca para parar';
+        if (btnIcon)  { btnIcon.textContent = 'stop'; btnIcon.style.fontVariationSettings = "'FILL' 1"; btnIcon.style.color = 'white'; }
+        mainBtn.style.background = '#DC2626';
+        mainBtn.style.boxShadow  = '0 16px 40px rgba(220,38,38,.4)';
 
         timerInterval = setInterval(() => {
           secondsElapsed++;
@@ -2489,7 +2535,6 @@ async function initCapsulaGrabar(router, params) {
             timerInterval = null;
             mediaRecorder.stop();
             mediaRecorder.stream.getTracks().forEach(t => t.stop());
-            mainBtn.classList.remove('animate-pulse');
           }
         }, 1000);
 
@@ -2500,7 +2545,6 @@ async function initCapsulaGrabar(router, params) {
         showToast(msg, 'error');
       }
     }
-    mainBtn.classList.remove('animate-pulse');
   });
 
   // ── Previsualización: play/pause ──────────────────────────────
@@ -2524,9 +2568,9 @@ async function initCapsulaGrabar(router, params) {
     if (timerEl)   timerEl.textContent = '00:00';
     if (previewEl) previewEl.classList.add('hidden');
     if (hintEl)    hintEl.textContent = 'Toca para grabar';
-    mainBtn.classList.remove('bg-slate-200');
-    mainBtn.classList.add('bg-primary');
-    if (btnIcon) { btnIcon.textContent = 'mic'; btnIcon.classList.add('text-white'); btnIcon.classList.remove('text-slate-500'); }
+    mainBtn.style.background = '#14213D';
+    mainBtn.style.boxShadow  = '0 16px 40px rgba(20,33,61,.35)';
+    if (btnIcon) { btnIcon.textContent = 'mic'; btnIcon.style.color = 'white'; }
   });
 
   // ── Enviar cápsula ────────────────────────────────────────────
@@ -2599,83 +2643,107 @@ async function initCapsulaReproducir(router, params) {
 
   const WAVE_HEIGHTS = [8,14,20,28,36,24,32,20,16,28,22,36,28,16,24,32,20,14,8];
 
+  // Color de fondo suave según categoría
+  const CAT_GRADIENT = {
+    gratitud:'linear-gradient(145deg,#FEF3C7,#FDE68A)',
+    recuerdos:'linear-gradient(145deg,#EDE9FE,#DDD6FE)',
+    carta:'linear-gradient(145deg,#FFE4E6,#FECDD3)',
+    humor:'linear-gradient(145deg,#FEF9C3,#FEF08A)',
+    animo:'linear-gradient(145deg,#D1FAE5,#A7F3D0)',
+    cancion:'linear-gradient(145deg,#F3E8FF,#E9D5FF)',
+    confesion:'linear-gradient(145deg,#E0F2FE,#BAE6FD)',
+    buenos_dias:'linear-gradient(145deg,#FFEDD5,#FED7AA)',
+    sin_categoria:'linear-gradient(145deg,#F1F5F9,#E2E8F0)',
+  };
+  const catGradient = CAT_GRADIENT[capsule.category] || CAT_GRADIENT.sin_categoria;
+
   app.innerHTML = `
     <div class="min-h-screen flex flex-col bg-[#F5F0E8] font-display text-slate-900">
+
+      <!-- Header -->
       <header class="px-6 pt-10 pb-4 flex items-center gap-4">
         <button id="pl-back"
                 class="w-10 h-10 bg-white rounded-full flex items-center justify-center
-                       shadow-sm active:scale-95 transition-transform flex-shrink-0">
-          <span class="material-symbols-outlined text-slate-900 text-xl">arrow_back</span>
+                       shadow-sm active:scale-95 transition-transform flex-shrink-0"
+                style="box-shadow:0 2px 10px rgba(0,0,0,0.08)">
+          <span class="material-symbols-outlined text-slate-700 text-xl">arrow_back</span>
         </button>
         <div class="flex-1 min-w-0">
           <h1 class="text-xl font-bold leading-tight">${cat.emoji} ${_esc(cat.label)}</h1>
-          <p class="text-xs text-slate-400 truncate">${_esc(dateStr)}</p>
+          <p class="text-xs text-slate-400 mt-0.5 truncate">${_esc(dateStr)}</p>
         </div>
       </header>
 
-      <main class="flex-1 flex flex-col items-center justify-center px-6 pb-10 gap-8">
+      <main class="flex-1 flex flex-col items-center justify-center px-6 pb-10 gap-6">
 
-        <!-- Remitente -->
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-20 h-20 rounded-full overflow-hidden bg-primary/10
-                      flex items-center justify-center shadow-lg ring-4 ring-white">
+        <!-- Card del remitente con gradiente de categoría -->
+        <div class="w-full rounded-3xl p-6 flex flex-col items-center gap-4"
+             style="${catGradient};box-shadow:0 4px 20px rgba(0,0,0,0.08)">
+          <div class="w-20 h-20 rounded-full overflow-hidden bg-white/70
+                      flex items-center justify-center ring-4 ring-white/80"
+               style="box-shadow:0 4px 16px rgba(0,0,0,0.1)">
             ${senderAv
               ? `<img src="${_esc(senderAv)}" class="w-full h-full object-cover" alt="${_esc(senderName)}">`
-              : `<span class="material-symbols-outlined text-4xl text-primary/40"
+              : `<span class="material-symbols-outlined text-4xl text-slate-400"
                        style="font-variation-settings:'FILL' 1">person</span>`}
           </div>
           <div class="text-center">
-            <p class="font-bold text-lg" style="color:#14213D">${_esc(senderName)}</p>
-            <p class="text-slate-400 text-sm">te envió una cápsula de voz</p>
+            <p class="font-bold text-lg text-slate-900">${_esc(senderName)}</p>
+            <p class="text-slate-600 text-sm mt-0.5">te envió una cápsula de voz</p>
           </div>
         </div>
 
         <!-- Player card -->
-        <div class="w-full bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col gap-5">
+        <div class="w-full bg-white rounded-3xl p-6 flex flex-col gap-5"
+             style="box-shadow:0 4px 24px rgba(0,0,0,0.07)">
 
-          <!-- Waveform animada -->
-          <div class="flex items-center justify-center gap-1 h-12">
+          <!-- Waveform -->
+          <div class="flex items-center justify-center gap-1 h-14">
             ${WAVE_HEIGHTS.map((h,i) => `
               <div id="wb-${i}"
-                   class="bg-primary/20 w-1.5 rounded-full transition-all duration-150"
-                   style="height:${h}px"></div>`).join('')}
+                   class="rounded-full transition-all duration-100"
+                   style="width:5px;height:${h}px;background:rgba(20,33,61,0.18)"></div>`).join('')}
           </div>
 
-          <!-- Barra de progreso y tiempos -->
-          <div class="space-y-1">
+          <!-- Barra de progreso -->
+          <div class="space-y-2">
             <div id="pl-track"
-                 class="relative h-2 bg-slate-100 rounded-full overflow-hidden cursor-pointer">
-              <div id="pl-fill" class="h-full bg-primary rounded-full" style="width:0%"></div>
+                 class="relative h-2 rounded-full cursor-pointer overflow-hidden"
+                 style="background:#E2E8F0">
+              <div id="pl-fill" class="h-full rounded-full transition-none"
+                   style="width:0%;background:#14213D"></div>
             </div>
-            <div class="flex justify-between text-[11px] text-slate-400 tabular-nums">
+            <div class="flex justify-between text-[11px] text-slate-400 tabular-nums font-medium">
               <span id="pl-current">00:00</span>
               <span>${_fmtSecs(duration)}</span>
             </div>
           </div>
 
-          <!-- Botón play principal -->
+          <!-- Botón play -->
           <div class="flex items-center justify-center">
             <button id="pl-play-btn"
-                    class="w-20 h-20 bg-primary rounded-full flex items-center justify-center
-                           shadow-xl active:scale-95 transition-all"
-                    style="box-shadow:0 12px 28px rgba(20,33,61,.28)">
+                    class="w-20 h-20 rounded-full flex items-center justify-center
+                           active:scale-95 transition-all"
+                    style="background:#14213D;box-shadow:0 12px 32px rgba(20,33,61,.30)">
               <span id="pl-play-icon" class="material-symbols-outlined text-white text-5xl"
                     style="font-variation-settings:'FILL' 1">play_arrow</span>
             </button>
           </div>
 
-          <p id="pl-status" class="text-center text-xs text-slate-400">Cargando audio...</p>
+          <p id="pl-status" class="text-center text-xs text-slate-400 font-medium">Cargando audio...</p>
         </div>
 
-        <!-- Responder -->
+        <!-- Botón responder -->
         <button id="pl-reply-btn"
-                class="w-full bg-white border-2 text-primary font-bold py-4 rounded-full
-                       active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                class="w-full font-bold py-4 rounded-full
+                       active:scale-[0.98] transition-all flex items-center justify-center gap-2
+                       border-2 bg-transparent"
                 style="border-color:#14213D;color:#14213D">
           <span class="material-symbols-outlined text-xl"
                 style="font-variation-settings:'FILL' 1">mic</span>
           <span>Responder con cápsula</span>
         </button>
+
       </main>
     </div>`;
 
@@ -2712,10 +2780,11 @@ async function initCapsulaReproducir(router, params) {
     WAVE_HEIGHTS.forEach((_, i) => {
       const bar = document.getElementById(`wb-${i}`);
       if (!bar) return;
-      bar.style.height = `${8 + Math.random() * 32}px`;
-      bar.style.backgroundColor = 'rgba(20,33,61,.55)';
+      bar.style.height          = `${6 + Math.random() * 42}px`;
+      bar.style.background      = 'rgba(20,33,61,.6)';
+      bar.style.transitionDuration = '80ms';
     });
-    waveRaf = setTimeout(animateWave, 120);
+    waveRaf = setTimeout(animateWave, 100);
   }
 
   function stopWave() {
@@ -2723,7 +2792,11 @@ async function initCapsulaReproducir(router, params) {
     waveRaf = null;
     WAVE_HEIGHTS.forEach((h, i) => {
       const bar = document.getElementById(`wb-${i}`);
-      if (bar) { bar.style.height = `${h}px`; bar.style.backgroundColor = 'rgba(20,33,61,.2)'; }
+      if (bar) {
+        bar.style.height          = `${h}px`;
+        bar.style.background      = 'rgba(20,33,61,.18)';
+        bar.style.transitionDuration = '300ms';
+      }
     });
   }
 
