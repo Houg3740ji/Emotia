@@ -24,18 +24,27 @@ const EMOTIONS = [
   { emoji: '😟', name: 'Preocupado/a', negative: true  },
   { emoji: '🤗', name: 'Agradecido/a', negative: false },
   { emoji: '😏', name: 'Travieso/a',   negative: false },
-  { emoji: '🫠', name: 'Abrumado/a',   negative: true  },
+  { emoji: '😩', name: 'Abrumado/a',   negative: true  },
   { emoji: '💪', name: 'Motivado/a',   negative: false },
 ];
 
-// ── Mensajes de apoyo para emociones negativas ───────────────
+// ── Mensajes de apoyo para todas las emociones ───────────────
 const SUPPORT_MESSAGES = {
+  'Feliz':        'Tu alegría también nutre a tu pareja. Compártela con ella hoy.',
+  'Enamorado/a':  'Exprésalo. Las palabras y los gestos también enamoran.',
+  'Emocionado/a': '¡Contagia esa energía! Cuéntale a tu pareja qué te tiene así.',
+  'En paz':       'La calma interior te hace más presente para quienes quieres.',
+  'Cariñoso/a':   'Un abrazo o un detalle hoy puede hacer el día de tu pareja.',
+  'Pensativo/a':  'Compartir lo que ronda tu cabeza puede aclararlo todo.',
   'Triste':       'Es válido sentirse así. ¿Quieres que tu pareja lo sepa?',
   'Ansioso/a':    'La ansiedad pasa. Respira y comparte cómo te sientes.',
-  'Enfadado/a':   'Está bien sentir enfado. Compártelo con calma.',
-  'Agotado/a':    'Necesitas descanso. Tu pareja puede ayudarte.',
-  'Preocupado/a': 'No estás solo/a. Comparte lo que te preocupa.',
-  'Abrumado/a':   'Tómatelo con calma. Un paso a la vez.',
+  'Enfadado/a':   'Está bien sentir enfado. Compártelo con calma cuando puedas.',
+  'Agotado/a':    'Necesitas descanso. Tu pareja puede apoyarte.',
+  'Preocupado/a': 'No estás solo/a. Compartir lo que te preocupa alivia.',
+  'Agradecido/a': 'Dile a tu pareja algo que aprecias de ella hoy.',
+  'Travieso/a':   'Esa chispa es energía para conectar con tu pareja de un modo especial.',
+  'Abrumado/a':   'Tómatelo con calma. Un paso a la vez, y no tienes que hacerlo solo/a.',
+  'Motivado/a':   'Usa esa energía para algo que os acerque como pareja.',
 };
 
 // ════════════════════════════════════════════════════════════
