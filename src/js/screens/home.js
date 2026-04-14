@@ -88,7 +88,8 @@ function insertNoCoupleBar(partnerCode) {
 // ════════════════════════════════════════════════════════════
 async function initHome(router) {
   // ── 1. Obtener datos del usuario y su pareja ─────────────────
-  const user   = await auth.getUser();
+  const session = await auth.getSession().catch(() => null);
+  const user    = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
   const profile = await db.getMyProfile().catch(() => null);

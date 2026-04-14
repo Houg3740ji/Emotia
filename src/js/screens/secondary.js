@@ -61,7 +61,8 @@ async function initReflexion(router) {
   // Back button
   qs('header button')?.addEventListener('click', () => history.back());
 
-  const user = await auth.getUser().catch(() => null);
+  const session = await auth.getSession().catch(() => null);
+  const user = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
   const couple  = await db.getMyCouple().catch(() => null);
@@ -271,7 +272,8 @@ function _esc(str) {
 async function initCapsulas(router) {
   router.wireTabBar();
 
-  const user = await auth.getUser().catch(() => null);
+  const session = await auth.getSession().catch(() => null);
+  const user = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
   const couple = await db.getMyCouple().catch(() => null);
@@ -453,7 +455,8 @@ function _showCapsulaListSheet(cat, capsules, router) {
 // ════════════════════════════════════════════════════════════
 async function initIntimo(router) {
   const app  = document.getElementById('app');
-  const user = await auth.getUser().catch(() => null);
+  const session = await auth.getSession().catch(() => null);
+  const user = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
   const couple = await db.getMyCouple().catch(() => null);
@@ -898,7 +901,8 @@ async function _intimoHistorial(container, couple) {
     return;
   }
 
-  const user = await auth.getUser().catch(() => null);
+  const session = await auth.getSession().catch(() => null);
+  const user = session?.user ?? null;
   if (!user) { container.innerHTML = ''; return; }
 
   container.innerHTML = `
@@ -1229,7 +1233,8 @@ function _categoryLabel(category) {
 // ════════════════════════════════════════════════════════════
 async function initRuleta(router) {
   const app  = document.getElementById('app');
-  const user = await auth.getUser().catch(() => null);
+  const session = await auth.getSession().catch(() => null);
+  const user = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
   const couple = await db.getMyCouple().catch(() => null);
@@ -1911,7 +1916,8 @@ function _dateEmoji(mood) {
 async function initTareas(router) {
   qs('header button')?.addEventListener('click', () => history.back());
 
-  const user = await auth.getUser().catch(() => null);
+  const session = await auth.getSession().catch(() => null);
+  const user = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
   const couple  = await db.getMyCouple().catch(() => null);
@@ -2600,7 +2606,8 @@ async function initCapsulaReproducir(router, params) {
   const app     = document.getElementById('app');
   const capsule = params?.capsule;
 
-  const user = await auth.getUser().catch(() => null);
+  const session = await auth.getSession().catch(() => null);
+  const user = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
   if (!capsule) return router.navigate('/capsulas');
 

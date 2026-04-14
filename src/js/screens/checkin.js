@@ -51,7 +51,8 @@ const SUPPORT_MESSAGES = {
 // INIT
 // ════════════════════════════════════════════════════════════
 async function initCheckin(router) {
-  const user    = await auth.getUser();
+  const session = await auth.getSession().catch(() => null);
+  const user    = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
   const couple  = await db.getMyCouple().catch(() => null);
