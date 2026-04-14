@@ -11,28 +11,31 @@ import homeRaw from '../../../stitch_emotia/home_inicio_1/code.html?raw';
 const qs  = (sel) => document.querySelector(`#app ${sel}`);
 const qsa = (sel) => document.querySelectorAll(`#app ${sel}`);
 
-// ── Calcular racha de días consecutivos ──────────────────────
+// ── Calcular racha de días consecutivos (basada en reflexiones) ──
 async function calcStreak(userId, coupleId) {
   try {
     const { data } = await supabase
-      .from('emotion_checkins')
-      .select('date')
+      .from('question_answers')
+      .select('answered_date')
       .eq('user_id', userId)
       .eq('couple_id', coupleId)
-      .order('date', { ascending: false })
-      .limit(60);
+      .order('answered_date', { ascending: false })
+      .limit(90);
 
     if (!data?.length) return 0;
 
-    let streak  = 0;
-    let cursor  = new Date();
+    // Deduplicar fechas (puede haber más de una fila por día en edge cases)
+    const dates = [...new Set(data.map(r => r.answered_date))];
+
+    let streak = 0;
+    let cursor = new Date();
     cursor.setHours(0,0,0,0);
 
-    for (const { date } of data) {
-      const d = new Date(date);
+    for (const dateStr of dates) {
+      const d = new Date(dateStr);
       d.setHours(0,0,0,0);
       const diff = Math.round((cursor - d) / 86400000);
-      if (diff > 1) break;
+      if (diff > 1) break;   // hueco de más de 1 día → racha rota
       streak++;
       cursor = d;
     }
@@ -178,15 +181,20 @@ async function initHome(router) {
     }
   }
 
-  // 4d. Racha
+  // 4d. Racha (basada en reflexiones diarias)
   const rachaWidget = widgets[3];
-  if (rachaWidget && couple) {
-    try {
-      const streak     = await calcStreak(user.id, couple.id);
-      const rachaNum   = rachaWidget.querySelector('.text-3xl.font-bold');
-      if (rachaNum) rachaNum.textContent = String(streak);
-      renderStreakBars(streak);
-    } catch (_) { /* silencioso */ }
+  if (rachaWidget) {
+    rachaWidget.style.cursor = 'pointer';
+    rachaWidget.addEventListener('click', () => router.navigate('/reflexion'));
+
+    if (couple) {
+      try {
+        const streak   = await calcStreak(user.id, couple.id);
+        const rachaNum = rachaWidget.querySelector('.text-3xl.font-bold');
+        if (rachaNum) rachaNum.textContent = String(streak);
+        renderStreakBars(streak);
+      } catch (_) { /* silencioso */ }
+    }
   }
 
   // ── 5. Wire up tab bar y botón de ajustes ────────────────────
