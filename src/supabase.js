@@ -380,6 +380,47 @@ export const db = {
     return data;
   },
 
+  /**
+   * Historial de reflexiones de la pareja (últimas 30 fechas únicas).
+   * Devuelve array agrupado por fecha: [{ date, question, answers: [{name, text}] }]
+   */
+  async getHistorialReflexiones(coupleId) {
+    const { data, error } = await supabase
+      .from('question_answers')
+      .select(`
+        answered_date,
+        answer_text,
+        user_id,
+        daily_questions ( text ),
+        users ( name )
+      `)
+      .eq('couple_id', coupleId)
+      .order('answered_date', { ascending: false })
+      .limit(60); // máx 2 respuestas/día × 30 días
+    if (error) throw error;
+
+    // Agrupar por fecha
+    const byDate = {};
+    for (const row of data || []) {
+      const key = row.answered_date;
+      if (!byDate[key]) {
+        byDate[key] = {
+          date:     key,
+          question: row.daily_questions?.text || '',
+          answers:  [],
+        };
+      }
+      byDate[key].answers.push({
+        name: row.users?.name || '—',
+        text: row.answer_text || '',
+      });
+    }
+
+    return Object.values(byDate)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 30);
+  },
+
   // ── CÁPSULAS DE AUDIO ──
 
   /**

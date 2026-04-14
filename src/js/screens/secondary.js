@@ -15,6 +15,7 @@ import capsulasRaw  from '../../../stitch_emotia/c_psulas_men_refinado_ios/code.
 import intimoRaw    from '../../../stitch_emotia/ntimo_descubrir_t_tulo_ajustado/code.html?raw';
 import ruletaRaw    from '../../../stitch_emotia/ruleta_de_citas_men_refinado_ios/code.html?raw';
 import tareasRaw    from '../../../stitch_emotia/tareas_conjuntas_refinado/code.html?raw';
+import notasRaw     from '../../../stitch_emotia/notas_historial/code.html?raw';
 
 const qs = (sel) => document.querySelector(`#app ${sel}`);
 
@@ -3221,6 +3222,76 @@ export async function showSettings(router) {
 
 
 // ════════════════════════════════════════════════════════════
+// NOTAS — Historial de reflexiones (últimos 30 días)
+// ════════════════════════════════════════════════════════════
+async function initNotas(router) {
+  // Back button
+  qs('header button')?.addEventListener('click', () => history.back());
+
+  const session = await auth.getSession().catch(() => null);
+  const user    = session?.user ?? null;
+  if (!user) return router.navigate('/onboarding/1');
+
+  const couple  = await db.getMyCouple().catch(() => null);
+  const list    = document.getElementById('notas-list');
+  const subtitle = document.getElementById('notas-subtitle');
+
+  if (!list) return;
+
+  if (!couple) {
+    list.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-20 text-center gap-3">
+        <span class="material-symbols-outlined text-4xl text-slate-300">link_off</span>
+        <p class="text-slate-400 text-sm">Vincula tu pareja para ver el historial</p>
+      </div>`;
+    return;
+  }
+
+  try {
+    const entradas = await db.getHistorialReflexiones(couple.id);
+
+    if (!entradas.length) {
+      list.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-20 text-center gap-3">
+          <span class="material-symbols-outlined text-4xl text-slate-300">auto_stories</span>
+          <p class="text-slate-400 text-sm">Aún no hay reflexiones guardadas.<br/>Responde la pregunta diaria para empezar.</p>
+        </div>`;
+      return;
+    }
+
+    if (subtitle) subtitle.textContent = `${entradas.length} entrada${entradas.length !== 1 ? 's' : ''} · últimos 30 días`;
+
+    list.innerHTML = entradas.map(e => {
+      const fecha = new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES', {
+        weekday: 'long', day: 'numeric', month: 'long',
+      });
+      const respuestas = e.answers.map(a => `
+        <div class="bg-slate-50 rounded-xl px-4 py-3">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">${_esc(a.name)}</p>
+          <p class="text-sm text-slate-700 leading-relaxed">${_esc(a.text)}</p>
+        </div>`).join('');
+
+      return `
+        <article class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-primary uppercase tracking-widest">${fecha}</span>
+            <span class="material-symbols-outlined text-slate-300 text-base">auto_stories</span>
+          </div>
+          <p class="text-sm font-semibold text-slate-800 leading-snug">${_esc(e.question)}</p>
+          <div class="flex flex-col gap-2">${respuestas}</div>
+        </article>`;
+    }).join('');
+
+  } catch (err) {
+    list.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-20 text-center gap-3">
+        <span class="material-symbols-outlined text-4xl text-slate-300">error</span>
+        <p class="text-slate-400 text-sm">Error al cargar el historial</p>
+      </div>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════
 // EXPORTACIÓN
 // ════════════════════════════════════════════════════════════
 export const ROUTE_MAP = {
@@ -3231,4 +3302,5 @@ export const ROUTE_MAP = {
   '/intimo':               { html: intimoRaw,    init: initIntimo             },
   '/ruleta':               { html: ruletaRaw,    init: initRuleta             },
   '/tareas':               { html: tareasRaw,    init: initTareas             },
+  '/notas':                { html: notasRaw,     init: initNotas              },
 };

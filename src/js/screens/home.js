@@ -198,6 +198,21 @@ async function initHome(router) {
     }
   }
 
+  // 4e. Notas guardadas → historial de reflexiones
+  const notasWidget = widgets[4];
+  if (notasWidget) {
+    notasWidget.style.cursor = 'pointer';
+    notasWidget.addEventListener('click', () => router.navigate('/notas'));
+
+    if (couple) {
+      try {
+        const historial = await db.getHistorialReflexiones(couple.id);
+        const countEl   = notasWidget.querySelector('.text-sm.font-bold');
+        if (countEl) countEl.textContent = `${historial.length} entrada${historial.length !== 1 ? 's' : ''}`;
+      } catch (_) { /* silencioso */ }
+    }
+  }
+
   // ── 5. Wire up tab bar y botón de ajustes ────────────────────
   router.wireTabBar();
 

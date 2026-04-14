@@ -47,6 +47,7 @@ const MODULE_LOADERS = {
   '/intimo':          () => import('./screens/secondary.js'),
   '/ruleta':          () => import('./screens/secondary.js'),
   '/tareas':          () => import('./screens/secondary.js'),
+  '/notas':           () => import('./screens/secondary.js'),
 };
 
 // ── Router principal ─────────────────────────────────────────
