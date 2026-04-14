@@ -110,13 +110,15 @@ export const router = {
         history.pushState({ path }, '', hashPath);
       }
 
+      // ── Conectar tab bar inmediatamente (síncrono) ───────────
+      // Debe ir ANTES del init() para que los links no queden como href="#"
+      this.wireTabBar();
+      this._syncTabBar(path);
+
       // ── Ejecutar init en segundo plano (actualiza datos en el DOM) ──
       if (typeof init === 'function') {
         init(this, params).catch(err => console.error('[Router] Error en init:', err));
       }
-
-      // Activar tab bar si la pantalla tiene nav
-      this._syncTabBar(path);
 
     } catch (err) {
       console.error('[Router] Error cargando pantalla:', path, err);
@@ -211,7 +213,8 @@ export const router = {
    */
   wireTabBar() {
     const nav = document.querySelector('#app nav');
-    if (!nav) return;
+    if (!nav || nav.dataset.wired) return;  // guard: evitar doble-registro
+    nav.dataset.wired = '1';
 
     const ROUTE_BY_INDEX = ['/home', '/capsulas', null, '/intimo', '/ruleta'];
 
