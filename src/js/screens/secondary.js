@@ -2856,8 +2856,35 @@ async function initCapsulaReproducir(router, params) {
 // ════════════════════════════════════════════════════════════
 // SETTINGS (bottom sheet modal)
 // ════════════════════════════════════════════════════════════
+// ── Helpers de tema e idioma ──────────────────────────────────
+function applyTheme(theme) {
+  const html = document.documentElement;
+  if (theme === 'dark') {
+    html.classList.add('dark');
+  } else if (theme === 'light') {
+    html.classList.remove('dark');
+  } else { // system
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? html.classList.add('dark')
+      : html.classList.remove('dark');
+  }
+  localStorage.setItem('emotia_theme', theme);
+}
+
+function applyLang(lang) {
+  localStorage.setItem('emotia_lang', lang);
+  document.documentElement.lang = lang;
+}
+
+export function initAppPreferences() {
+  // Llamar al arrancar la app para restaurar tema e idioma guardados
+  const theme = localStorage.getItem('emotia_theme') || 'light';
+  applyTheme(theme);
+}
+
 export async function showSettings(router) {
-  const user    = await auth.getUser().catch(() => null);
+  const session = await auth.getSession().catch(() => null);
+  const user    = session?.user ?? null;
   if (!user) return;
   const profile = await db.getMyProfile().catch(() => null);
   const couple  = await db.getMyCouple().catch(() => null);
@@ -3008,26 +3035,6 @@ export async function showSettings(router) {
           <div class="px-4">${partnerSection}</div>
         </div>
 
-        <!-- Modo Íntimo -->
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Modo Íntimo</p>
-        <div class="bg-white rounded-2xl divide-y divide-slate-100 shadow-sm mb-5">
-          <button class="w-full flex items-center justify-between px-4 py-3.5 active:bg-slate-50 transition-colors text-left"
-                  onclick="showToast?.('El cambio de PIN estará disponible próximamente','neutral',2000)">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-slate-400">lock</span>
-              <p class="text-sm font-medium text-slate-700">Cambiar PIN</p>
-            </div>
-            <span class="material-symbols-outlined text-slate-300">chevron_right</span>
-          </button>
-          <div class="flex items-center justify-between px-4 py-3.5">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-slate-400">face</span>
-              <p class="text-sm font-medium text-slate-700">Usar Face ID / Touch ID</p>
-            </div>
-            ${toggleHtml(false)}
-          </div>
-        </div>
-
         <!-- Notificaciones -->
         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Notificaciones</p>
         <div class="bg-white rounded-2xl divide-y divide-slate-100 shadow-sm mb-5">
@@ -3048,27 +3055,35 @@ export async function showSettings(router) {
         <!-- Preferencias -->
         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Preferencias</p>
         <div class="bg-white rounded-2xl divide-y divide-slate-100 shadow-sm mb-5">
-          <div class="flex items-center justify-between px-4 py-3.5">
-            <div class="flex items-center gap-3">
+          <!-- Idioma -->
+          <div class="px-4 py-3.5">
+            <div class="flex items-center gap-3 mb-3">
               <span class="material-symbols-outlined text-slate-400">language</span>
-              <p class="text-sm font-medium text-slate-700">Idioma</p>
+              <p class="text-sm font-medium text-slate-700">Idioma / Language</p>
             </div>
-            <div class="flex items-center gap-1 text-slate-400">
-              <p class="text-sm">Español</p>
-              <span class="material-symbols-outlined text-lg">chevron_right</span>
+            <div class="flex rounded-xl bg-slate-100 p-1 gap-1">
+              ${[['es','🇪🇸 Español'], ['en','🇬🇧 English']].map(([l, lbl]) => {
+                const active = (localStorage.getItem('emotia_lang') || 'es') === l;
+                return `<button class="lang-btn flex-1 flex items-center justify-center py-1.5 rounded-lg text-xs font-semibold transition-all
+                  ${active ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}" data-lang="${l}">${lbl}</button>`;
+              }).join('')}
             </div>
           </div>
+          <!-- Tema -->
           <div class="px-4 py-3.5">
             <div class="flex items-center gap-3 mb-3">
               <span class="material-symbols-outlined text-slate-400">contrast</span>
-              <p class="text-sm font-medium text-slate-700">Tema</p>
+              <p class="text-sm font-medium text-slate-700">Tema / Theme</p>
             </div>
             <div class="flex rounded-xl bg-slate-100 p-1 gap-1">
-              ${[['light_mode','Claro',true], ['dark_mode','Oscuro',false], ['brightness_auto','Sistema',false]].map(([icon, lbl, active]) => `
-                <button class="theme-btn flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition-all
-                               ${active ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}">
-                  <span class="material-symbols-outlined" style="font-size:1rem">${icon}</span>${lbl}
-                </button>`).join('')}
+              ${[['light','light_mode','Claro','Light'], ['dark','dark_mode','Oscuro','Dark'], ['system','brightness_auto','Sistema','System']].map(([val, icon, lbl, lbl_en]) => {
+                const active = (localStorage.getItem('emotia_theme') || 'light') === val;
+                const lang   = localStorage.getItem('emotia_lang') || 'es';
+                return `<button class="theme-btn flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition-all
+                  ${active ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}" data-theme="${val}">
+                  <span class="material-symbols-outlined" style="font-size:1rem">${icon}</span>${lang === 'en' ? lbl_en : lbl}
+                </button>`;
+              }).join('')}
             </div>
           </div>
         </div>
@@ -3181,15 +3196,35 @@ export async function showSettings(router) {
     showToast('Contacta con soporte para desvincular', 'neutral', 3000);
   });
 
+  // Selector de idioma
+  overlay.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      applyLang(lang);
+      overlay.querySelectorAll('.lang-btn').forEach(b => {
+        const on = b.dataset.lang === lang;
+        b.classList.toggle('bg-white',     on);
+        b.classList.toggle('text-slate-800', on);
+        b.classList.toggle('shadow-sm',    on);
+        b.classList.toggle('text-slate-400', !on);
+      });
+      showToast(lang === 'en' ? 'Language set to English' : 'Idioma: Español', 'success', 1800);
+    });
+  });
+
   // Selector de tema
   overlay.querySelectorAll('.theme-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      const theme = btn.dataset.theme;
+      applyTheme(theme);
       overlay.querySelectorAll('.theme-btn').forEach(b => {
-        b.classList.remove('bg-white', 'text-slate-800', 'shadow-sm');
-        b.classList.add('text-slate-400');
+        const on = b.dataset.theme === theme;
+        b.classList.toggle('bg-white',       on);
+        b.classList.toggle('text-slate-800', on);
+        b.classList.toggle('shadow-sm',      on);
+        b.classList.toggle('text-slate-400', !on);
       });
-      btn.classList.add('bg-white', 'text-slate-800', 'shadow-sm');
-      btn.classList.remove('text-slate-400');
+      showToast(theme === 'dark' ? '🌙 Tema oscuro activado' : theme === 'light' ? '☀️ Tema claro activado' : '🖥️ Tema del sistema', 'success', 1800);
     });
   });
 

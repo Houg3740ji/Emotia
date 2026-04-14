@@ -6,6 +6,7 @@
 
 import { auth } from '../supabase.js';
 import { router } from './router.js';
+import { initAppPreferences } from './screens/secondary.js';
 
 // ── Limpiar suscripciones real-time al cambiar de pantalla ──
 function cleanupRealtime() {
@@ -17,6 +18,8 @@ function cleanupRealtime() {
 
 // ── Arrancar la app ──────────────────────────────────────────
 async function init() {
+  // Restaurar tema e idioma guardados antes de mostrar nada
+  initAppPreferences();
   // Escuchar cambios de sesión globales (login / logout / expiración)
   auth.onAuthStateChange(async (event, session) => {
     console.log('[Emotia] Auth event:', event);
