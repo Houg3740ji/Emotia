@@ -90,12 +90,12 @@ export const router = {
       const { html, init } = route;
       const { bodyClass, content } = extractScreen(html);
 
-      // ── Inyectar HTML invisible (evita flash de datos placeholder) ──
+      // ── Inyectar HTML y mostrar inmediatamente ───────────────
       const app = document.getElementById('app');
-      app.className   = bodyClass;
-      app.style.opacity    = '0';
+      app.className        = `screen-enter ${bodyClass}`;
+      app.style.opacity    = '1';
       app.style.transition = 'none';
-      app.innerHTML   = content;
+      app.innerHTML        = content;
 
       // Tailwind CDN puede necesitar un re-scan tras inyección dinámica
       if (typeof window.tailwind?.refresh === 'function') {
@@ -110,14 +110,10 @@ export const router = {
         history.pushState({ path }, '', hashPath);
       }
 
-      // ── Ejecutar init: carga datos reales antes de mostrar la pantalla ──
+      // ── Ejecutar init en segundo plano (actualiza datos en el DOM) ──
       if (typeof init === 'function') {
-        await init(this, params);
+        init(this, params).catch(err => console.error('[Router] Error en init:', err));
       }
-
-      // ── Fade-in con datos reales ya en el DOM ─────────────────
-      app.style.transition = 'opacity 0.18s ease';
-      app.style.opacity    = '1';
 
       // Activar tab bar si la pantalla tiene nav
       this._syncTabBar(path);
