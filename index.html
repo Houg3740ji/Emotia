@@ -130,8 +130,9 @@
       background: #F5F0E8;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       z-index: 9999;
-      transition: opacity 0.3s ease;
+      transition: background-color 0.25s ease, opacity 0.3s ease;
     }
+    html.dark #loading-overlay { background: #102220; }
     #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -142,67 +143,79 @@
       margin-top: 1.5rem;
     }
 
-    /* ══════════════════════════════════════════════════
-       DARK MODE — paleta propia de la app
-       background-dark: #102220  (definido en tailwind config)
-       Se activa cuando <html> tiene la clase "dark"
-    ══════════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════════════════════════
+       EMOTIA — DARK MODE
+       Paleta: background-dark #102220 (del config Tailwind de la app)
+       Tarjetas: #1E3733 (mismo hue teal, claramente elevado sobre el fondo)
+       Activa con <html class="dark">
+
+       QUÉ SE CAMBIA:  fondos neutros, textos, bordes, inputs.
+       QUÉ NO SE TOCA: bg-primary, gradientes, bg-slate-900/bg-navy-custom
+                       (widgets oscuros intencionales), bg-white/{10,20}
+                       (overlays dentro de cards con gradiente teal).
+    ══════════════════════════════════════════════════════════════ */
     html.dark { color-scheme: dark; }
 
-    /* ── Fondo principal ── */
-    html.dark body,
-    html.dark #app                     { background-color: #102220; color: #e0f0ee; }
-    html.dark #loading-overlay         { background: #102220; }
+    /* ── 1. Base: body y contenedor principal ── */
+    html.dark body { background-color: #102220; }
+    html.dark #app { background-color: #102220; color: #E5F0EE; }
+    html.dark #loading-overlay { background-color: #102220; }
 
-    /* bg-background-light (#F5F0E8) → background-dark (#102220) */
-    html.dark .bg-background-light     { background-color: #102220 !important; }
-    /* Header sticky con backdrop */
-    html.dark .bg-background-light\/90,
-    html.dark .bg-background-light\/80 { background-color: rgba(16,34,32,0.92) !important; }
+    /* ── 2. Fondos de pantalla (cream → teal oscuro) ── */
+    /* bg-background-light: clase Tailwind custom */
+    html.dark .bg-background-light            { background-color: #102220 !important; }
+    html.dark .bg-background-light\/90        { background-color: rgba(16,34,32,0.93) !important; }
+    html.dark .bg-background-light\/80        { background-color: rgba(16,34,32,0.85) !important; }
+    /* bg-[#F5F0E8]: clase arbitraria usada en pantallas JS */
+    html.dark [class*="bg-[#F5F0E8]"]         { background-color: #102220 !important; }
 
-    /* ── Superficies y tarjetas (solo fondos neutros, NO botones primary/red) ── */
-    html.dark .bg-white                { background-color: #163028 !important; }
-    html.dark .bg-slate-50             { background-color: #122824 !important; }
-    html.dark .bg-slate-100            { background-color: #163028 !important; }
-    html.dark .bg-slate-200            { background-color: #1c3830 !important; }
-    /* bg-white con opacidad (nav flotante, headers) */
-    html.dark .bg-white\/95            { background-color: rgba(22,48,40,0.97) !important; }
-    html.dark .bg-white\/90            { background-color: rgba(22,48,40,0.92) !important; }
-    html.dark .bg-white\/80            { background-color: rgba(22,48,40,0.85) !important; }
-    html.dark .bg-white\/60            { background-color: rgba(22,48,40,0.70) !important; }
-    html.dark .bg-white\/40            { background-color: rgba(22,48,40,0.55) !important; }
+    /* ── 3. Superficies blancas → superficie teal elevada ── */
+    /* bg-white sólido: tarjetas, modales, nav */
+    html.dark .bg-white                        { background-color: #1E3733 !important; }
+    /* bg-white/95: nav flotante con backdrop blur */
+    html.dark .bg-white\/95                    { background-color: rgba(30,55,51,0.97) !important; }
 
-    /* ── Textos ── */
-    html.dark .text-slate-900          { color: #e0f0ee !important; }
-    html.dark .text-slate-800          { color: #cce7e3 !important; }
-    html.dark .text-slate-700          { color: #a8cdc8 !important; }
-    html.dark .text-slate-600          { color: #88b0aa !important; }
-    html.dark .text-slate-500          { color: #6a9590 !important; }
-    html.dark .text-slate-400          { color: #527a75 !important; }
-    html.dark .text-navy-dark          { color: #e0f0ee !important; }
+    /* bg-slate-50/100: fondos alternativos claros */
+    html.dark .bg-slate-50                     { background-color: #172E2B !important; }
+    html.dark .bg-slate-100                    { background-color: #1E3733 !important; }
+    /* bg-slate-200: usada en separadores, drag handle, tabs container */
+    html.dark .bg-slate-200                    { background-color: rgba(255,255,255,0.11) !important; }
+    html.dark .bg-slate-200\/50                { background-color: rgba(255,255,255,0.07) !important; }
+    /* bg-slate-800: usada en dark: variants del checkin → misma superficie */
+    html.dark .bg-slate-800                    { background-color: #1E3733 !important; }
 
-    /* ── Bordes ── */
-    html.dark .border-slate-100        { border-color: rgba(13,150,139,0.18) !important; }
-    html.dark .border-slate-200        { border-color: rgba(13,150,139,0.22) !important; }
-    html.dark .border-slate-300        { border-color: rgba(13,150,139,0.28) !important; }
-    html.dark .border-navy-dark\/5     { border-color: rgba(13,150,139,0.12) !important; }
+    /* ── 4. Texto ── */
+    html.dark .text-slate-900                  { color: #E5F0EE !important; }
+    html.dark .text-slate-800                  { color: #D0E8E4 !important; }
+    html.dark .text-slate-700                  { color: #A8CAC5 !important; }
+    html.dark .text-slate-600                  { color: #85AFA9 !important; }
+    html.dark .text-slate-500                  { color: #699B96 !important; }
+    html.dark .text-slate-400                  { color: #537975 !important; }
+    html.dark .text-slate-300                  { color: #446E6A !important; }
+    html.dark .text-navy-dark                  { color: #E5F0EE !important; }
 
-    /* ── Inputs ── */
+    /* ── 5. Bordes: separadores muy sutiles ── */
+    html.dark .border-slate-100                { border-color: rgba(255,255,255,0.07) !important; }
+    html.dark .border-slate-200                { border-color: rgba(255,255,255,0.09) !important; }
+    html.dark .border-slate-200\/50            { border-color: rgba(255,255,255,0.05) !important; }
+    html.dark .border-slate-300                { border-color: rgba(255,255,255,0.12) !important; }
+    html.dark .border-navy-dark\/5             { border-color: rgba(255,255,255,0.05) !important; }
+
+    /* ── 6. Inputs ── */
     html.dark input,
     html.dark textarea,
     html.dark select {
-      background-color: #1c3830 !important;
-      color: #e0f0ee !important;
-      border-color: rgba(13,150,139,0.3) !important;
+      background-color: #243D39 !important;
+      color: #E5F0EE !important;
+      border-color: rgba(255,255,255,0.11) !important;
     }
     html.dark input::placeholder,
-    html.dark textarea::placeholder    { color: #527a75 !important; }
+    html.dark textarea::placeholder            { color: #537975 !important; }
 
-    /* ── Bottom sheets ── */
-    html.dark .rounded-t-3xl.bg-white,
-    html.dark .rounded-t-2xl.bg-white  { background-color: #163028 !important; }
+    /* ── 7. Sección de la ruleta: fondo crema como inline style ── */
+    html.dark [style*="rgba(232,222,209"]      { background: rgba(16,34,32,0.65) !important; }
 
-    /* ── Transición suave ── */
+    /* ── 8. Transición suave al cambiar tema ── */
     body, #app, input, textarea, select {
       transition: background-color 0.25s ease, color 0.15s ease, border-color 0.2s ease;
     }
