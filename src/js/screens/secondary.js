@@ -2962,11 +2962,25 @@ function applyLang(lang) {
   document.documentElement.lang = lang;
 }
 
+// Listener guardado para poder eliminarlo si cambia la preferencia
+let _systemThemeListener = null;
+
 export function initAppPreferences() {
-  // Llamar al arrancar la app para restaurar tema e idioma guardados
   const theme = localStorage.getItem('emotia_theme') || 'light';
   applyTheme(theme);
 }
+
+function _attachSystemListener() {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (_systemThemeListener) mq.removeEventListener('change', _systemThemeListener);
+  _systemThemeListener = () => {
+    if (localStorage.getItem('emotia_theme') === 'system') applyTheme('system');
+  };
+  mq.addEventListener('change', _systemThemeListener);
+}
+
+// Arrancar el listener de sistema al cargar
+_attachSystemListener();
 
 export async function showSettings(router) {
   const session = await auth.getSession().catch(() => null);

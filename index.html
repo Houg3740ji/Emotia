@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Emotia</title>
 
+  <!-- Aplicar tema antes de renderizar para evitar parpadeo -->
+  <script>
+    (function() {
+      var t = localStorage.getItem('emotia_theme') || 'light';
+      var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    })();
+  </script>
+
   <!-- Tailwind CDN — único punto de carga para toda la SPA -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -130,6 +140,106 @@
       border: 3px solid #e0f2f1; border-top-color: #0d968b;
       border-radius: 50%; animation: spin 0.75s linear infinite;
       margin-top: 1.5rem;
+    }
+
+    /* ══════════════════════════════════════════════════
+       DARK MODE — overrides globales
+       Se activa cuando <html> tiene la clase "dark"
+    ══════════════════════════════════════════════════ */
+    html.dark {
+      color-scheme: dark;
+    }
+
+    /* Fondo principal de la app */
+    html.dark body,
+    html.dark #app {
+      background-color: #0d1f1e !important;
+      color: #e2f0ef !important;
+    }
+
+    html.dark #loading-overlay {
+      background: #0d1f1e;
+    }
+
+    /* ── Superficies / tarjetas ── */
+    html.dark .bg-white           { background-color: #1a2e2c !important; }
+    html.dark .bg-slate-50        { background-color: #152826 !important; }
+    html.dark .bg-slate-100       { background-color: #1e3330 !important; }
+    html.dark .bg-slate-200       { background-color: #243e3a !important; }
+    html.dark .bg-white\/40,
+    html.dark .bg-white\/60,
+    html.dark .bg-white\/80       { background-color: rgba(26,46,44,0.85) !important; }
+
+    /* Fondo general de pantallas (cream / F5F0E8) */
+    html.dark .bg-\[#F5F0E8\],
+    html.dark [style*="background:#F5F0E8"],
+    html.dark [style*="background: #F5F0E8"] { background-color: #0d1f1e !important; }
+
+    /* ── Textos ── */
+    html.dark .text-slate-900     { color: #f0f9f8 !important; }
+    html.dark .text-slate-800     { color: #e2f0ef !important; }
+    html.dark .text-slate-700     { color: #cbd5e1 !important; }
+    html.dark .text-slate-600     { color: #94a3b8 !important; }
+    html.dark .text-slate-500     { color: #64748b !important; }
+    html.dark .text-slate-400     { color: #536773 !important; }
+    html.dark .text-slate-300     { color: #44596b !important; }
+
+    /* navy-dark */
+    html.dark .text-navy-dark     { color: #e2f0ef !important; }
+    html.dark .text-navy-dark\/40,
+    html.dark .text-navy-dark\/50,
+    html.dark .text-navy-dark\/60 { color: rgba(226,240,239,0.45) !important; }
+
+    /* ── Bordes ── */
+    html.dark .border-slate-100   { border-color: rgba(255,255,255,0.07) !important; }
+    html.dark .border-slate-200   { border-color: rgba(255,255,255,0.1) !important; }
+    html.dark .border-slate-300   { border-color: rgba(255,255,255,0.13) !important; }
+    html.dark .border-navy-dark\/5 { border-color: rgba(255,255,255,0.06) !important; }
+
+    /* ── Inputs ── */
+    html.dark input,
+    html.dark textarea,
+    html.dark select {
+      background-color: #243e3a !important;
+      color: #e2f0ef !important;
+      border-color: rgba(255,255,255,0.12) !important;
+    }
+    html.dark input::placeholder,
+    html.dark textarea::placeholder { color: #536773 !important; }
+
+    /* ── Divisores / separadores ── */
+    html.dark .divide-slate-100 > * + * { border-color: rgba(255,255,255,0.07) !important; }
+
+    /* ── Bottom sheet / modales ── */
+    html.dark .fixed.inset-0.bg-black\/40,
+    html.dark .fixed.inset-0.bg-black\/50 { background-color: rgba(0,0,0,0.6) !important; }
+
+    /* Sheet blanco */
+    html.dark .rounded-t-3xl.bg-white,
+    html.dark .rounded-t-2xl.bg-white  { background-color: #1a2e2c !important; }
+
+    /* ── Navigation bar (bottom nav) ── */
+    html.dark .bg-white.border-t { background-color: #132421 !important; border-color: rgba(255,255,255,0.08) !important; }
+
+    /* ── Sombras ── */
+    html.dark .shadow,
+    html.dark .shadow-sm,
+    html.dark .shadow-md         { box-shadow: 0 2px 12px rgba(0,0,0,0.4) !important; }
+    html.dark .ios-shadow        { box-shadow: 0 4px 20px -2px rgba(0,0,0,0.35) !important; }
+
+    /* ── Chips de filtro ── */
+    html.dark .bg-white.text-slate-600  { background-color: #243e3a !important; color: #94a3b8 !important; }
+
+    /* ── Gradientes de fondo usados en home/checkin ── */
+    html.dark .from-\[#F5F0E8\],
+    html.dark .from-background-light  { --tw-gradient-from: #0d1f1e !important; }
+    html.dark .to-white,
+    html.dark .to-slate-50             { --tw-gradient-to: #1a2e2c !important; }
+
+    /* ── Transición suave al cambiar tema ── */
+    html, body, #app, .bg-white, .bg-slate-50, .bg-slate-100,
+    input, textarea, select {
+      transition: background-color 0.25s ease, color 0.15s ease, border-color 0.2s ease;
     }
   </style>
 </head>
