@@ -76,6 +76,34 @@ async function initReflexion(router) {
   const couple  = await db.getMyCouple().catch(() => null);
   const partner = couple ? await db.getPartner().catch(() => null) : null;
 
+  // ── Racha: calcular y mostrar en el badge ─────────────────────
+  if (couple) {
+    try {
+      const { data: streakData } = await supabase
+        .from('question_answers')
+        .select('answered_date')
+        .eq('user_id', user.id)
+        .eq('couple_id', couple.id)
+        .order('answered_date', { ascending: false })
+        .limit(90);
+      let streak = 0;
+      if (streakData?.length) {
+        const dates = [...new Set(streakData.map(r => r.answered_date))];
+        let cursor = new Date(); cursor.setHours(0,0,0,0);
+        for (const ds of dates) {
+          const d = new Date(ds); d.setHours(0,0,0,0);
+          if (Math.round((cursor - d) / 86400000) > 1) break;
+          streak++; cursor = d;
+        }
+      }
+      const streakEl = document.getElementById('reflection-streak');
+      if (streakEl) {
+        const daysWord = getLang() === 'en' ? (streak === 1 ? 'day' : 'days') : (streak === 1 ? 'día' : 'días');
+        streakEl.textContent = `${streak} ${daysWord}`;
+      }
+    } catch (_) { /* silencioso */ }
+  }
+
   // ── Cargar pregunta del día (determinista — misma para ambos) ──
   let question = null;
   try {
@@ -101,7 +129,10 @@ async function initReflexion(router) {
   // ── Actualizar pregunta y fecha en el DOM ─────────────────────
   const questionEl = qs('h2.text-2xl');
   const dateLabel  = qs('p.text-slate-400.text-sm');
-  if (questionEl && question?.text) questionEl.textContent = question.text;
+  if (questionEl && question) {
+    const lang = getLang();
+    questionEl.textContent = (lang === 'en' && question.text_en) ? question.text_en : question.text;
+  }
   if (dateLabel) {
     const locale = getLang() === 'en' ? 'en-US' : 'es-ES';
     const hoy = new Date().toLocaleDateString(locale, { day: 'numeric', month: 'short' });
@@ -476,18 +507,22 @@ async function initIntimo(router) {
 
       <header class="pt-12 pb-2 px-6 flex items-center justify-center sticky top-0 z-10
                      bg-[#F5F0E8]/90 backdrop-blur-md">
-        <h1 class="font-bold tracking-tight text-4xl text-slate-900">Íntimo</h1>
+        <h1 class="font-bold tracking-tight text-4xl text-slate-900">${t('intimo.title')}</h1>
       </header>
 
       <!-- Tabs -->
       <div class="px-6 py-4">
         <div class="flex h-11 items-center rounded-xl bg-slate-200/50 p-1 max-w-sm mx-auto">
-          ${['descubrir','matches','historial'].map((t, i) => `
-            <button data-tab="${t}"
+          ${[
+            { key: 'descubrir', label: t('intimo.tabDiscover') },
+            { key: 'matches',   label: t('intimo.tabMatches')  },
+            { key: 'historial', label: t('intimo.tabHistory')  },
+          ].map((tab, i) => `
+            <button data-tab="${tab.key}"
                     class="intimo-tab flex-1 h-full rounded-lg text-sm font-semibold
                            transition-all duration-200
                            ${i === 0 ? 'bg-white shadow-sm text-primary' : 'text-slate-500'}">
-              ${t.charAt(0).toUpperCase() + t.slice(1)}
+              ${tab.label}
             </button>`).join('')}
         </div>
       </div>
@@ -579,45 +614,55 @@ function _markSeenId(id) {
 }
 
 // ── Fantasías de respaldo cuando BD devuelve vacío ────────────
-const FALLBACK_FANTASIES = [
+// Bilingüe: title_es/title_en, description_es/description_en
+const _FB_RAW = [
   // SENSORIAL
-  { id: 'fb-1',  title: 'Venda y sorpresa total',       description: 'Un@ lleva los ojos vendados. El otro guía cada toque durante 20 minutos sin hablar ni revelar qué viene después.', category: 'sensorial', intensity_label: 'medio',   duration_label: '20 min' },
-  { id: 'fb-2',  title: 'Hielo y aceite caliente',      description: 'Alternad cubitos de hielo y aceite templado sobre la piel. Quien recibe cierra los ojos y no sabe qué viene.', category: 'sensorial', intensity_label: 'medio',   duration_label: '30 min' },
-  { id: 'fb-3',  title: 'Solo con una pluma',           description: 'Diez minutos de exploración solo con una pluma de marabú. Sin manos, sin hablar. Turnaos sin límite de tiempo.', category: 'sensorial', intensity_label: 'suave',   duration_label: '20 min' },
-  { id: 'fb-4',  title: 'Masaje con vela de masaje',    description: 'Gotead cera de vela de masaje de baja temperatura y masajead la zona después. Veinte minutos cada uno.', category: 'sensorial', intensity_label: 'medio',   duration_label: '45 min' },
-  { id: 'fb-5',  title: 'Masaje facial lento',          description: 'Diez minutos de masaje facial cada uno: sienes, mandíbula, cuero cabelludo. Sin prisa. Sorprende la intimidad que genera.', category: 'sensorial', intensity_label: 'suave',   duration_label: '20 min' },
+  { id:'fb-1',  title_es:'Venda y sorpresa total',        title_en:'Blindfold and total surprise',         description_es:'Un@ lleva los ojos vendados. El otro guía cada toque durante 20 minutos sin hablar ni revelar qué viene después.',                              description_en:'One of you is blindfolded. The other guides every touch for 20 minutes without speaking or revealing what comes next.',                  category:'sensorial', intensity_label:'medio',   duration_label:'20 min' },
+  { id:'fb-2',  title_es:'Hielo y aceite caliente',       title_en:'Ice and warm oil',                     description_es:'Alternad cubitos de hielo y aceite templado sobre la piel. Quien recibe cierra los ojos y no sabe qué viene.',                                  description_en:'Take turns using ice cubes and warm oil on each other\'s skin. The receiver keeps their eyes closed, never knowing what comes next.',     category:'sensorial', intensity_label:'medio',   duration_label:'30 min' },
+  { id:'fb-3',  title_es:'Solo con una pluma',            title_en:'Only a feather',                       description_es:'Diez minutos de exploración solo con una pluma de marabú. Sin manos, sin hablar. Turnaos sin límite de tiempo.',                                description_en:'Ten minutes of exploration using only a feather. No hands, no talking. Take turns with no time limit.',                                  category:'sensorial', intensity_label:'suave',   duration_label:'20 min' },
+  { id:'fb-4',  title_es:'Masaje con vela de masaje',     title_en:'Massage candle wax',                   description_es:'Gotead cera de vela de masaje de baja temperatura y masajead la zona después. Veinte minutos cada uno.',                                        description_en:'Drip low-temperature massage candle wax and then massage the area. Twenty minutes each.',                                               category:'sensorial', intensity_label:'medio',   duration_label:'45 min' },
+  { id:'fb-5',  title_es:'Masaje facial lento',           title_en:'Slow face massage',                    description_es:'Diez minutos de masaje facial cada uno: sienes, mandíbula, cuero cabelludo. Sin prisa. Sorprende la intimidad que genera.',                    description_en:'Ten minutes of face massage each: temples, jaw, scalp. No rush. The intimacy it creates is surprising.',                                category:'sensorial', intensity_label:'suave',   duration_label:'20 min' },
   // ROLE PLAY
-  { id: 'fb-6',  title: 'Extraños en el bar',           description: 'Quedadais en un bar y fingid que no os conocéis. Ligaros desde cero como si fuera la primera vez que os veis.', category: 'role_play', intensity_label: 'medio',   duration_label: '2 h'   },
-  { id: 'fb-7',  title: 'Servicio a habitación',        description: 'Un@ hace un pedido por teléfono. El otro llega como camarero del hotel. Toda la noche en personaje sin romperlo en ningún momento.', category: 'role_play', intensity_label: 'intenso', duration_label: '1 h'   },
-  { id: 'fb-8',  title: 'Masajista de lujo',            description: 'Un@ es clienta de spa exclusivo, el otro el masajista profesional. Mesa, aceite, música ambient. Sin salir del personaje.', category: 'role_play', intensity_label: 'suave',   duration_label: '45 min' },
-  { id: 'fb-9',  title: 'Vecinos que se lían',          description: 'Un@ llama a la puerta con cualquier excusa. El otro abre. Fingid que os veis por primera vez y dejadlo fluir.', category: 'role_play', intensity_label: 'intenso', duration_label: '1 h'   },
+  { id:'fb-6',  title_es:'Extraños en el bar',            title_en:'Strangers at the bar',                 description_es:'Quedadais en un bar y fingid que no os conocéis. Ligaros desde cero como si fuera la primera vez que os veis.',                                  description_en:'Meet at a bar and pretend you don\'t know each other. Flirt from scratch as if it\'s the very first time you\'ve laid eyes on each other.', category:'role_play', intensity_label:'medio',   duration_label:'2 h'   },
+  { id:'fb-7',  title_es:'Servicio a habitación',         title_en:'Room service',                         description_es:'Un@ hace un pedido por teléfono. El otro llega como camarero del hotel. Toda la noche en personaje sin romperlo en ningún momento.',              description_en:'One of you calls room service. The other arrives as the hotel waiter. Stay in character all night without breaking it.',                  category:'role_play', intensity_label:'intenso', duration_label:'1 h'   },
+  { id:'fb-8',  title_es:'Masajista de lujo',             title_en:'Luxury masseur',                       description_es:'Un@ es clienta de spa exclusivo, el otro el masajista profesional. Mesa, aceite, música ambient. Sin salir del personaje.',                      description_en:'One of you is the exclusive spa client, the other the professional masseur. Table, oil, ambient music. Stay in character.',              category:'role_play', intensity_label:'suave',   duration_label:'45 min' },
+  { id:'fb-9',  title_es:'Vecinos que se lían',           title_en:'Neighbors who hook up',                description_es:'Un@ llama a la puerta con cualquier excusa. El otro abre. Fingid que os veis por primera vez y dejadlo fluir.',                                  description_en:'One of you knocks on the door with any excuse. The other opens it. Pretend you\'re meeting for the first time and let it flow.',          category:'role_play', intensity_label:'intenso', duration_label:'1 h'   },
   // JUEGO
-  { id: 'fb-10', title: 'Ruleta de deseos secretos',    description: 'Cada uno escribe 6 deseos en papeles doblados. Mezcladlos. Lo que salga al azar se cumple esa noche, sin negociar.', category: 'juego',    intensity_label: 'intenso', duration_label: '1 h'   },
-  { id: 'fb-11', title: 'Verdad o reto íntimo',         description: 'Por turnos: verdad es confesar una fantasía nunca dicha. Reto es que el otro decida qué hacéis exactamente durante tres minutos.', category: 'juego',    intensity_label: 'medio',   duration_label: '45 min' },
-  { id: 'fb-12', title: 'Strip trivial',                description: 'Preguntas de cultura general. Cada error: una prenda menos. El perdedor final cumple un deseo del ganador sin límites.', category: 'juego',    intensity_label: 'intenso', duration_label: '1 h'   },
-  { id: 'fb-13', title: 'Dados de instrucciones',       description: 'Cada uno escribe 6 instrucciones numeradas del 1 al 6. Tirad un dado por turnos y cumplidlas sin negociar ni pedir cambios.', category: 'juego',    intensity_label: 'intenso', duration_label: '45 min' },
+  { id:'fb-10', title_es:'Ruleta de deseos secretos',     title_en:'Secret desires roulette',              description_es:'Cada uno escribe 6 deseos en papeles doblados. Mezcladlos. Lo que salga al azar se cumple esa noche, sin negociar.',                            description_en:'Each of you writes 6 desires on folded papers. Mix them up. Whatever comes out at random must happen that night — no negotiating.',       category:'juego',    intensity_label:'intenso', duration_label:'1 h'   },
+  { id:'fb-11', title_es:'Verdad o reto íntimo',          title_en:'Intimate truth or dare',               description_es:'Por turnos: verdad es confesar una fantasía nunca dicha. Reto es que el otro decida qué hacéis exactamente durante tres minutos.',               description_en:'Take turns: truth means confessing a fantasy you\'ve never spoken aloud; dare means the other decides exactly what you do for three minutes.', category:'juego',    intensity_label:'medio',   duration_label:'45 min' },
+  { id:'fb-12', title_es:'Strip trivial',                 title_en:'Strip trivia',                         description_es:'Preguntas de cultura general. Cada error: una prenda menos. El perdedor final cumple un deseo del ganador sin límites.',                        description_en:'General knowledge questions. Each wrong answer: one piece of clothing off. The final loser fulfills any wish the winner chooses.',        category:'juego',    intensity_label:'intenso', duration_label:'1 h'   },
+  { id:'fb-13', title_es:'Dados de instrucciones',        title_en:'Instruction dice',                     description_es:'Cada uno escribe 6 instrucciones numeradas del 1 al 6. Tirad un dado por turnos y cumplidlas sin negociar ni pedir cambios.',                    description_en:'Each of you writes 6 numbered instructions. Roll a die in turns and carry out each one without negotiating or asking for changes.',        category:'juego',    intensity_label:'intenso', duration_label:'45 min' },
   // AVENTURA
-  { id: 'fb-14', title: 'Fuera de la cama esta noche',  description: 'Ningún espacio habitual esta noche. Elegid juntos dónde, pero tiene que ser un lugar nuevo: cocina, terraza o donde sea.', category: 'aventura',  intensity_label: 'intenso', duration_label: '1 h'   },
-  { id: 'fb-15', title: 'En el coche de noche',         description: 'Aparcamiento solitario, asientos reclinados, música baja. Como cuando erais jóvenes y no teníais otro sitio adonde ir.', category: 'aventura',  intensity_label: 'intenso', duration_label: '1 h'   },
-  { id: 'fb-16', title: 'Terraza a medianoche',         description: 'Solo vosotros, la oscuridad y las estrellas. Llevar una manta. Sin planear nada más. Improvisar el resto.', category: 'aventura',  intensity_label: 'intenso', duration_label: '45 min' },
-  { id: 'fb-17', title: 'Hotel de improviso',           description: 'Reservad esta noche un hotel cercano. Nada planeado más allá de eso. Los móviles en silencio nada más entrar.', category: 'aventura',  intensity_label: 'medio',   duration_label: '12 h'  },
+  { id:'fb-14', title_es:'Fuera de la cama esta noche',   title_en:'Out of the bed tonight',               description_es:'Ningún espacio habitual esta noche. Elegid juntos dónde, pero tiene que ser un lugar nuevo: cocina, terraza o donde sea.',                       description_en:'No usual spots tonight. Choose together where, but it must be somewhere new: kitchen, terrace — anywhere.',                              category:'aventura',  intensity_label:'intenso', duration_label:'1 h'   },
+  { id:'fb-15', title_es:'En el coche de noche',          title_en:'In the car at night',                  description_es:'Aparcamiento solitario, asientos reclinados, música baja. Como cuando erais jóvenes y no teníais otro sitio adonde ir.',                         description_en:'A quiet parking lot, seats reclined, music low. Like when you were young and had nowhere else to go.',                                   category:'aventura',  intensity_label:'intenso', duration_label:'1 h'   },
+  { id:'fb-16', title_es:'Terraza a medianoche',          title_en:'Rooftop at midnight',                  description_es:'Solo vosotros, la oscuridad y las estrellas. Llevar una manta. Sin planear nada más. Improvisar el resto.',                                      description_en:'Just the two of you, the darkness, and the stars. Bring a blanket. Plan nothing beyond that. Improvise the rest.',                       category:'aventura',  intensity_label:'intenso', duration_label:'45 min' },
+  { id:'fb-17', title_es:'Hotel de improviso',            title_en:'Spontaneous hotel stay',               description_es:'Reservad esta noche un hotel cercano. Nada planeado más allá de eso. Los móviles en silencio nada más entrar.',                                  description_en:'Book a nearby hotel for tonight. Nothing planned beyond that. Phones on silent as soon as you walk in.',                                 category:'aventura',  intensity_label:'medio',   duration_label:'12 h'  },
   // CONEXIÓN
-  { id: 'fb-18', title: '4 minutos mirándoos',          description: 'Sentaos frente a frente, sin hablar ni reír. Solo miraros a los ojos cuatro minutos exactos. Es más íntimo de lo que parece.', category: 'conexion',  intensity_label: 'suave',   duration_label: '15 min' },
-  { id: 'fb-19', title: 'Carta erótica en papel',       description: 'Cada uno escribe en papel lo que desea del otro esta noche. Intercambiad las cartas. Cumplidlas en el orden que salgan.', category: 'conexion',  intensity_label: 'medio',   duration_label: '1 h'   },
-  { id: 'fb-20', title: 'Bailar pegados en silencio',   description: 'Abrazados en el salón, sin música. Uno lleva, el otro sigue. Diez minutos sin hablar ni mirar el teléfono.', category: 'conexion',  intensity_label: 'suave',   duration_label: '15 min' },
-  { id: 'fb-21', title: 'Preguntas que no hacemos',     description: 'Por turnos, haced preguntas íntimas que nunca os habéis atrevido a hacer. La regla: respuesta honesta obligatoria siempre.', category: 'conexion',  intensity_label: 'medio',   duration_label: '1 h'   },
+  { id:'fb-18', title_es:'4 minutos mirándoos',           title_en:'4 minutes of eye contact',             description_es:'Sentaos frente a frente, sin hablar ni reír. Solo miraros a los ojos cuatro minutos exactos. Es más íntimo de lo que parece.',                  description_en:'Sit face to face, no talking, no laughing. Just hold each other\'s gaze for exactly four minutes. It\'s more intimate than it sounds.',  category:'conexion',  intensity_label:'suave',   duration_label:'15 min' },
+  { id:'fb-19', title_es:'Carta erótica en papel',        title_en:'Erotic letter on paper',               description_es:'Cada uno escribe en papel lo que desea del otro esta noche. Intercambiad las cartas. Cumplidlas en el orden que salgan.',                        description_en:'Each of you writes on paper what you want from the other tonight. Exchange letters. Fulfill them in the order they come.',                category:'conexion',  intensity_label:'medio',   duration_label:'1 h'   },
+  { id:'fb-20', title_es:'Bailar pegados en silencio',    title_en:'Silent slow dance',                    description_es:'Abrazados en el salón, sin música. Uno lleva, el otro sigue. Diez minutos sin hablar ni mirar el teléfono.',                                    description_en:'Hold each other in the living room, no music. One leads, the other follows. Ten minutes without talking or looking at your phone.',       category:'conexion',  intensity_label:'suave',   duration_label:'15 min' },
+  { id:'fb-21', title_es:'Preguntas que no hacemos',      title_en:'Questions we never ask',               description_es:'Por turnos, haced preguntas íntimas que nunca os habéis atrevido a hacer. La regla: respuesta honesta obligatoria siempre.',                    description_en:'Take turns asking intimate questions you\'ve never dared to ask. The rule: an honest answer is always required.',                         category:'conexion',  intensity_label:'medio',   duration_label:'1 h'   },
   // DESAFÍO
-  { id: 'fb-22', title: 'Solo palabras, una hora',      description: 'Sin contacto físico durante 60 minutos. Solo describid con palabras exactas lo que queréis haceros. La tensión acumulada es el juego.', category: 'desafio',   intensity_label: 'intenso', duration_label: '1 h'   },
-  { id: 'fb-23', title: 'Fotos íntimas solo vuestras',  description: 'Turnaos haciéndoos fotos el uno al otro. El fotógrafo decide la pose sin que el otro la vea venir. Las fotos son solo vuestras.', category: 'desafio',   intensity_label: 'intenso', duration_label: '45 min' },
-  { id: 'fb-24', title: 'Striptease planificado',       description: 'Un@ prepara una playlist y ejecuta un striptease. El otro solo puede mirar, sin tocar, hasta que quien actúa lo autorice.', category: 'desafio',   intensity_label: 'intenso', duration_label: '20 min' },
-  { id: 'fb-25', title: 'Confesión nunca dicha',        description: 'Por turnos, confesad una fantasía que nunca habéis dicho en voz alta. Sin juzgar, sin comentar. Solo escuchar y aceptar.', category: 'desafio',   intensity_label: 'intenso', duration_label: '30 min' },
+  { id:'fb-22', title_es:'Solo palabras, una hora',       title_en:'Words only, one hour',                 description_es:'Sin contacto físico durante 60 minutos. Solo describid con palabras exactas lo que queréis haceros. La tensión acumulada es el juego.',          description_en:'No physical contact for 60 minutes. Only describe in exact words what you want to do to each other. The built-up tension is the game.',   category:'desafio',   intensity_label:'intenso', duration_label:'1 h'   },
+  { id:'fb-23', title_es:'Fotos íntimas solo vuestras',   title_en:'Intimate photos just for you',         description_es:'Turnaos haciéndoos fotos el uno al otro. El fotógrafo decide la pose sin que el otro la vea venir. Las fotos son solo vuestras.',                description_en:'Take turns photographing each other. The photographer decides the pose without warning. The photos are just for the two of you.',         category:'desafio',   intensity_label:'intenso', duration_label:'45 min' },
+  { id:'fb-24', title_es:'Striptease planificado',        title_en:'Planned striptease',                   description_es:'Un@ prepara una playlist y ejecuta un striptease. El otro solo puede mirar, sin tocar, hasta que quien actúa lo autorice.',                    description_en:'One of you prepares a playlist and performs a striptease. The other can only watch — no touching — until the performer allows it.',       category:'desafio',   intensity_label:'intenso', duration_label:'20 min' },
+  { id:'fb-25', title_es:'Confesión nunca dicha',         title_en:'Never-told confession',                description_es:'Por turnos, confesad una fantasía que nunca habéis dicho en voz alta. Sin juzgar, sin comentar. Solo escuchar y aceptar.',                      description_en:'Take turns confessing a fantasy you\'ve never said out loud. No judging, no commenting. Just listen and accept.',                         category:'desafio',   intensity_label:'intenso', duration_label:'30 min' },
   // ROMÁNTICO
-  { id: 'fb-26', title: 'Baño de espuma y champán',     description: 'Llenad la bañera con espuma y sales. Champán, velas y música. Sin salir hasta que se vacíe la botella.', category: 'romantico', intensity_label: 'suave',   duration_label: '1 h'   },
-  { id: 'fb-27', title: 'Cena a oscuras con velas',     description: 'Cenad solo con velas, sin luz artificial. Sin móviles. Solo hablar de recuerdos favoritos que tenéis juntos.', category: 'romantico', intensity_label: 'suave',   duration_label: '1 h'   },
-  { id: 'fb-28', title: 'Leer erótica en voz alta',     description: 'Buscad un relato erótico y leedlo por párrafos alternos en voz alta. Quien escucha no puede interrumpir ni tocar.', category: 'romantico', intensity_label: 'medio',   duration_label: '30 min' },
-  { id: 'fb-29', title: 'Playlist íntima compartida',   description: 'Cada uno añade 10 canciones a una playlist nueva. Escuchadla juntos en silencio sin explicar por qué elegisteis cada una.', category: 'romantico', intensity_label: 'suave',   duration_label: '45 min' },
-  { id: 'fb-30', title: 'Sin ropa en casa toda la tarde', description: 'Pasad toda la tarde en casa sin ropa, haciendo cosas normales: cocinar, ver algo, hablar. Sin que sea obligatorio nada más.', category: 'desafio',   intensity_label: 'medio',   duration_label: '3 h'   },
+  { id:'fb-26', title_es:'Baño de espuma y champán',      title_en:'Bubble bath and champagne',            description_es:'Llenad la bañera con espuma y sales. Champán, velas y música. Sin salir hasta que se vacíe la botella.',                                        description_en:'Fill the tub with bubbles and bath salts. Champagne, candles, and music. Don\'t get out until the bottle is empty.',                    category:'romantico', intensity_label:'suave',   duration_label:'1 h'   },
+  { id:'fb-27', title_es:'Cena a oscuras con velas',      title_en:'Candlelit dinner in the dark',         description_es:'Cenad solo con velas, sin luz artificial. Sin móviles. Solo hablar de recuerdos favoritos que tenéis juntos.',                                    description_en:'Dine only by candlelight, no artificial light. No phones. Just talk about your favorite memories together.',                             category:'romantico', intensity_label:'suave',   duration_label:'1 h'   },
+  { id:'fb-28', title_es:'Leer erótica en voz alta',      title_en:'Read erotica aloud',                   description_es:'Buscad un relato erótico y leedlo por párrafos alternos en voz alta. Quien escucha no puede interrumpir ni tocar.',                             description_en:'Find an erotic story and read it aloud in alternating paragraphs. The listener cannot interrupt or touch.',                              category:'romantico', intensity_label:'medio',   duration_label:'30 min' },
+  { id:'fb-29', title_es:'Playlist íntima compartida',    title_en:'Shared intimate playlist',             description_es:'Cada uno añade 10 canciones a una playlist nueva. Escuchadla juntos en silencio sin explicar por qué elegisteis cada una.',                     description_en:'Each of you adds 10 songs to a new playlist. Listen to it together in silence without explaining why you chose each song.',               category:'romantico', intensity_label:'suave',   duration_label:'45 min' },
+  { id:'fb-30', title_es:'Sin ropa en casa toda la tarde',title_en:'No clothes at home all afternoon',     description_es:'Pasad toda la tarde en casa sin ropa, haciendo cosas normales: cocinar, ver algo, hablar. Sin que sea obligatorio nada más.',                    description_en:'Spend the whole afternoon at home with no clothes, doing normal things: cooking, watching something, talking. Nothing else is mandatory.', category:'desafio',   intensity_label:'medio',   duration_label:'3 h'   },
 ];
+
+function getFallbackFantasies() {
+  const lang = getLang();
+  return _FB_RAW.map(f => ({
+    ...f,
+    title:       lang === 'en' ? f.title_en       : f.title_es,
+    description: lang === 'en' ? f.description_en : f.description_es,
+  }));
+}
 
 // ── Tab: Descubrir ────────────────────────────────────────────
 async function _intimoDescubrir(container, couple, user) {
@@ -625,8 +670,8 @@ async function _intimoDescubrir(container, couple, user) {
     container.innerHTML = `
       <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-20">
         <span class="text-5xl">💫</span>
-        <p class="font-bold text-lg text-slate-700">Sin pareja vinculada</p>
-        <p class="text-sm text-slate-400">Vincula a tu pareja para explorar juntos</p>
+        <p class="font-bold text-lg text-slate-700">${t('intimo.noCouple')}</p>
+        <p class="text-sm text-slate-400">${t('intimo.noCoupleHint')}</p>
       </div>`;
     return;
   }
@@ -640,11 +685,11 @@ async function _intimoDescubrir(container, couple, user) {
     if (seenIds.length > 0) all = all.filter(f => !seenIds.includes(String(f.id)));
     // Si la BD devuelve vacío, usar fallbacks hardcodeados (también filtrando ya vistos)
     if (!all.length) {
-      all = FALLBACK_FANTASIES.filter(f => !seenIds.includes(String(f.id)));
+      all = getFallbackFantasies().filter(f => !seenIds.includes(String(f.id)));
     }
     fantasies = all;
   } catch (_) {
-    fantasies = FALLBACK_FANTASIES.filter(f => !seenIds.includes(String(f.id)));
+    fantasies = getFallbackFantasies().filter(f => !seenIds.includes(String(f.id)));
   }
 
   const state = { index: 0, aiLoading: false, aiFailed: false };
@@ -694,7 +739,7 @@ async function _intimoDescubrir(container, couple, user) {
             <span class="material-symbols-outlined text-primary text-4xl animate-spin">
               progress_activity
             </span>
-            <p class="text-sm text-slate-500 font-medium">Cargando más ideas...</p>
+            <p class="text-sm text-slate-500 font-medium">${t('intimo.loading')}</p>
           </div>`;
       } else {
         container.innerHTML = `
@@ -702,12 +747,12 @@ async function _intimoDescubrir(container, couple, user) {
             <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-2">
               <span class="text-4xl">✨</span>
             </div>
-            <p class="font-bold text-lg text-slate-700">Has visto todo</p>
-            <p class="text-sm text-slate-400">Vuelve más tarde o revisa tus matches</p>
+            <p class="font-bold text-lg text-slate-700">${t('intimo.allSeen')}</p>
+            <p class="text-sm text-slate-400">${t('intimo.allSeenHint')}</p>
             <button id="go-matches"
                     class="mt-2 px-6 py-3 rounded-full font-semibold text-sm text-slate-600
                            border border-slate-200 active:scale-95 transition-transform">
-              Ver Matches
+              ${t('intimo.viewMatches')}
             </button>
           </div>`;
         document.getElementById('go-matches')?.addEventListener('click', () =>
@@ -753,13 +798,13 @@ async function _intimoDescubrir(container, couple, user) {
               <div id="ind-like" class="absolute top-8 left-6 opacity-0 pointer-events-none">
                 <span class="font-black text-lg px-4 py-2 rounded-xl border-[3px] border-green-500
                              text-green-600 bg-white/90 rotate-[-12deg] inline-block shadow">
-                  ME GUSTA
+                  ${t('intimo.like')}
                 </span>
               </div>
               <div id="ind-nope" class="absolute top-8 right-6 opacity-0 pointer-events-none">
                 <span class="font-black text-lg px-4 py-2 rounded-xl border-[3px] border-red-500
                              text-red-600 bg-white/90 rotate-[12deg] inline-block shadow">
-                  PASO
+                  ${t('intimo.nope')}
                 </span>
               </div>
 
@@ -792,7 +837,7 @@ async function _intimoDescubrir(container, couple, user) {
                 <span class="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 rounded-full
                              text-xs font-medium text-slate-600">
                   <span class="material-symbols-outlined text-sm text-slate-400">bolt</span>
-                  ${_esc(cur.intensity_label)}
+                  ${_esc(_intensityLabel(cur.intensity_label))}
                 </span>` : ''}
               </div>
             </div>
@@ -1219,22 +1264,34 @@ function _fantasyEmoji(category) {
 // ── Etiqueta legible por categoría ───────────────────────────
 function _categoryLabel(category) {
   const MAP = {
-    sensorial: 'Sensorial', sensual: 'Sensual',
-    romantico: 'Romántico', romantica: 'Romántico',
-    aventura: 'Aventura',
-    juego: 'Juego',
-    masaje: 'Masaje',
-    role_play: 'Rol', roleplay: 'Rol',
-    exterior: 'Aventura', outdoor: 'Aventura',
-    sorpresa: 'Sorpresa',
-    desafio: 'Desafío', desafío: 'Desafío',
-    conexion: 'Conexión', conexión: 'Conexión',
+    sensorial: 'roulette.catSensorial', sensual: 'roulette.catSensual',
+    romantico: 'roulette.catRomantico', romantica: 'roulette.catRomantico',
+    aventura: 'roulette.catAventura',
+    juego: 'roulette.catJuego',
+    masaje: 'roulette.catMasaje',
+    role_play: 'roulette.catRolPlay', roleplay: 'roulette.catRolPlay',
+    exterior: 'roulette.catExterior', outdoor: 'roulette.catExterior',
+    sorpresa: 'roulette.catSorpresa',
+    desafio: 'roulette.catDesafio', desafío: 'roulette.catDesafio',
+    conexion: 'roulette.catConexion', conexión: 'roulette.catConexion',
   };
   const k = (category || '').toLowerCase()
     .replace(/\s+/g, '_')
     .replace(/[áà]/g,'a').replace(/[éè]/g,'e')
     .replace(/[íì]/g,'i').replace(/[óò]/g,'o').replace(/[úù]/g,'u');
-  return MAP[k] || category || '';
+  const key = MAP[k];
+  return key ? t(key) : (category || '');
+}
+
+// ── Etiqueta de intensidad traducida ─────────────────────────
+function _intensityLabel(raw) {
+  const k = (raw || '').toLowerCase()
+    .replace(/[áà]/g,'a').replace(/[éè]/g,'e')
+    .replace(/[íì]/g,'i').replace(/[óò]/g,'o').replace(/[úù]/g,'u');
+  if (k === 'suave')   return t('intimo.intensity.suave');
+  if (k === 'medio')   return t('intimo.intensity.medio');
+  if (k === 'intenso') return t('intimo.intensity.intenso');
+  return raw || '';
 }
 
 

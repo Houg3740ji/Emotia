@@ -5,7 +5,7 @@
 import { auth, db, supabase } from '../../supabase.js';
 import { getTimeGreeting, showToast } from '../auth.js';
 import { showSettings } from './secondary.js';
-import { t } from '../i18n.js';
+import { t, getLang } from '../i18n.js';
 
 import homeRaw from '../../../stitch_emotia/home_inicio_1/code.html?raw';
 
@@ -141,8 +141,8 @@ async function initHome(router) {
     try {
       const question = await db.getDailyQuestionForToday();
       const qText    = questionCard.querySelector('p.text-xl, p[class*="text-xl"]');
-      if (qText && question?.text) {
-        qText.textContent = question.text;
+      if (qText && question) {
+        qText.textContent = (getLang() === 'en' && question.text_en) ? question.text_en : question.text;
       }
       // Guardar el ID de la pregunta para la pantalla de reflexión
       if (question) sessionStorage.setItem('emotia_daily_question', JSON.stringify(question));

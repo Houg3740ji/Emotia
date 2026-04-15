@@ -307,7 +307,7 @@ export const db = {
   async getDailyQuestionForToday() {
     const { data, error } = await supabase
       .from('daily_questions')
-      .select('*')
+      .select('id, text, text_en, category, is_active')
       .eq('is_active', true)
       .order('id');                          // orden estable
     if (error) throw error;

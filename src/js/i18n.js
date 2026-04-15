@@ -268,6 +268,27 @@ const TRANSLATIONS = {
       and:              'y',
     },
 
+    // ── Íntimo ────────────────────────────────────────────────────
+    intimo: {
+      title:         'Íntimo',
+      tabDiscover:   'Descubrir',
+      tabMatches:    'Matches',
+      tabHistory:    'Historial',
+      noCouple:      'Sin pareja vinculada',
+      noCoupleHint:  'Vincula a tu pareja para explorar juntos',
+      loading:       'Cargando más ideas...',
+      allSeen:       'Has visto todo',
+      allSeenHint:   'Vuelve más tarde o revisa tus matches',
+      viewMatches:   'Ver Matches',
+      like:          'ME GUSTA',
+      nope:          'PASO',
+      intensity: {
+        suave:   'Suave',
+        medio:   'Medio',
+        intenso: 'Intenso',
+      },
+    },
+
     // ── Router ────────────────────────────────────────────────────
     router: {
       loadError:    'Error al cargar la pantalla',
@@ -537,6 +558,27 @@ const TRANSLATIONS = {
       days:             'day',
       daysPlural:       'days',
       and:              'and',
+    },
+
+    // ── Intimate ─────────────────────────────────────────────────
+    intimo: {
+      title:         'Intimate',
+      tabDiscover:   'Discover',
+      tabMatches:    'Matches',
+      tabHistory:    'History',
+      noCouple:      'No partner linked',
+      noCoupleHint:  'Link your partner to explore together',
+      loading:       'Loading more ideas...',
+      allSeen:       "You've seen everything",
+      allSeenHint:   'Come back later or check your matches',
+      viewMatches:   'View Matches',
+      like:          'LIKE',
+      nope:          'NOPE',
+      intensity: {
+        suave:   'Soft',
+        medio:   'Medium',
+        intenso: 'Intense',
+      },
     },
 
     // ── Router ───────────────────────────────────────────────────
