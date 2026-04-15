@@ -7,6 +7,7 @@
 
 import { auth, db } from '../supabase.js';
 import { hideLoadingOverlay, showToast } from './auth.js';
+import { t } from './i18n.js';
 
 // Rutas públicas (no requieren sesión activa)
 // Las rutas 3-5 son parte del flujo de registro: si la confirmación de email
@@ -127,10 +128,10 @@ export const router = {
       document.getElementById('app').innerHTML = `
         <div style="display:flex;align-items:center;justify-content:center;height:100vh;padding:2rem;text-align:center;">
           <div>
-            <p style="color:#dc2626;font-weight:700;margin-bottom:0.5rem;">Error al cargar la pantalla</p>
-            <p style="color:#64748b;font-size:0.875rem;">${err.message || 'Error desconocido'}</p>
+            <p style="color:#dc2626;font-weight:700;margin-bottom:0.5rem;">${t('router.loadError')}</p>
+            <p style="color:#64748b;font-size:0.875rem;">${err.message || t('router.unknownError')}</p>
             <button onclick="window.location.reload()" style="margin-top:1rem;padding:0.5rem 1.5rem;background:#0d968b;color:white;border:none;border-radius:9999px;cursor:pointer;font-weight:600;">
-              Reintentar
+              ${t('router.retry')}
             </button>
           </div>
         </div>

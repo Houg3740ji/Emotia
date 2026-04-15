@@ -5,6 +5,7 @@
 import { auth, db, supabase } from '../../supabase.js';
 import { getTimeGreeting, showToast } from '../auth.js';
 import { showSettings } from './secondary.js';
+import { t } from '../i18n.js';
 
 import homeRaw from '../../../stitch_emotia/home_inicio_1/code.html?raw';
 
@@ -63,11 +64,11 @@ function insertNoCoupleBar(partnerCode) {
   banner.className = 'widget-span-2 bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between mb-2';
   banner.innerHTML = `
     <div>
-      <p class="text-primary text-xs font-bold uppercase tracking-wide mb-0.5">Sin pareja vinculada</p>
-      <p class="text-slate-700 text-sm font-semibold">Tu código: <span class="text-primary font-black tracking-widest">${partnerCode || '---'}</span></p>
+      <p class="text-primary text-xs font-bold uppercase tracking-wide mb-0.5">${t('home.noCouple')}</p>
+      <p class="text-slate-700 text-sm font-semibold">${t('home.yourCode')} <span class="text-primary font-black tracking-widest">${partnerCode || '---'}</span></p>
     </div>
     <button id="copy-home-code" class="flex items-center gap-1 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-full active:scale-95 transition-transform">
-      <span class="material-symbols-outlined text-sm">content_copy</span>Copiar
+      <span class="material-symbols-outlined text-sm">content_copy</span>${t('copy')}
     </button>
   `;
   const grid = main.querySelector('.command-grid');
@@ -76,9 +77,9 @@ function insertNoCoupleBar(partnerCode) {
   document.getElementById('copy-home-code')?.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(partnerCode || '');
-      showToast('Código copiado ✓', 'success', 1500);
+      showToast(t('codeCopied'), 'success', 1500);
     } catch (_) {
-      showToast(`Tu código: ${partnerCode}`, 'neutral', 3000);
+      showToast(`${t('home.yourCode')} ${partnerCode}`, 'neutral', 3000);
     }
   });
 }
@@ -128,7 +129,7 @@ async function initHome(router) {
           const iconDiv = emotionWidget.querySelector('.material-symbols-outlined');
           if (iconDiv) iconDiv.textContent = myCheckin.emoji;
         } else {
-          if (emotionSpan) emotionSpan.textContent = 'Sin registrar';
+          if (emotionSpan) emotionSpan.textContent = t('home.noEmotion');
         }
       } catch (_) { /* silencioso */ }
     }
@@ -176,7 +177,7 @@ async function initHome(router) {
         });
         const statusText = tasksWidget.querySelector('.text-white\\/40');
         if (statusText) {
-          statusText.textContent = `${pending.length} pendientes • ${todayDone.length} completadas hoy`;
+          statusText.textContent = `${pending.length} ${t('home.pending')} • ${todayDone.length} ${t('home.completedToday')}`;
         }
       } catch (_) { /* silencioso */ }
     }
@@ -208,7 +209,7 @@ async function initHome(router) {
       try {
         const historial = await db.getHistorialReflexiones(couple.id);
         const countEl   = notasWidget.querySelector('.text-sm.font-bold');
-        if (countEl) countEl.textContent = `${historial.length} entrada${historial.length !== 1 ? 's' : ''}`;
+        if (countEl) countEl.textContent = `${historial.length} ${historial.length !== 1 ? t('home.entries') : t('home.entry')}`;
       } catch (_) { /* silencioso */ }
     }
   }
@@ -233,7 +234,7 @@ async function initHome(router) {
         if (payload.new?.user_id !== user.id) {
           const partnerCard = qs('.command-grid > div:nth-child(1)');
           if (partnerCard) {
-            showToast(`${partner?.name || 'Tu pareja'} ha registrado su estado ${payload.new.emoji}`, 'neutral', 3000);
+            showToast(`${partner?.name || 'Tu pareja'} ${t('home.partnerStatus')} ${payload.new.emoji}`, 'neutral', 3000);
           }
         }
       })

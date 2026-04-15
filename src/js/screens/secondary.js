@@ -9,6 +9,7 @@
 import { auth, db, supabase, storage } from '../../supabase.js';
 import { showToast, setButtonLoading } from '../auth.js';
 import { aiGenerate, buildContext } from '../ai.js';
+import { t, getLang } from '../i18n.js';
 
 import reflexionRaw from '../../../stitch_emotia/m_dulo_de_reflexi_n_refinado_v2/code.html?raw';
 import capsulasRaw  from '../../../stitch_emotia/c_psulas_men_refinado_ios/code.html?raw';
@@ -20,24 +21,30 @@ import notasRaw     from '../../../stitch_emotia/notas_historial/code.html?raw';
 const qs = (sel) => document.querySelector(`#app ${sel}`);
 
 // ── Categorías de cápsulas (mismo orden que el grid Stitch) ──
-const CAPSULE_CATS = [
-  { key: 'gratitud',      emoji: '🙏', label: 'Gratitud'      },
-  { key: 'recuerdos',     emoji: '📸', label: 'Recuerdos'     },
-  { key: 'carta',         emoji: '💌', label: 'Carta de amor' },
-  { key: 'humor',         emoji: '😂', label: 'Hazme reir'    },
-  { key: 'animo',         emoji: '💪', label: 'Ánimo'         },
-  { key: 'cancion',       emoji: '🎵', label: 'Canción'       },
-  { key: 'confesion',     emoji: '🤫', label: 'Confesión'     },
-  { key: 'buenos_dias',   emoji: '☀️', label: 'Buenos días'   },
-  { key: 'sin_categoria', emoji: '📂', label: 'Sin categoría' },
-];
+// Las labels se traducen en tiempo de render via t()
+function getCapsuleCats() {
+  return [
+    { key: 'gratitud',      emoji: '🙏', label: t('capsules.cats.gratitud')      },
+    { key: 'recuerdos',     emoji: '📸', label: t('capsules.cats.recuerdos')     },
+    { key: 'carta',         emoji: '💌', label: t('capsules.cats.carta')         },
+    { key: 'humor',         emoji: '😂', label: t('capsules.cats.humor')         },
+    { key: 'animo',         emoji: '💪', label: t('capsules.cats.animo')         },
+    { key: 'cancion',       emoji: '🎵', label: t('capsules.cats.cancion')       },
+    { key: 'confesion',     emoji: '🤫', label: t('capsules.cats.confesion')     },
+    { key: 'buenos_dias',   emoji: '☀️', label: t('capsules.cats.buenos_dias')   },
+    { key: 'sin_categoria', emoji: '📂', label: t('capsules.cats.sin_categoria') },
+  ];
+}
 
 // ── Mapa de prioridades de tareas ─────────────────────────────
-const PRIORITY = {
-  high:   { label: 'Alta',  bg: 'bg-red-100',   text: 'text-red-600'   },
-  medium: { label: 'Media', bg: 'bg-amber-100',  text: 'text-amber-600' },
-  low:    { label: 'Baja',  bg: 'bg-blue-100',   text: 'text-blue-600'  },
-};
+// Se evalúa en tiempo de render para recoger el idioma activo
+function getPriority() {
+  return {
+    high:   { label: t('tasks.priorityHigh'),   bg: 'bg-red-100',   text: 'text-red-600'   },
+    medium: { label: t('tasks.priorityMedium'), bg: 'bg-amber-100',  text: 'text-amber-600' },
+    low:    { label: t('tasks.priorityLow'),    bg: 'bg-blue-100',   text: 'text-blue-600'  },
+  };
+}
 
 // ── Helper genérico: wire back button + tab bar ──────────────
 function wireCommonNav(router) {
@@ -96,8 +103,9 @@ async function initReflexion(router) {
   const dateLabel  = qs('p.text-slate-400.text-sm');
   if (questionEl && question?.text) questionEl.textContent = question.text;
   if (dateLabel) {
-    const hoy = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-    dateLabel.textContent = `Pregunta del día • ${hoy}`;
+    const locale = getLang() === 'en' ? 'en-US' : 'es-ES';
+    const hoy = new Date().toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+    dateLabel.textContent = `${t('reflection.dateLabel')} • ${hoy}`;
   }
 
   // ── Cargar respuestas existentes ──────────────────────────────
@@ -135,14 +143,14 @@ async function initReflexion(router) {
 
     saveBtn.addEventListener('click', async () => {
       const text = textarea?.value?.trim();
-      if (!text) { showToast('Escribe tu reflexión antes de guardar', 'error'); return; }
-      if (!couple) { showToast('Vincula tu pareja para guardar reflexiones', 'neutral', 3000); return; }
-      if (!question) { showToast('No hay pregunta disponible hoy', 'error'); return; }
+      if (!text) { showToast(t('reflection.writeFirst'), 'error'); return; }
+      if (!couple) { showToast(t('reflection.linkFirst'), 'neutral', 3000); return; }
+      if (!question) { showToast(t('reflection.noQuestion'), 'error'); return; }
 
       setButtonLoading(saveBtn, true);
       try {
         await db.saveAnswer({ questionId: question.id, coupleId: couple.id, answerText: text });
-        showToast('Reflexión guardada ✓', 'success', 2000);
+        showToast(t('reflection.saved'), 'success', 2000);
 
         // Recargar respuestas para revelar la de la pareja si ya respondió
         const answers = await db.getAnswersForQuestion(question.id, couple.id);
@@ -154,7 +162,7 @@ async function initReflexion(router) {
         _setSaveBtnUpdate(saveBtn);
       } catch (err) {
         setButtonLoading(saveBtn, false);
-        showToast(err.message || 'Error al guardar', 'error');
+        showToast(err.message || t('reflection.saveError'), 'error');
       }
     });
   }
@@ -162,7 +170,7 @@ async function initReflexion(router) {
 
 function _setSaveBtnUpdate(btn) {
   btn.innerHTML = `
-    <span class="text-lg">Actualizar reflexión</span>
+    <span class="text-lg">${t('reflection.updateBtn')}</span>
     <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1">edit</span>
   `;
 }
@@ -194,7 +202,7 @@ function _renderPartnerSection(partner, partnerAnswer, userHasAnswered, question
                     bg-white/70 backdrop-blur-[2px] rounded-2xl">
           <span class="material-symbols-outlined text-4xl text-slate-400 mb-2">lock</span>
           <p class="text-sm text-slate-500 font-medium text-center px-6">
-            Guarda tu reflexión para ver la de ${_esc(partnerName)}
+            ${t('reflection.saveToSee')} ${_esc(partnerName)}
           </p>
         </div>
       </div>`;
@@ -209,7 +217,7 @@ function _renderPartnerSection(partner, partnerAnswer, userHasAnswered, question
         <span class="material-symbols-outlined text-slate-400 text-lg"
               style="font-variation-settings:'wght' 300">hourglass_empty</span>
         <p class="text-sm text-slate-400 font-medium italic">
-          ${_esc(partnerName)} aún no ha respondido
+          ${_esc(partnerName)} ${t('reflection.notAnsweredYet')}
         </p>
       </div>`;
     return;
@@ -254,9 +262,9 @@ function _renderPartnerSection(partner, partnerAnswer, userHasAnswered, question
           b.classList.toggle('ring-2',     b === btn);
           b.classList.toggle('ring-primary', b === btn);
         });
-        showToast(`Reacción guardada ${reaction}`, 'success', 1500);
+        showToast(`${t('reflection.reactionSaved')} ${reaction}`, 'success', 1500);
       } catch (_) {
-        showToast('Error al guardar reacción', 'error');
+        showToast(t('reflection.reactionError'), 'error');
       }
     });
   });
@@ -292,6 +300,7 @@ async function initCapsulas(router) {
   }
 
   // Wire category cards
+  const CAPSULE_CATS = getCapsuleCats();
   const cards = document.querySelectorAll('#app .grid.grid-cols-3 > div');
   cards.forEach((card, i) => {
     const cat = CAPSULE_CATS[i];
@@ -407,7 +416,7 @@ function _showCapsulaListSheet(cat, capsules, router) {
                 style="background:#14213D">
           <span class="material-symbols-outlined text-xl"
                 style="font-variation-settings:'FILL' 1">mic</span>
-          <span>Grabar nueva ${_esc(cat.label)}</span>
+          <span>${t('capsules.recordNew')} ${_esc(cat.label)}</span>
         </button>
       </div>
     </div>`;
@@ -897,7 +906,7 @@ async function _intimoHistorial(container, couple) {
   if (!couple) {
     container.innerHTML = `
       <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8 py-20">
-        <p class="text-slate-400 text-sm">Vincula tu pareja para ver el historial</p>
+        <p class="text-slate-400 text-sm">${t('notes.linkFirst')}</p>
       </div>`;
     return;
   }
@@ -1000,7 +1009,7 @@ async function _intimoHistorial(container, couple) {
   } catch (_) {
     container.innerHTML = `
       <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8 py-20">
-        <p class="text-slate-400 text-sm">Error al cargar el historial</p>
+        <p class="text-slate-400 text-sm">${t('notes.loadError')}</p>
       </div>`;
   }
 }
@@ -1461,8 +1470,8 @@ async function initRuleta(router) {
           const allPlans = await db.getDatePlans();
           const { plans: filtered, relaxed } = _findBestMatch(allPlans, activeFilters);
           if (!filtered || filtered.length === 0)
-            throw new Error('Sin planes para esa combinación. Prueba con menos filtros.');
-          if (relaxed) showToast('No hay planes exactos, mostrando el más cercano', 'neutral', 2500);
+            throw new Error(t('roulette.noPlans'));
+          if (relaxed) showToast(t('roulette.closestPlan'), 'neutral', 2500);
           const sh = _shuffleArray(filtered);
           winner = sh[_cryptoRandInt(sh.length)];
         }
@@ -1475,9 +1484,8 @@ async function initRuleta(router) {
       _ruletaShowResult(winner, couple);
     } catch (err) {
       console.error('[Ruleta] Error al girar:', err);
-      showToast(err.message?.includes('Sin planes') ? err.message : 'Error al obtener planes',
-                err.message?.includes('Sin planes') ? 'neutral' : 'error',
-                4000);
+      const isNoPlans = err.message?.includes(t('roulette.noPlans').slice(0, 10));
+      showToast(err.message || t('roulette.saveError'), isNoPlans ? 'neutral' : 'error', 4000);
     }
 
     spinning = false;
@@ -1828,7 +1836,7 @@ function _ruletaShowResult(plan, couple) {
               style="box-shadow:0 6px 18px rgba(13,150,139,.25)">
         <span class="material-symbols-outlined text-base"
               style="font-variation-settings:'FILL' 1">favorite</span>
-        Aceptar esta cita
+        ${t('roulette.accept')}
       </button>
       <button id="regirar-btn"
               class="w-14 flex items-center justify-center rounded-full bg-white
@@ -1846,35 +1854,35 @@ function _ruletaShowResult(plan, couple) {
 
     if (!plan.id) {
       // Plan generado por IA sin BD — confirmar visualmente sin INSERT
-      showToast('¡Cita anotada! Que la disfruten 🎉', 'success', 2500);
+      showToast(t('roulette.dateBooked'), 'success', 2500);
       if (btn) {
         btn.disabled = true;
         btn.style.opacity = '0.65';
         btn.innerHTML = `<span class="material-symbols-outlined text-base"
                                style="font-variation-settings:'FILL' 1">check_circle</span>
-                         Cita anotada`;
+                         ${t('roulette.dateSavedBtn')}`;
       }
       return;
     }
 
     if (!couple) {
-      showToast('Vincula tu pareja para guardar la cita', 'neutral', 3000);
+      showToast(t('roulette.linkFirst'), 'neutral', 3000);
       return;
     }
     setButtonLoading(btn, true);
     try {
       await db.acceptDatePlan(couple.id, plan.id);
-      showToast('¡Cita guardada! Que la disfruten 🎉', 'success', 2500);
+      showToast(t('roulette.dateSaved'), 'success', 2500);
       if (btn) {
         btn.disabled = true;
         btn.style.opacity = '0.65';
         btn.innerHTML = `<span class="material-symbols-outlined text-base"
                                style="font-variation-settings:'FILL' 1">check_circle</span>
-                         Cita guardada`;
+                         ${t('roulette.dateSaveBtn2')}`;
       }
     } catch (err) {
       setButtonLoading(btn, false);
-      showToast(err.message || 'Error al guardar la cita', 'error');
+      showToast(err.message || t('roulette.saveError'), 'error');
     }
   });
 
@@ -1929,8 +1937,8 @@ async function initTareas(router) {
     if (main) main.innerHTML = `
       <div class="flex flex-col items-center justify-center py-24 gap-4 text-center">
         <span class="material-symbols-outlined text-5xl text-slate-300">group</span>
-        <p class="text-navy-dark font-semibold">Sin pareja vinculada</p>
-        <p class="text-slate-400 text-sm px-8">Vincula tu pareja para gestionar tareas juntos</p>
+        <p class="text-navy-dark font-semibold">${t('tasks.noCouple')}</p>
+        <p class="text-slate-400 text-sm px-8">${t('tasks.noCoupleHint')}</p>
       </div>`;
     return;
   }
@@ -1971,11 +1979,11 @@ async function initTareas(router) {
           && payload.new?.completed_at
           && payload.new?.completed_by
           && payload.new.completed_by !== user.id) {
-        showToast(`${partner?.name || 'Tu pareja'} completó una tarea ✓`, 'neutral', 2500);
+        showToast(`${partner?.name || 'Tu pareja'} ${t('tasks.partnerCompleted')}`, 'neutral', 2500);
       }
       // Avisar si la pareja creó una tarea nueva
       if (payload.eventType === 'INSERT' && payload.new?.assigned_to !== user.id) {
-        showToast(`${partner?.name || 'Tu pareja'} añadió una tarea`, 'neutral', 2500);
+        showToast(`${partner?.name || 'Tu pareja'} ${t('tasks.partnerAdded')}`, 'neutral', 2500);
       }
       await reload();
     })
@@ -2007,11 +2015,12 @@ function _renderPendingTasks(tasks, user, partner) {
     container.innerHTML = `
       <div class="text-center py-10">
         <span class="material-symbols-outlined text-5xl text-primary/30 block mb-2">task_alt</span>
-        <p class="text-navy-dark/50 font-medium">¡Sin tareas pendientes!</p>
+        <p class="text-navy-dark/50 font-medium">${t('tasks.noPending')}</p>
       </div>`;
     return;
   }
 
+  const PRIORITY = getPriority();
   container.innerHTML = tasks.map(task => {
     const p = PRIORITY[task.priority] || PRIORITY.medium;
     const assignedHtml = _assignedHtml(task, user, partner);
@@ -2060,15 +2069,16 @@ function _renderCompletedTasks(tasks, user, partner) {
   if (!tasks.length) {
     listEl.innerHTML = `
       <p class="text-navy-dark/40 text-sm italic text-center py-4">
-        Aún no hay tareas completadas
+        ${t('tasks.noCompleted')}
       </p>`;
     return;
   }
 
   listEl.innerHTML = tasks.map(task => {
-    const byName = task.completed_by === user.id ? 'Yo' : (partner?.name || 'Tu pareja');
+    const byName = task.completed_by === user.id ? t('tasks.assignedMe') : (partner?.name || 'Tu pareja');
+    const locale = getLang() === 'en' ? 'en-US' : 'es-ES';
     const timeStr = task.completed_at
-      ? new Date(task.completed_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+      ? new Date(task.completed_at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
       : '';
     return `
       <div class="bg-white/40 rounded-2xl p-4 border border-navy-dark/5 flex items-center justify-between">
@@ -2079,7 +2089,7 @@ function _renderCompletedTasks(tasks, user, partner) {
           <div>
             <p class="text-navy-dark font-semibold line-through opacity-50">${_esc(task.title)}</p>
             <p class="text-xs text-navy-dark/40">
-              Completada por ${_esc(byName)}${timeStr ? ` a las ${timeStr}` : ''}
+              ${t('tasks.completedBy')} ${_esc(byName)}${timeStr ? ` ${t('tasks.at')} ${timeStr}` : ''}
             </p>
           </div>
         </div>
@@ -2089,14 +2099,14 @@ function _renderCompletedTasks(tasks, user, partner) {
 
 // ── HTML del asignado ─────────────────────────────────────────
 function _assignedHtml(task, user, partner) {
-  let label = 'Sin asignar';
+  let label = t('tasks.assignedBoth');
   let avatarHtml = '';
 
   if (!task.assigned_to) {
-    label = 'Ambos';
+    label = t('tasks.assignedBoth');
     avatarHtml = `<span class="material-symbols-outlined text-slate-400 text-base">group</span>`;
   } else if (task.assigned_to === user.id) {
-    label = 'Yo';
+    label = t('tasks.assignedMe');
     avatarHtml = `<span class="material-symbols-outlined text-slate-400 text-base">person</span>`;
   } else {
     const name = task.assigned_to_user?.name || partner?.name || 'Pareja';
@@ -2111,9 +2121,9 @@ function _assignedHtml(task, user, partner) {
     <div class="flex items-center gap-2">
       ${avatarHtml}
       <p class="text-sm text-navy-dark/60">
-        ${label === 'Ambos'
-          ? '<span class="font-medium">Ambos</span>'
-          : `Asignada a: <span class="font-medium">${_esc(label)}</span>`}
+        ${label === t('tasks.assignedBoth')
+          ? `<span class="font-medium">${t('tasks.assignedBoth')}</span>`
+          : `${t('tasks.assignedTo')} <span class="font-medium">${_esc(label)}</span>`}
       </p>
     </div>`;
 }
@@ -2133,12 +2143,12 @@ function _wireTaskActions(user, reload) {
 
       try {
         await db.completeTask(taskId);
-        showToast('¡Tarea completada! ✓', 'success', 1500);
+        showToast(t('tasks.completed'), 'success', 1500);
         await reload();
       } catch (err) {
         card.style.opacity   = '';
         card.style.transform = '';
-        showToast(err.message || 'Error al completar', 'error');
+        showToast(err.message || t('tasks.completeError'), 'error');
       }
     });
   });
@@ -2178,7 +2188,7 @@ function _wireTaskActions(user, reload) {
       } catch (err) {
         card.style.opacity   = '';
         card.style.transform = '';
-        showToast(err.message || 'Error al eliminar', 'error');
+        showToast(err.message || t('tasks.deleteError'), 'error');
       }
     });
   });
@@ -2196,7 +2206,7 @@ function _showNewTaskModal(user, couple, partner, onCreated) {
          class="relative w-full bg-white rounded-t-3xl p-6 pb-10 space-y-5 shadow-2xl
                 translate-y-full transition-transform duration-300">
       <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold text-navy-dark">Nueva Tarea</h3>
+        <h3 class="text-xl font-bold text-navy-dark">${t('tasks.newTask')}</h3>
         <button id="ntm-close" class="text-slate-400 active:scale-90 transition-transform">
           <span class="material-symbols-outlined">close</span>
         </button>
@@ -2206,25 +2216,25 @@ function _showNewTaskModal(user, couple, partner, onCreated) {
              class="w-full px-4 py-3 rounded-xl border border-slate-200
                     focus:border-primary focus:ring-1 focus:ring-primary
                     bg-white text-navy-dark placeholder:text-slate-400 outline-none transition-all"
-             placeholder="Nombre de la tarea..." autocomplete="off" />
+             placeholder="${t('tasks.namePlaceholder')}" autocomplete="off" />
 
       <div class="space-y-2">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Prioridad</p>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">${t('tasks.priority')}</p>
         <div class="flex gap-2" id="ntm-priority">
-          <button data-p="high"   class="p-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-transparent bg-red-50   text-red-600   active:scale-95">Alta</button>
-          <button data-p="medium" class="p-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-primary    bg-amber-50  text-amber-600 active:scale-95">Media</button>
-          <button data-p="low"    class="p-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-transparent bg-blue-50   text-blue-600  active:scale-95">Baja</button>
+          <button data-p="high"   class="p-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-transparent bg-red-50   text-red-600   active:scale-95">${t('tasks.priorityHigh')}</button>
+          <button data-p="medium" class="p-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-primary    bg-amber-50  text-amber-600 active:scale-95">${t('tasks.priorityMedium')}</button>
+          <button data-p="low"    class="p-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-transparent bg-blue-50   text-blue-600  active:scale-95">${t('tasks.priorityLow')}</button>
         </div>
       </div>
 
       <div class="space-y-2">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Asignar a</p>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">${t('tasks.assignTo')}</p>
         <div class="flex gap-2" id="ntm-assign">
-          <button data-a="me"      class="a-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-primary bg-primary/10 text-primary active:scale-95">Yo</button>
+          <button data-a="me"      class="a-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-primary bg-primary/10 text-primary active:scale-95">${t('tasks.assignedMe')}</button>
           <button data-a="partner" class="a-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-transparent bg-slate-100 text-slate-600 active:scale-95">
-            ${_esc(partner?.name || 'Pareja')}
+            ${_esc(partner?.name || t('tasks.partner'))}
           </button>
-          <button data-a="both"    class="a-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-transparent bg-slate-100 text-slate-600 active:scale-95">Ambos</button>
+          <button data-a="both"    class="a-btn flex-1 py-2 rounded-xl text-sm font-semibold border-2 border-transparent bg-slate-100 text-slate-600 active:scale-95">${t('tasks.assignedBoth')}</button>
         </div>
       </div>
 
@@ -2233,7 +2243,7 @@ function _showNewTaskModal(user, couple, partner, onCreated) {
                      shadow-lg shadow-primary/20 active:scale-[0.98] transition-all
                      flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-xl">add</span>
-        <span>Crear Tarea</span>
+        <span>${t('tasks.createTask')}</span>
       </button>
     </div>`;
 
@@ -2336,7 +2346,7 @@ async function initCapsulaGrabar(router, params) {
         <div>
           <h1 class="text-xl font-bold text-slate-900">Nueva cápsula</h1>
           <p class="text-xs text-slate-400 mt-0.5">
-            ${(() => { const c = CAPSULE_CATS.find(x => x.key === preselectedCat); return c ? `${c.emoji} ${_esc(c.label)}` : 'Sin categoría'; })()}
+            ${(() => { const _c = getCapsuleCats().find(x => x.key === preselectedCat); return _c ? `${_c.emoji} ${_esc(_c.label)}` : t('capsules.cats.sin_categoria'); })()}
           </p>
         </div>
       </header>
@@ -2377,7 +2387,7 @@ async function initCapsulaGrabar(router, params) {
             </button>
           </div>
 
-          <p id="rec-hint" class="text-sm text-slate-400 font-medium">Toca para grabar</p>
+          <p id="rec-hint" class="text-sm text-slate-400 font-medium">${t('capsules.tapToRecord')}</p>
         </div>
 
         <!-- Previsualización (oculta hasta que se para la grabación) -->
@@ -2480,7 +2490,7 @@ async function initCapsulaGrabar(router, params) {
           if (waveEl)    waveEl.classList.add('hidden');
           // Mostrar preview
           if (previewEl) previewEl.classList.remove('hidden');
-          if (hintEl)    hintEl.textContent = 'Grabación lista — revisa antes de enviar';
+          if (hintEl)    hintEl.textContent = t('capsules.readyToSend');
           // Botón a "re-grabar"
           mainBtn.style.background = '#E2E8F0';
           mainBtn.style.boxShadow  = '0 4px 12px rgba(0,0,0,.08)';
@@ -2499,7 +2509,7 @@ async function initCapsulaGrabar(router, params) {
         document.getElementById('rec-ring-outer')?.classList.remove('hidden');
         document.getElementById('rec-ring-inner')?.classList.remove('hidden');
         if (waveEl)   waveEl.classList.remove('hidden');
-        if (hintEl)   hintEl.textContent = 'Grabando… toca para parar';
+        if (hintEl)   hintEl.textContent = t('capsules.recording');
         if (btnIcon)  { btnIcon.textContent = 'stop'; btnIcon.style.fontVariationSettings = "'FILL' 1"; btnIcon.style.color = 'white'; }
         mainBtn.style.background = '#DC2626';
         mainBtn.style.boxShadow  = '0 16px 40px rgba(220,38,38,.4)';
@@ -2518,8 +2528,8 @@ async function initCapsulaGrabar(router, params) {
 
       } catch (err) {
         const msg = err.name === 'NotAllowedError'
-          ? 'Permiso de micrófono denegado'
-          : 'No se pudo acceder al micrófono';
+          ? t('capsules.micDenied')
+          : t('capsules.micError');
         showToast(msg, 'error');
       }
     }
@@ -2545,7 +2555,7 @@ async function initCapsulaGrabar(router, params) {
     secondsElapsed = 0;
     if (timerEl)   timerEl.textContent = '00:00';
     if (previewEl) previewEl.classList.add('hidden');
-    if (hintEl)    hintEl.textContent = 'Toca para grabar';
+    if (hintEl)    hintEl.textContent = t('capsules.tapToRecord');
     mainBtn.style.background = '#14213D';
     mainBtn.style.boxShadow  = '0 16px 40px rgba(20,33,61,.35)';
     if (btnIcon) { btnIcon.textContent = 'mic'; btnIcon.style.color = 'white'; }
@@ -2559,7 +2569,7 @@ async function initCapsulaGrabar(router, params) {
     const partner = couple ? await db.getPartner().catch(() => null) : null;
 
     if (!couple || !partner) {
-      showToast('Necesitas tener pareja vinculada para enviar cápsulas', 'neutral', 3000);
+      showToast(t('capsules.linkFirst'), 'neutral', 3000);
       return;
     }
 
@@ -2573,7 +2583,7 @@ async function initCapsulaGrabar(router, params) {
         audioUrl:        path,          // guardamos el path, no la URL firmada que expira
         durationSeconds: secondsElapsed,
       });
-      showToast('Cápsula enviada ✓', 'success', 2500);
+      showToast(t('capsules.sent'), 'success', 2500);
       previewAudio?.pause();
       setTimeout(() => router.navigate('/capsulas'), 1500);
     } catch (err) {
@@ -2612,7 +2622,8 @@ async function initCapsulaReproducir(router, params) {
   if (!user) return router.navigate('/onboarding/1');
   if (!capsule) return router.navigate('/capsulas');
 
-  const cat        = CAPSULE_CATS.find(c => c.key === capsule.category) || CAPSULE_CATS[CAPSULE_CATS.length - 1];
+  const _cats      = getCapsuleCats();
+  const cat        = _cats.find(c => c.key === capsule.category) || _cats[_cats.length - 1];
   const senderName = capsule.sender?.name || 'Tu pareja';
   const senderAv   = capsule.sender?.avatar_url;
   const duration   = capsule.duration_seconds || 0;
@@ -2996,15 +3007,15 @@ export async function showSettings(router) {
         </div>
 
         <!-- Mi Perfil -->
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Mi Perfil</p>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">${t('settings.myProfile')}</p>
         <div class="bg-white rounded-2xl shadow-sm mb-5">
           <div class="px-4 py-3.5">
             <div id="st-name-view" class="flex items-center justify-between">
               <div>
-                <p class="text-[11px] text-slate-400 mb-0.5">Nombre</p>
+                <p class="text-[11px] text-slate-400 mb-0.5">${t('settings.name')}</p>
                 <p id="st-name-display" class="text-sm font-semibold text-slate-800">${_esc(name)}</p>
               </div>
-              <button id="st-edit-name" class="text-primary text-sm font-semibold active:opacity-60">Editar</button>
+              <button id="st-edit-name" class="text-primary text-sm font-semibold active:opacity-60">${t('settings.edit')}</button>
             </div>
             <div id="st-name-edit" style="display:none;gap:0.5rem;margin-top:0.25rem" class="flex">
               <input id="st-name-input" type="text" value="${_esc(name)}"
@@ -3018,30 +3029,30 @@ export async function showSettings(router) {
         </div>
 
         <!-- Mi Pareja -->
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Mi Pareja</p>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">${t('settings.myPartner')}</p>
         <div class="bg-white rounded-2xl divide-y divide-slate-100 shadow-sm mb-5">
           <div class="flex items-center justify-between px-4 py-3.5">
             <div>
-              <p class="text-[11px] text-slate-400 mb-0.5">Tu código</p>
+              <p class="text-[11px] text-slate-400 mb-0.5">${t('settings.yourCode')}</p>
               <p class="text-lg font-black tracking-widest text-primary font-mono">${_esc(code)}</p>
             </div>
             <button id="st-copy-code"
                     class="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary text-xs
                            font-semibold rounded-full active:scale-95 transition-transform">
               <span class="material-symbols-outlined text-sm">content_copy</span>
-              Copiar
+              ${t('settings.copy')}
             </button>
           </div>
           <div class="px-4">${partnerSection}</div>
         </div>
 
         <!-- Notificaciones -->
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Notificaciones</p>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">${t('settings.notifications')}</p>
         <div class="bg-white rounded-2xl divide-y divide-slate-100 shadow-sm mb-5">
           ${[
-            ['notifications', 'Pregunta del día'],
-            ['mood',          'Check-in emocional'],
-            ['mic',           'Cápsulas de audio'],
+            ['notifications', t('settings.dailyQuestion')],
+            ['mood',          t('settings.emotionalCheckin')],
+            ['mic',           t('settings.audioCapsules')],
           ].map(([icon, label]) => `
             <div class="flex items-center justify-between px-4 py-3.5">
               <div class="flex items-center gap-3">
@@ -3053,13 +3064,13 @@ export async function showSettings(router) {
         </div>
 
         <!-- Preferencias -->
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Preferencias</p>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">${t('settings.preferences')}</p>
         <div class="bg-white rounded-2xl divide-y divide-slate-100 shadow-sm mb-5">
           <!-- Idioma -->
           <div class="px-4 py-3.5">
             <div class="flex items-center gap-3 mb-3">
               <span class="material-symbols-outlined text-slate-400">language</span>
-              <p class="text-sm font-medium text-slate-700">Idioma / Language</p>
+              <p class="text-sm font-medium text-slate-700">${t('settings.langLabel')} / Language</p>
             </div>
             <div class="flex rounded-xl bg-slate-100 p-1 gap-1">
               ${[['es','Español'], ['en','English']].map(([l, lbl]) => {
@@ -3073,15 +3084,14 @@ export async function showSettings(router) {
           <div class="px-4 py-3.5">
             <div class="flex items-center gap-3 mb-3">
               <span class="material-symbols-outlined text-slate-400">contrast</span>
-              <p class="text-sm font-medium text-slate-700">Tema / Theme</p>
+              <p class="text-sm font-medium text-slate-700">${t('settings.themeLabel')} / Theme</p>
             </div>
             <div class="flex rounded-xl bg-slate-100 p-1 gap-1">
-              ${[['light','light_mode','Claro','Light'], ['dark','dark_mode','Oscuro','Dark'], ['system','brightness_auto','Sistema','System']].map(([val, icon, lbl, lbl_en]) => {
+              ${[['light','light_mode', t('settings.themeLight')], ['dark','dark_mode', t('settings.themeDark')], ['system','brightness_auto', t('settings.themeSystem')]].map(([val, icon, lbl]) => {
                 const active = (localStorage.getItem('emotia_theme') || 'light') === val;
-                const lang   = localStorage.getItem('emotia_lang') || 'es';
                 return `<button class="theme-btn flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition-all
                   ${active ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}" data-theme="${val}">
-                  <span class="material-symbols-outlined" style="font-size:1rem">${icon}</span>${lang === 'en' ? lbl_en : lbl}
+                  <span class="material-symbols-outlined" style="font-size:1rem">${icon}</span>${lbl}
                 </button>`;
               }).join('')}
             </div>
@@ -3089,17 +3099,17 @@ export async function showSettings(router) {
         </div>
 
         <!-- Cuenta -->
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Cuenta</p>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">${t('settings.account')}</p>
         <div class="bg-white rounded-2xl divide-y divide-slate-100 shadow-sm mb-5">
           <button id="st-sign-out"
                   class="w-full flex items-center gap-3 px-4 py-3.5 active:bg-slate-50 transition-colors text-left">
             <span class="material-symbols-outlined text-primary">logout</span>
-            <p class="text-sm font-medium text-primary">Cerrar sesión</p>
+            <p class="text-sm font-medium text-primary">${t('settings.signOut')}</p>
           </button>
           <button id="st-delete-account"
                   class="w-full flex items-center gap-3 px-4 py-3.5 active:bg-red-50 transition-colors text-left">
             <span class="material-symbols-outlined text-red-500">delete_forever</span>
-            <p class="text-sm font-medium text-red-500">Eliminar cuenta</p>
+            <p class="text-sm font-medium text-red-500">${t('settings.deleteAccount')}</p>
           </button>
         </div>
 
@@ -3127,9 +3137,9 @@ export async function showSettings(router) {
   document.getElementById('st-copy-code')?.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(code);
-      showToast('Código copiado ✓', 'success', 1500);
+      showToast(t('settings.codeCopied'), 'success', 1500);
     } catch (_) {
-      showToast(`Tu código: ${code}`, 'neutral', 3000);
+      showToast(`${t('settings.yourCode')}: ${code}`, 'neutral', 3000);
     }
   });
 
@@ -3144,16 +3154,16 @@ export async function showSettings(router) {
   document.getElementById('st-name-save')?.addEventListener('click', async () => {
     const input   = document.getElementById('st-name-input');
     const newName = input?.value.trim();
-    if (!newName || newName.length < 2) return showToast('El nombre es demasiado corto', 'error');
+    if (!newName || newName.length < 2) return showToast(t('settings.nameTooShort'), 'error');
     try {
       await db.updateMyProfile({ name: newName });
       document.getElementById('st-name-display').textContent = newName;
       document.getElementById('st-hero-name').textContent    = newName;
       document.getElementById('st-name-view').style.display  = '';
       document.getElementById('st-name-edit').style.display  = 'none';
-      showToast('Nombre actualizado ✓', 'success', 1500);
+      showToast(t('settings.nameUpdated'), 'success', 1500);
     } catch (_) {
-      showToast('Error al actualizar nombre', 'error');
+      showToast(t('settings.nameError'), 'error');
     }
   });
 
@@ -3170,9 +3180,9 @@ export async function showSettings(router) {
       await db.updateMyProfile({ avatar_url: url });
       const wrap = document.getElementById('st-avatar-wrap');
       if (wrap) wrap.innerHTML = `<img src="${url}" class="w-20 h-20 rounded-full object-cover border-4 border-primary/30" />`;
-      showToast('Foto actualizada ✓', 'success', 1500);
+      showToast(t('settings.photoUpdated'), 'success', 1500);
     } catch (_) {
-      showToast('Error al subir foto', 'error');
+      showToast(t('settings.photoError'), 'error');
     }
   });
 
@@ -3181,34 +3191,31 @@ export async function showSettings(router) {
     const input       = document.getElementById('st-partner-input');
     const partnerCode = input?.value.trim().toUpperCase();
     if (!partnerCode || partnerCode.length !== 6)
-      return showToast('Introduce un código de 6 caracteres', 'error');
+      return showToast(t('settings.codeLength'), 'error');
     try {
       await db.linkWithPartner(partnerCode);
-      showToast('¡Pareja vinculada! 🎉', 'success', 2500);
+      showToast(t('settings.partnerLinked'), 'success', 2500);
       closeSheet();
     } catch (_) {
-      showToast('Código no encontrado', 'error');
+      showToast(t('settings.codeNotFound'), 'error');
     }
   });
 
   // Desvincular pareja (solo informativo)
   document.getElementById('st-unlink')?.addEventListener('click', () => {
-    showToast('Contacta con soporte para desvincular', 'neutral', 3000);
+    showToast(t('settings.unlinkInfo'), 'neutral', 3000);
   });
 
-  // Selector de idioma
+  // Selector de idioma — cambia idioma y re-renderiza la pantalla actual
   overlay.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const lang = btn.dataset.lang;
       applyLang(lang);
-      overlay.querySelectorAll('.lang-btn').forEach(b => {
-        const on = b.dataset.lang === lang;
-        b.classList.toggle('bg-white',     on);
-        b.classList.toggle('text-slate-800', on);
-        b.classList.toggle('shadow-sm',    on);
-        b.classList.toggle('text-slate-400', !on);
-      });
-      showToast(lang === 'en' ? 'Language set to English' : 'Idioma: Español', 'success', 1800);
+      const toast = lang === 'en' ? t('settings.langToastEn') : t('settings.langToastEs');
+      showToast(toast, 'success', 1800);
+      // Cerrar ajustes y re-renderizar la pantalla en el nuevo idioma
+      closeSheet();
+      setTimeout(() => router.navigate(router.currentRoute || '/home'), 400);
     });
   });
 
@@ -3224,7 +3231,8 @@ export async function showSettings(router) {
         b.classList.toggle('shadow-sm',      on);
         b.classList.toggle('text-slate-400', !on);
       });
-      showToast(theme === 'dark' ? '🌙 Tema oscuro activado' : theme === 'light' ? '☀️ Tema claro activado' : '🖥️ Tema del sistema', 'success', 1800);
+      const themeToast = theme === 'dark' ? t('settings.themeToastDark') : theme === 'light' ? t('settings.themeToastLight') : t('settings.themeToastSystem');
+      showToast(themeToast, 'success', 1800);
     });
   });
 
@@ -3235,7 +3243,7 @@ export async function showSettings(router) {
       closeSheet();
       setTimeout(() => router.navigate('/onboarding/1'), 400);
     } catch (_) {
-      showToast('Error al cerrar sesión', 'error');
+      showToast(t('settings.signOutError'), 'error');
     }
   });
 
@@ -3246,10 +3254,10 @@ export async function showSettings(router) {
     deleteStep++;
     clearTimeout(deleteTimer);
     if (deleteStep === 1) {
-      showToast('¿Seguro? Toca de nuevo para confirmar', 'error', 3500);
+      showToast(t('settings.deleteConfirm'), 'error', 3500);
       deleteTimer = setTimeout(() => { deleteStep = 0; }, 4000);
     } else {
-      showToast('Para eliminar tu cuenta contacta a soporte@emotia.app', 'neutral', 5000);
+      showToast(t('settings.deleteInfo'), 'neutral', 5000);
       deleteStep = 0;
     }
   });
@@ -3277,7 +3285,7 @@ async function initNotas(router) {
     list.innerHTML = `
       <div class="flex flex-col items-center justify-center py-20 text-center gap-3">
         <span class="material-symbols-outlined text-4xl text-slate-300">link_off</span>
-        <p class="text-slate-400 text-sm">Vincula tu pareja para ver el historial</p>
+        <p class="text-slate-400 text-sm">${t('notes.linkFirst')}</p>
       </div>`;
     return;
   }
@@ -3289,15 +3297,16 @@ async function initNotas(router) {
       list.innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 text-center gap-3">
           <span class="material-symbols-outlined text-4xl text-slate-300">auto_stories</span>
-          <p class="text-slate-400 text-sm">Aún no hay reflexiones guardadas.<br/>Responde la pregunta diaria para empezar.</p>
+          <p class="text-slate-400 text-sm">${t('notes.empty')}</p>
         </div>`;
       return;
     }
 
-    if (subtitle) subtitle.textContent = `${entradas.length} entrada${entradas.length !== 1 ? 's' : ''} · últimos 30 días`;
+    if (subtitle) subtitle.textContent = `${entradas.length} ${entradas.length !== 1 ? t('notes.subtitlePl') : t('notes.subtitle')} ${t('notes.subtitleSuffix')}`;
 
     list.innerHTML = entradas.map(e => {
-      const fecha = new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES', {
+      const notasLocale = getLang() === 'en' ? 'en-US' : 'es-ES';
+      const fecha = new Date(e.date + 'T12:00:00').toLocaleDateString(notasLocale, {
         weekday: 'long', day: 'numeric', month: 'long',
       });
       const respuestas = e.answers.map(a => `
@@ -3321,7 +3330,7 @@ async function initNotas(router) {
     list.innerHTML = `
       <div class="flex flex-col items-center justify-center py-20 text-center gap-3">
         <span class="material-symbols-outlined text-4xl text-slate-300">error</span>
-        <p class="text-slate-400 text-sm">Error al cargar el historial</p>
+        <p class="text-slate-400 text-sm">${t('notes.loadError')}</p>
       </div>`;
   }
 }

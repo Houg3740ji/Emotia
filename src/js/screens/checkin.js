@@ -4,48 +4,31 @@
 
 import { auth, db } from '../../supabase.js';
 import { showToast, setButtonLoading } from '../auth.js';
+import { t } from '../i18n.js';
 
 import checkinRaw from '../../../stitch_emotia/check_in_emojis_con_contenedores_ampliados/code.html?raw';
 
 const qs = (sel) => document.querySelector(`#app ${sel}`);
 
 // ── Definición de las 15 emociones (mismo orden que el HTML Stitch) ──
+// Cada emoción tiene un id fijo; el nombre se traduce en tiempo de render via t()
 const EMOTIONS = [
-  { emoji: '😊', name: 'Feliz',        negative: false },
-  { emoji: '😍', name: 'Enamorado/a',  negative: false },
-  { emoji: '🤩', name: 'Emocionado/a', negative: false },
-  { emoji: '😌', name: 'En paz',       negative: false },
-  { emoji: '🥰', name: 'Cariñoso/a',   negative: false },
-  { emoji: '🤔', name: 'Pensativo/a',  negative: false },
-  { emoji: '😢', name: 'Triste',       negative: true  },
-  { emoji: '😰', name: 'Ansioso/a',    negative: true  },
-  { emoji: '😤', name: 'Enfadado/a',   negative: true  },
-  { emoji: '😴', name: 'Agotado/a',    negative: true  },
-  { emoji: '😟', name: 'Preocupado/a', negative: true  },
-  { emoji: '🤗', name: 'Agradecido/a', negative: false },
-  { emoji: '😏', name: 'Travieso/a',   negative: false },
-  { emoji: '😩', name: 'Abrumado/a',   negative: true  },
-  { emoji: '💪', name: 'Motivado/a',   negative: false },
+  { emoji: '😊', id: 'happy',        negative: false },
+  { emoji: '😍', id: 'inLove',       negative: false },
+  { emoji: '🤩', id: 'excited',      negative: false },
+  { emoji: '😌', id: 'peaceful',     negative: false },
+  { emoji: '🥰', id: 'affectionate', negative: false },
+  { emoji: '🤔', id: 'thoughtful',   negative: false },
+  { emoji: '😢', id: 'sad',          negative: true  },
+  { emoji: '😰', id: 'anxious',      negative: true  },
+  { emoji: '😤', id: 'angry',        negative: true  },
+  { emoji: '😴', id: 'exhausted',    negative: true  },
+  { emoji: '😟', id: 'worried',      negative: true  },
+  { emoji: '🤗', id: 'grateful',     negative: false },
+  { emoji: '😏', id: 'mischievous',  negative: false },
+  { emoji: '😩', id: 'overwhelmed',  negative: true  },
+  { emoji: '💪', id: 'motivated',    negative: false },
 ];
-
-// ── Mensajes de apoyo para todas las emociones ───────────────
-const SUPPORT_MESSAGES = {
-  'Feliz':        'Tu alegría también nutre a tu pareja. Compártela con ella hoy.',
-  'Enamorado/a':  'Exprésalo. Las palabras y los gestos también enamoran.',
-  'Emocionado/a': '¡Contagia esa energía! Cuéntale a tu pareja qué te tiene así.',
-  'En paz':       'La calma interior te hace más presente para quienes quieres.',
-  'Cariñoso/a':   'Un abrazo o un detalle hoy puede hacer el día de tu pareja.',
-  'Pensativo/a':  'Compartir lo que ronda tu cabeza puede aclararlo todo.',
-  'Triste':       'Es válido sentirse así. ¿Quieres que tu pareja lo sepa?',
-  'Ansioso/a':    'La ansiedad pasa. Respira y comparte cómo te sientes.',
-  'Enfadado/a':   'Está bien sentir enfado. Compártelo con calma cuando puedas.',
-  'Agotado/a':    'Necesitas descanso. Tu pareja puede apoyarte.',
-  'Preocupado/a': 'No estás solo/a. Compartir lo que te preocupa alivia.',
-  'Agradecido/a': 'Dile a tu pareja algo que aprecias de ella hoy.',
-  'Travieso/a':   'Esa chispa es energía para conectar con tu pareja de un modo especial.',
-  'Abrumado/a':   'Tómatelo con calma. Un paso a la vez, y no tienes que hacerlo solo/a.',
-  'Motivado/a':   'Usa esa energía para algo que os acerque como pareja.',
-};
 
 // ════════════════════════════════════════════════════════════
 // INIT
@@ -124,27 +107,28 @@ async function initCheckin(router) {
 
     confirmBtn.addEventListener('click', async () => {
       if (selectedIdx < 0) {
-        showToast('Selecciona cómo te sientes', 'error');
+        showToast(t('checkin.selectEmotion'), 'error');
         return;
       }
 
       if (!couple) {
-        showToast('Vincula tu cuenta con tu pareja primero', 'neutral', 3000);
+        showToast(t('checkin.linkFirst'), 'neutral', 3000);
         router.navigate('/onboarding/5');
         return;
       }
 
       const emotion = EMOTIONS[selectedIdx];
+      const emotionName = t(`emotions.${emotion.id}.name`);
       setButtonLoading(confirmBtn, true);
 
       try {
         await db.saveEmotionCheckin({
           coupleId:    couple.id,
           emoji:       emotion.emoji,
-          emotionName: emotion.name,
+          emotionName: emotionName,
         });
 
-        showToast(`Estado guardado: ${emotion.emoji} ${emotion.name}`, 'success', 2000);
+        showToast(`${t('checkin.saved')} ${emotion.emoji} ${emotionName}`, 'success', 2000);
 
         // Recargar check-ins para mostrar el estado actualizado de la pareja
         const checkins   = await db.getTodayCheckins(couple.id);
@@ -183,13 +167,13 @@ function _selectEmoji(items, emotionNameEl, apoyoCardEl, idx) {
   // Actualizar nombre de emoción
   const emotion = EMOTIONS[idx];
   if (emotionNameEl && emotion) {
-    emotionNameEl.textContent = emotion.name;
+    emotionNameEl.textContent = t(`emotions.${emotion.id}.name`);
   }
 
-  // Mostrar/ocultar tarjeta de apoyo (solo emociones negativas)
+  // Mostrar/ocultar tarjeta de apoyo
   if (apoyoCardEl && emotion) {
-    const msg = SUPPORT_MESSAGES[emotion.name];
-    if (msg) {
+    const msg = t(`emotions.${emotion.id}.support`);
+    if (msg && msg !== `emotions.${emotion.id}.support`) {
       const msgEl = apoyoCardEl.querySelector('p.text-primary.font-bold, p[class*="font-bold"]');
       if (msgEl) msgEl.textContent = msg;
       apoyoCardEl.style.display = '';
@@ -207,8 +191,8 @@ function _updatePartnerCardNone() {
   const statusTxt = partnerCard.querySelector('p[class*="font-bold"][class*="text-\\[17px\\]"]');
   const avatar    = partnerCard.querySelector('img');
   const emojiDot  = partnerCard.querySelector('[class*="absolute"]');
-  if (nameLabel) nameLabel.textContent = 'SIN VINCULAR';
-  if (statusTxt) statusTxt.textContent = 'Vincula tu pareja';
+  if (nameLabel) nameLabel.textContent = t('checkin.noLinked');
+  if (statusTxt) statusTxt.textContent = t('checkin.linkPartner');
   if (emojiDot)  emojiDot.textContent  = '🔗';
   if (avatar) {
     avatar.src = '';
@@ -243,7 +227,7 @@ function _updatePartnerCard(partner, partnerCheckin, userHasDone) {
     partnerCard.classList.remove('partner-answer-locked');
   } else if (userHasDone) {
     // El usuario ya hizo check-in pero la pareja no
-    if (statusTxt) statusTxt.textContent = 'Aún no ha registrado';
+    if (statusTxt) statusTxt.textContent = t('checkin.notRegistered');
     if (emojiDot)  emojiDot.textContent  = '⏳';
   } else {
     // El usuario no ha hecho check-in → ocultar estado de pareja (blur)
