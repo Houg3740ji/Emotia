@@ -5,6 +5,8 @@
  * Las llamadas reales a Supabase van siempre en src/supabase.js.
  */
 
+import { getLang } from './i18n.js';
+
 // ── Validación ──────────────────────────────────────────────
 
 export function validateEmail(email) {
@@ -148,10 +150,16 @@ export function parseDateInput(ddmmyyyy) {
 }
 
 /**
- * Saludo dinámico basado en la hora actual.
+ * Saludo dinámico basado en la hora actual e idioma activo.
  */
 export function getTimeGreeting(name) {
-  const h = new Date().getHours();
+  const h    = new Date().getHours();
+  const lang = getLang();
+  if (lang === 'en') {
+    if (h >= 6  && h < 12) return `Good morning, ${name} ☀️`;
+    if (h >= 12 && h < 20) return `Good afternoon, ${name} 🌤`;
+    return `Good evening, ${name} 🌙`;
+  }
   if (h >= 6  && h < 12) return `Buenos días, ${name} ☀️`;
   if (h >= 12 && h < 20) return `Buenas tardes, ${name} 🌤`;
   return `Buenas noches, ${name} 🌙`;

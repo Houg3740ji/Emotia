@@ -883,7 +883,7 @@ async function _intimoMatches(container, couple) {
   if (!couple) {
     container.innerHTML = `
       <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8 py-20">
-        <p class="text-slate-400 text-sm">Vincula tu pareja para ver matches</p>
+        <p class="text-slate-400 text-sm">${t('intimo.linkToSeeMatches')}</p>
       </div>`;
     return;
   }
@@ -895,8 +895,8 @@ async function _intimoMatches(container, couple) {
     container.innerHTML = `
       <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-16">
         <span class="text-5xl">💫</span>
-        <p class="font-bold text-lg text-slate-700">Sin matches todavía</p>
-        <p class="text-sm text-slate-400">Cuando ambos deseen lo mismo aparecerá aquí</p>
+        <p class="font-bold text-lg text-slate-700">${t('intimo.noMatchesYet')}</p>
+        <p class="text-sm text-slate-400">${t('intimo.whenBothLike')}</p>
       </div>`;
     return;
   }
@@ -904,7 +904,7 @@ async function _intimoMatches(container, couple) {
   container.innerHTML = `
     <div class="px-5 py-3">
       <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[.15em] mb-4">
-        ${matches.length} match${matches.length !== 1 ? 'es' : ''} en común
+        ${matches.length} match${matches.length !== 1 ? 'es' : ''} ${t('intimo.matchesCommon')}
       </p>
       <div class="grid grid-cols-2 gap-3">
         ${matches.map(f => `
@@ -931,7 +931,7 @@ async function _intimoMatches(container, couple) {
                 ${_esc(f.title || '')}
               </p>
               ${f.intensity_label
-                ? `<p class="text-[11px] text-slate-400 mt-0.5">${_esc(f.intensity_label)}</p>`
+                ? `<p class="text-[11px] text-slate-400 mt-0.5">${_esc(_intensityLabel(f.intensity_label))}</p>`
                 : ''}
             </div>
           </div>`).join('')}
@@ -981,8 +981,8 @@ async function _intimoHistorial(container, couple) {
       container.innerHTML = `
         <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-20">
           <span class="text-5xl">💫</span>
-          <p class="font-bold text-lg text-slate-700">Sin matches todavía</p>
-          <p class="text-sm text-slate-400">Aún no tenéis matches. ¡Seguid explorando!</p>
+          <p class="font-bold text-lg text-slate-700">${t('intimo.noMatchesYet')}</p>
+          <p class="text-sm text-slate-400">${t('intimo.keepExploring')}</p>
         </div>`;
       return;
     }
@@ -1007,8 +1007,8 @@ async function _intimoHistorial(container, couple) {
       container.innerHTML = `
         <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-20">
           <span class="text-5xl">💫</span>
-          <p class="font-bold text-lg text-slate-700">Sin matches mutuos todavía</p>
-          <p class="text-sm text-slate-400">Aún no tenéis matches. ¡Seguid explorando!</p>
+          <p class="font-bold text-lg text-slate-700">${t('intimo.noMutualMatches')}</p>
+          <p class="text-sm text-slate-400">${t('intimo.keepExploring')}</p>
         </div>`;
       return;
     }
@@ -1025,13 +1025,13 @@ async function _intimoHistorial(container, couple) {
     container.innerHTML = `
       <div class="px-5 py-3">
         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[.15em] mb-4">
-          ${matchIds.length} match${matchIds.length !== 1 ? 'es' : ''} mutuos
+          ${matchIds.length} match${matchIds.length !== 1 ? 'es' : ''} ${t('intimo.matchesMutual')}
         </p>
         <div class="flex flex-col gap-3">
           ${matchIds.map(id => {
             const f    = fantasyMap[id] || {};
             const date = swipeDateOf[id]
-              ? new Date(swipeDateOf[id]).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+              ? new Date(swipeDateOf[id]).toLocaleDateString(getLang() === 'en' ? 'en-US' : 'es-ES', { day: 'numeric', month: 'short' })
               : '';
             return `
               <div class="bg-white rounded-2xl px-4 py-3 flex items-center gap-3
@@ -1225,7 +1225,7 @@ function _showFantasySheet(fantasy) {
           <span class="flex items-center gap-1.5 px-3 py-2 bg-slate-100 rounded-full
                        text-sm font-medium text-slate-600">
             <span class="material-symbols-outlined text-base text-slate-400">bolt</span>
-            ${_esc(fantasy.intensity_label)}
+            ${_esc(_intensityLabel(fantasy.intensity_label))}
           </span>` : ''}
         </div>
       </div>
@@ -1852,15 +1852,22 @@ function _ruletaShowResult(plan, couple) {
   section.classList.remove('hidden');
 
   const emoji = _dateEmoji(plan.mood_type);
+  const lang  = getLang();
+
+  const _planTitle = lang === 'en' && plan.title_en ? plan.title_en : (plan.title || '');
+  const _planDesc  = lang === 'en' && plan.description_en ? plan.description_en : (plan.description || '');
+
+  const _moodLabel = { relaxed: t('roulette.relaxed'), energetic: t('roulette.energetic'), romantic: t('roulette.romantic') }[plan.mood_type] || plan.mood_type;
+  const _costLabel = { free: t('roulette.free'), budget: t('roulette.affordable'), premium: t('roulette.premium') }[plan.cost_type] || plan.cost_type;
 
   card.innerHTML = `
     <!-- Título y descripción -->
     <div class="flex items-start gap-3">
       <span class="text-4xl flex-shrink-0 mt-0.5">${emoji}</span>
       <div class="flex-1 min-w-0">
-        <h3 class="font-bold text-xl text-slate-900 leading-snug">${_esc(plan.title || '')}</h3>
-        ${plan.description
-          ? `<p class="text-slate-500 text-sm mt-1.5 leading-relaxed">${_esc(plan.description)}</p>`
+        <h3 class="font-bold text-xl text-slate-900 leading-snug">${_esc(_planTitle)}</h3>
+        ${_planDesc
+          ? `<p class="text-slate-500 text-sm mt-1.5 leading-relaxed">${_esc(_planDesc)}</p>`
           : ''}
       </div>
     </div>
@@ -1869,11 +1876,11 @@ function _ruletaShowResult(plan, couple) {
     <div class="flex flex-wrap gap-2">
       ${plan.mood_type ? `
       <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-        ${_esc(plan.mood_type)}
+        ${_esc(_moodLabel)}
       </span>` : ''}
       ${plan.cost_type ? `
       <span class="px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold">
-        ${_esc(plan.cost_type)}
+        ${_esc(_costLabel)}
       </span>` : ''}
       ${plan.duration_label ? `
       <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
@@ -3035,7 +3042,7 @@ export async function showSettings(router) {
       <div class="sticky top-0 z-10 bg-[#F5F0E8]/95 backdrop-blur-sm px-5 pt-4 pb-3">
         <div class="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-4"></div>
         <div class="flex items-center justify-between">
-          <h2 class="font-bold text-xl tracking-tight text-slate-900">Ajustes</h2>
+          <h2 class="font-bold text-xl tracking-tight text-slate-900">${t('settings.title')}</h2>
           <button id="st-close"
                   class="w-9 h-9 rounded-full bg-slate-200/80 flex items-center justify-center active:scale-95 transition-transform">
             <span class="material-symbols-outlined text-slate-500 text-lg">close</span>
