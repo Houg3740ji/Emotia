@@ -17,6 +17,7 @@ interface RequestBody {
     costFilter?: string
     moodFilter?: string
     previousPlan?: string
+    lang?: string
   }
 }
 
@@ -62,7 +63,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const { user1Name, user2Name, daysTogether, season, lastEmotion,
-            locationFilter, durationFilter, costFilter, moodFilter, previousPlan } = context
+            locationFilter, durationFilter, costFilter, moodFilter, previousPlan, lang } = context
 
     // ── Prompts ──────────────────────────────────────────────────────────────
 
@@ -240,29 +241,62 @@ Semilla: ${Math.floor(Math.random() * 99999)}`
       const examples = EXAMPLE_BANK[bankKey] ?? EXAMPLE_BANK['economico|relajado']
 
       // Líneas de restricción MUY concretas
-      const durLine  = durationFilter === 'menos de 1 hora' ? '- Duración MÁXIMA: 1 hora (algo rápido, sin desplazamientos largos)'
-                     : durationFilter === '2 a 3 horas'     ? '- Duración: entre 2 y 3 horas'
-                     : durationFilter === 'medio día o más' ? '- Duración MÍNIMA: 4 horas o más (excursión, evento de todo el día, etc.)'
-                     : null
-      const costLine = costFilter === 'gratuito'         ? '- Coste: CERO euros, usando solo lo que ya tenéis en casa o espacios públicos gratuitos'
-                     : costFilter === 'económico'        ? '- Coste: entre 10 y 30€ en total para los dos'
-                     : costFilter === 'especial/premium' ? '- Coste: más de 30€, algo fuera de lo habitual'
-                     : null
-      const moodLine = moodFilter === 'tranquilo y relajado' ? '- Ambiente: RELAJADO, sin esfuerzo físico, sentados o tumbados'
-                     : moodFilter === 'activo y divertido'   ? '- Ambiente: ACTIVO, con movimiento físico, competición o energía'
-                     : moodFilter === 'romántico e íntimo'   ? '- Ambiente: ROMÁNTICO, íntimo, con detalles especiales'
-                     : null
+      const durLine  = lang === 'en'
+        ? (durationFilter === 'menos de 1 hora' ? '- MAX duration: 1 hour (something quick, no long travel)'
+         : durationFilter === '2 a 3 horas'     ? '- Duration: 2 to 3 hours'
+         : durationFilter === 'medio día o más' ? '- MIN duration: 4+ hours (excursion, full-day event, etc.)'
+         : null)
+        : (durationFilter === 'menos de 1 hora' ? '- Duración MÁXIMA: 1 hora (algo rápido, sin desplazamientos largos)'
+         : durationFilter === '2 a 3 horas'     ? '- Duración: entre 2 y 3 horas'
+         : durationFilter === 'medio día o más' ? '- Duración MÍNIMA: 4 horas o más (excursión, evento de todo el día, etc.)'
+         : null)
+      const costLine = lang === 'en'
+        ? (costFilter === 'gratuito'         ? '- Cost: ZERO, using only what you already have at home or free public spaces'
+         : costFilter === 'económico'        ? '- Cost: between $10-30 total for both'
+         : costFilter === 'especial/premium' ? '- Cost: over $30, something out of the ordinary'
+         : null)
+        : (costFilter === 'gratuito'         ? '- Coste: CERO euros, usando solo lo que ya tenéis en casa o espacios públicos gratuitos'
+         : costFilter === 'económico'        ? '- Coste: entre 10 y 30€ en total para los dos'
+         : costFilter === 'especial/premium' ? '- Coste: más de 30€, algo fuera de lo habitual'
+         : null)
+      const moodLine = lang === 'en'
+        ? (moodFilter === 'tranquilo y relajado' ? '- Mood: RELAXED, no physical effort, sitting or lying down'
+         : moodFilter === 'activo y divertido'   ? '- Mood: ACTIVE, physical movement, competition or energy'
+         : moodFilter === 'romántico e íntimo'   ? '- Mood: ROMANTIC, intimate, with special touches'
+         : null)
+        : (moodFilter === 'tranquilo y relajado' ? '- Ambiente: RELAJADO, sin esfuerzo físico, sentados o tumbados'
+         : moodFilter === 'activo y divertido'   ? '- Ambiente: ACTIVO, con movimiento físico, competición o energía'
+         : moodFilter === 'romántico e íntimo'   ? '- Ambiente: ROMÁNTICO, íntimo, con detalles especiales'
+         : null)
 
       const restrictions = [durLine, costLine, moodLine].filter(Boolean)
       const restrictBlock = restrictions.length > 0
-        ? `RESTRICCIONES OBLIGATORIAS:\n${restrictions.join('\n')}`
-        : 'Sin restricciones.'
+        ? (lang === 'en' ? `MANDATORY RESTRICTIONS:\n${restrictions.join('\n')}` : `RESTRICCIONES OBLIGATORIAS:\n${restrictions.join('\n')}`)
+        : (lang === 'en' ? 'No restrictions.' : 'Sin restricciones.')
 
       const avoidLine = previousPlan
-        ? `NO uses nada parecido a: "${previousPlan}"`
+        ? (lang === 'en' ? `DO NOT use anything similar to: "${previousPlan}"` : `NO uses nada parecido a: "${previousPlan}"`)
         : ''
 
-      prompt =
+      prompt = lang === 'en'
+? `Generate a date plan for a couple. Respond ENTIRELY in English.
+
+${restrictBlock}
+${avoidLine}
+
+STYLE EXAMPLES (use only as style/type reference, translate concepts to English):
+${examples.join('\n')}
+
+Generate ONE NEW plan DIFFERENT from the examples above.
+Title: 2-4 words, the specific activity, no flowery adjectives.
+Description: exactly what they would do, max 15 words.
+
+Respond ONLY with these two lines in English:
+TITULO: [2-4 words in English]
+DESCRIPCION: [max 15 words in English]
+
+Seed: ${Math.floor(Math.random() * 999999)}`
+:
 `Genera un plan de cita para una pareja española.
 
 ${restrictBlock}

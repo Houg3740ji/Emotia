@@ -1603,8 +1603,19 @@ let _wheelLastSeg = -1;     // para detectar cruce de segmento
 const _WHEEL_N      = 8;
 const _WHEEL_DEG    = 360 / _WHEEL_N;
 const _WHEEL_SIZE   = 288;
-const _WHEEL_LABELS = ['🍕 Cena','🎬 Peli','🎮 Juegos','🌿 Paseo','❤️ Íntimo','🏃 Activo','🎭 Arte','✨ Sorpresa'];
-let _wheelSegments  = [..._WHEEL_LABELS]; // se baraja cada giro
+function _getWheelLabels() {
+  return [
+    `🍕 ${t('roulette.wheelDinner')}`,
+    `🎬 ${t('roulette.wheelMovie')}`,
+    `🎮 ${t('roulette.wheelGames')}`,
+    `🌿 ${t('roulette.wheelWalk')}`,
+    `❤️ ${t('roulette.wheelIntimate')}`,
+    `🏃 ${t('roulette.wheelActive')}`,
+    `🎭 ${t('roulette.wheelArt')}`,
+    `✨ ${t('roulette.wheelSurprise')}`,
+  ];
+}
+let _wheelSegments  = []; // se baraja cada giro
 const _WHEEL_COLORS = ['#0D968B','#0A7568','#0D968B','#0A7568','#0D968B','#0A7568','#0D968B','#0A7568'];
 
 // ── Inicializa el canvas con DPR correcto y dibuja la rueda ───
@@ -1619,7 +1630,7 @@ function _ruletaInitWheel() {
   _wheelCtx = canvas.getContext('2d');
   _wheelCtx.scale(_wheelDpr, _wheelDpr);
   _wheelRot = 0;
-  _wheelSegments = [..._WHEEL_LABELS];
+  _wheelSegments = [..._getWheelLabels()];
   _ruletaDrawWheel(0);
 }
 
@@ -1758,7 +1769,7 @@ function _ruletaSpinWithResult(aiPromise) {
   if (!_wheelCtx) return aiPromise; // sin canvas, devuelve directo
 
   // ── Barajar segmentos para esta tirada (variedad visual) ──────
-  _wheelSegments = _shuffleArray([..._WHEEL_LABELS]);
+  _wheelSegments = _shuffleArray([..._getWheelLabels()]);
   _ruletaDrawWheel(_wheelRot % 360);
 
   const FREE_SPEED   = 7;    // grados/frame ≈ 420 deg/s a 60 fps
@@ -3006,23 +3017,23 @@ export async function showSettings(router) {
                 </div>`}
            <div>
              <p class="text-sm font-semibold text-slate-800">${_esc(partner.name || 'Pareja')}</p>
-             <p class="text-xs text-slate-400">Vinculado/a</p>
+             <p class="text-xs text-slate-400">${t('settings.linked')}</p>
            </div>
          </div>
          <button id="st-unlink"
                  class="text-red-500 text-xs font-semibold px-3 py-1.5 rounded-full border border-red-200 active:scale-95 transition-transform">
-           Desvincular
+           ${t('settings.unlink')}
          </button>
        </div>`
     : `<div class="py-3">
-         <p class="text-xs text-slate-400 mb-2">Introduce el código de tu pareja</p>
+         <p class="text-xs text-slate-400 mb-2">${t('settings.enterCode')}</p>
          <div class="flex gap-2">
            <input id="st-partner-input" type="text" maxlength="6" placeholder="ABC123"
                   class="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm uppercase
                          tracking-widest font-mono text-center outline-none focus:border-primary" />
            <button id="st-link-btn"
                    class="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl active:scale-95 transition-transform">
-             Vincular
+             ${t('settings.linkPartner')}
            </button>
          </div>
        </div>`;

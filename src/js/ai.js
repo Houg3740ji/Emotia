@@ -8,6 +8,7 @@
  */
 
 import { db } from '../supabase.js'
+import { getLang } from './i18n.js'
 
 const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-generate`
 const ANON_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -67,12 +68,14 @@ export async function buildContext(user, couple, partner, filters = {}) {
     || user?.email?.split('@')[0]
     || 'tú'
 
+  const lang = getLang()
   return {
     user1Name,
-    user2Name:    partner?.name || 'tu pareja',
+    user2Name:    partner?.name || (lang === 'en' ? 'your partner' : 'tu pareja'),
     daysTogether,
     season:       getSeason(),
-    lastEmotion:  'amor',
+    lastEmotion:  lang === 'en' ? 'love' : 'amor',
+    lang,
     ...filters,
   }
 }
