@@ -162,26 +162,27 @@
     html.dark #loading-overlay { background-color: #102220; }
 
     /* ── 2. Fondos de pantalla (cream → teal oscuro) ── */
-    /* bg-background-light: clase Tailwind custom */
     html.dark .bg-background-light            { background-color: #102220 !important; }
     html.dark .bg-background-light\/90        { background-color: rgba(16,34,32,0.93) !important; }
     html.dark .bg-background-light\/80        { background-color: rgba(16,34,32,0.85) !important; }
-    /* bg-[#F5F0E8]: clase arbitraria usada en pantallas JS */
+    /* bg-[#F5F0E8] y variantes con opacidad (pantallas JS + settings sticky header) */
     html.dark [class*="bg-[#F5F0E8]"]         { background-color: #102220 !important; }
 
-    /* ── 3. Superficies blancas → superficie teal elevada ── */
-    /* bg-white sólido: tarjetas, modales, nav */
+    /* ── 3. Superficies y jerarquía de elevación ── */
+    /*
+      Fondo app:      #102220  (base, más oscuro)
+      Tarjeta:        #1E3733  (elevado — bg-white)
+      Contenedor tab: #152C29  (hundido dentro de tarjeta — bg-slate-100)
+      Tab activa:     #1E3733  (vuelve al nivel de tarjeta — bg-white dentro del tab)
+    */
     html.dark .bg-white                        { background-color: #1E3733 !important; }
-    /* bg-white/95: nav flotante con backdrop blur */
     html.dark .bg-white\/95                    { background-color: rgba(30,55,51,0.97) !important; }
 
-    /* bg-slate-50/100: fondos alternativos claros */
-    html.dark .bg-slate-50                     { background-color: #172E2B !important; }
-    html.dark .bg-slate-100                    { background-color: #1E3733 !important; }
-    /* bg-slate-200: usada en separadores, drag handle, tabs container */
-    html.dark .bg-slate-200                    { background-color: rgba(255,255,255,0.11) !important; }
-    html.dark .bg-slate-200\/50                { background-color: rgba(255,255,255,0.07) !important; }
-    /* bg-slate-800: usada en dark: variants del checkin → misma superficie */
+    html.dark .bg-slate-50                     { background-color: #132924 !important; }
+    html.dark .bg-slate-100                    { background-color: #152C29 !important; }
+    html.dark .bg-slate-200                    { background-color: rgba(255,255,255,0.10) !important; }
+    html.dark .bg-slate-200\/50                { background-color: rgba(255,255,255,0.06) !important; }
+    html.dark .bg-slate-300                    { background-color: rgba(255,255,255,0.15) !important; }
     html.dark .bg-slate-800                    { background-color: #1E3733 !important; }
 
     /* ── 4. Texto ── */
@@ -194,20 +195,26 @@
     html.dark .text-slate-300                  { color: #446E6A !important; }
     html.dark .text-navy-dark                  { color: #E5F0EE !important; }
 
-    /* ── 5. Bordes: separadores muy sutiles ── */
+    /* ── 5. Bordes y divisores ── */
     html.dark .border-slate-100                { border-color: rgba(255,255,255,0.07) !important; }
     html.dark .border-slate-200                { border-color: rgba(255,255,255,0.09) !important; }
     html.dark .border-slate-200\/50            { border-color: rgba(255,255,255,0.05) !important; }
+    /* border-slate-200/60: línea bajo el header del home */
+    html.dark .border-slate-200\/60            { border-color: rgba(255,255,255,0.06) !important; }
     html.dark .border-slate-300                { border-color: rgba(255,255,255,0.12) !important; }
     html.dark .border-navy-dark\/5             { border-color: rgba(255,255,255,0.05) !important; }
+    /* divide-slate-100: divisores entre filas en settings */
+    html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+      border-color: rgba(255,255,255,0.07) !important;
+    }
 
     /* ── 6. Inputs ── */
     html.dark input,
     html.dark textarea,
     html.dark select {
-      background-color: #243D39 !important;
+      background-color: #1A3330 !important;
       color: #E5F0EE !important;
-      border-color: rgba(255,255,255,0.11) !important;
+      border-color: rgba(255,255,255,0.12) !important;
     }
     html.dark input::placeholder,
     html.dark textarea::placeholder            { color: #537975 !important; }
