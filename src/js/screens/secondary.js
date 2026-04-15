@@ -3062,7 +3062,7 @@ export async function showSettings(router) {
               <p class="text-sm font-medium text-slate-700">Idioma / Language</p>
             </div>
             <div class="flex rounded-xl bg-slate-100 p-1 gap-1">
-              ${[['es','🇪🇸 Español'], ['en','🇬🇧 English']].map(([l, lbl]) => {
+              ${[['es','Español'], ['en','English']].map(([l, lbl]) => {
                 const active = (localStorage.getItem('emotia_lang') || 'es') === l;
                 return `<button class="lang-btn flex-1 flex items-center justify-center py-1.5 rounded-lg text-xs font-semibold transition-all
                   ${active ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}" data-lang="${l}">${lbl}</button>`;
