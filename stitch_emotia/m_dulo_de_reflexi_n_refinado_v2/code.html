@@ -42,14 +42,14 @@
 <button class="flex items-center justify-center size-10 rounded-full bg-white shadow-sm transition-transform active:scale-95 border border-slate-100">
 <span class="material-symbols-outlined text-navy !text-xl" style="font-variation-settings: 'wght' 300;">arrow_back</span>
 </button>
-<h1 class="font-bold tracking-tight text-navy dark:text-white text-2xl">Reflexión</h1>
+<h1 class="font-bold tracking-tight text-navy dark:text-white text-2xl" data-i18n="reflection.title">Reflexión</h1>
 <div class="size-10"></div>
 </header>
 <main class="flex-1 px-6 pt-4 pb-12 space-y-6 flex flex-col">
 <div class="flex gap-2">
 <div class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
 <span class="text-sm">💭</span>
-<span class="text-[11px] font-bold text-primary uppercase tracking-wider">Reflexión</span>
+<span class="text-[11px] font-bold text-primary uppercase tracking-wider" data-i18n="reflection.badge">Reflexión</span>
 </div>
 <div class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange-100 border border-orange-200">
 <span class="text-sm">🔥</span>
@@ -65,12 +65,12 @@
 <h2 class="text-2xl font-bold leading-tight text-navy dark:text-white pr-4">
                     ¿Qué es lo que más te ha hecho sonreír hoy?
                 </h2>
-<p class="mt-4 text-slate-400 text-sm font-medium">Pregunta del día • 24 Oct</p>
+<p class="mt-4 text-slate-400 text-sm font-medium"><span data-i18n="reflection.dateLabel">Pregunta del día</span> • 24 Oct</p>
 </div>
 </div>
 <div class="space-y-6 flex-1 flex flex-col">
 <div class="relative flex-1 min-h-[220px]">
-<textarea class="w-full h-full p-6 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary bg-white dark:bg-slate-800 dark:ring-slate-700 text-navy dark:text-slate-200 placeholder:text-slate-400/80 resize-none transition-all shadow-sm text-lg" placeholder="Escribe tu reflexión aquí..."></textarea>
+<textarea class="w-full h-full p-6 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary bg-white dark:bg-slate-800 dark:ring-slate-700 text-navy dark:text-slate-200 placeholder:text-slate-400/80 resize-none transition-all shadow-sm text-lg" placeholder="Escribe tu reflexión aquí..." data-i18n-placeholder="reflection.placeholder"></textarea>
 <div class="absolute bottom-6 right-6 text-[10px] font-medium text-slate-400 uppercase tracking-widest">
                     0 / 500
                 </div>
@@ -80,7 +80,7 @@
 <p class="text-sm text-slate-400 font-medium italic">Tu pareja aún no ha respondido</p>
 </div>
 <button class="w-full bg-primary hover:bg-primary/95 text-white font-bold py-5 rounded-full shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
-<span class="text-lg">Guardar reflexión</span>
+<span class="text-lg" data-i18n="reflection.saveBtnText">Guardar reflexión</span>
 <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1">send</span>
 </button>
 </div>

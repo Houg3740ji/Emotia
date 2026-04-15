@@ -44,28 +44,28 @@
 <button class="flex-shrink-0 flex items-center justify-center w-10 h-10 bg-white rounded-full shadow-sm border border-navy-dark/5 active:scale-95 transition-transform">
 <span class="material-symbols-outlined text-navy-dark text-xl">arrow_back</span>
 </button>
-<h1 class="font-bold tracking-tight text-navy-dark flex-1 text-center whitespace-nowrap overflow-hidden text-ellipsis text-2xl">Tareas Conjuntas</h1>
+<h1 class="font-bold tracking-tight text-navy-dark flex-1 text-center whitespace-nowrap overflow-hidden text-ellipsis text-2xl" data-i18n="tasks.title">Tareas Conjuntas</h1>
 <div class="w-10 flex-shrink-0"></div>
 </header>
 <main class="px-6 flex-grow pb-12">
 <div class="flex gap-3 mb-8 overflow-x-auto pb-2 scrollbar-hide">
 <div class="flex-1 min-w-[100px] bg-white rounded-2xl p-4 shadow-sm border border-navy-dark/5">
-<p class="text-xs font-medium text-navy-dark/60 mb-1">Pendientes</p>
+<p class="text-xs font-medium text-navy-dark/60 mb-1" data-i18n="tasks.statPending">Pendientes</p>
 <p class="text-2xl font-bold text-navy-dark">8</p>
 </div>
 <div class="flex-1 min-w-[100px] bg-white rounded-2xl p-4 shadow-sm border border-navy-dark/5">
-<p class="text-xs font-medium text-navy-dark/60 mb-1">Hechas hoy</p>
+<p class="text-xs font-medium text-navy-dark/60 mb-1" data-i18n="tasks.statDoneToday">Hechas hoy</p>
 <p class="text-2xl font-bold text-primary">3</p>
 </div>
 <div class="flex-1 min-w-[100px] bg-white rounded-2xl p-4 shadow-sm border border-navy-dark/5">
-<p class="text-xs font-medium text-navy-dark/60 mb-1">Nuevas</p>
+<p class="text-xs font-medium text-navy-dark/60 mb-1" data-i18n="tasks.statNew">Nuevas</p>
 <p class="text-2xl font-bold text-amber-500">2</p>
 </div>
 </div>
 <div class="mb-8">
 <div class="flex justify-between items-center mb-4">
-<h2 class="text-xl font-bold">Pendientes</h2>
-<button class="text-primary text-sm font-semibold">Ver todas</button>
+<h2 class="text-xl font-bold" data-i18n="tasks.pendingTitle">Pendientes</h2>
+<button class="text-primary text-sm font-semibold" data-i18n="tasks.viewAll">Ver todas</button>
 </div>
 <div class="space-y-4">
 <div class="bg-white rounded-2xl p-5 shadow-sm border border-navy-dark/5 flex items-start gap-4">
@@ -116,7 +116,7 @@
 </div>
 </div>
 <div class="mb-12">
-<h2 class="text-xl font-bold mb-4">Completadas recientemente</h2>
+<h2 class="text-xl font-bold mb-4" data-i18n="tasks.recentlyCompleted">Completadas recientemente</h2>
 <div class="bg-white/40 rounded-2xl p-4 border border-navy-dark/5 flex items-center justify-between">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-full">check_circle</span>
@@ -130,8 +130,8 @@
 <div class="flex justify-center mb-10">
 <button class="flex items-center gap-2 bg-primary text-white px-10 py-4 rounded-full font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
 <span class="material-symbols-outlined text-xl">add</span>
-                Nueva Tarea
-            </button>
+                <span data-i18n="tasks.newTaskBtn">Nueva Tarea</span>
+</button>
 </div>
 </main>
 </body></html>

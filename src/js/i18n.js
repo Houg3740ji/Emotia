@@ -1,28 +1,43 @@
 /**
  * EMOTIA — Sistema de internacionalización (i18n)
  * Traducciones ES / EN para toda la app.
+ * Para traducir el DOM estático usa applyI18n() después de inyectar HTML.
  */
 
 const TRANSLATIONS = {
+  // ════════════════════════════════════════════════════════════
+  // ESPAÑOL
+  // ════════════════════════════════════════════════════════════
   es: {
-    // ── Común ───────────────────────────────────────────────────
     copy:       'Copiar',
     codeCopied: 'Código copiado ✓',
 
     // ── Home ────────────────────────────────────────────────────
     home: {
-      noCouple:       'Sin pareja vinculada',
-      yourCode:       'Tu código:',
-      noEmotion:      'Sin registrar',
-      pending:        'pendientes',
-      completedToday: 'completadas hoy',
-      entry:          'entrada',
-      entries:        'entradas',
-      partnerStatus:  'ha registrado su estado',
+      settingsBtn:      'Ajustes',
+      emotionalState:   'Estado Emocional',
+      reflectionModule: 'Módulo de Reflexión',
+      questionOfDay:    'Pregunta del Día',
+      writeReflection:  'Escribe tu reflexión aquí',
+      taskActivity:     'Actividad de Tareas',
+      streak:           'Racha',
+      days:             'días',
+      savedNotes:       'Notas Guardadas',
+      noCouple:         'Sin pareja vinculada',
+      yourCode:         'Tu código:',
+      noEmotion:        'Sin registrar',
+      pending:          'pendientes',
+      completedToday:   'completadas hoy',
+      entry:            'entrada',
+      entries:          'entradas',
+      partnerStatus:    'ha registrado su estado',
     },
 
     // ── Check-in ─────────────────────────────────────────────────
     checkin: {
+      title:         '¿Cómo te sientes hoy?',
+      support:       'APOYO',
+      confirmBtn:    'Confirmar estado',
       selectEmotion: 'Selecciona cómo te sientes',
       linkFirst:     'Vincula tu cuenta con tu pareja primero',
       saved:         'Estado guardado:',
@@ -52,21 +67,31 @@ const TRANSLATIONS = {
 
     // ── Reflexión ─────────────────────────────────────────────────
     reflection: {
-      dateLabel:        'Pregunta del día',
-      writeFirst:       'Escribe tu reflexión antes de guardar',
-      linkFirst:        'Vincula tu pareja para guardar reflexiones',
-      noQuestion:       'No hay pregunta disponible hoy',
-      saved:            'Reflexión guardada ✓',
-      saveError:        'Error al guardar',
-      notAnsweredYet:   'aún no ha respondido',
-      saveToSee:        'Guarda tu reflexión para ver la de',
-      reactionSaved:    'Reacción guardada',
-      reactionError:    'Error al guardar reacción',
-      updateBtn:        'Actualizar reflexión',
+      title:          'Reflexión',
+      badge:          'Reflexión',
+      saveBtnText:    'Guardar reflexión',
+      placeholder:    'Escribe tu reflexión aquí...',
+      dateLabel:      'Pregunta del día',
+      writeFirst:     'Escribe tu reflexión antes de guardar',
+      linkFirst:      'Vincula tu pareja para guardar reflexiones',
+      noQuestion:     'No hay pregunta disponible hoy',
+      saved:          'Reflexión guardada ✓',
+      saveError:      'Error al guardar',
+      notAnsweredYet: 'aún no ha respondido',
+      saveToSee:      'Guarda tu reflexión para ver la de',
+      reactionSaved:  'Reacción guardada',
+      reactionError:  'Error al guardar reacción',
+      updateBtn:      'Actualizar reflexión',
     },
 
     // ── Cápsulas ──────────────────────────────────────────────────
     capsules: {
+      title:          'Cápsulas',
+      whatToRecord:   '¿Qué quieres grabar?',
+      beforeRecording:'Antes de grabar',
+      tip1:           'Elimina distracciones a tu alrededor',
+      tip2:           'Habla desde el corazón, sin filtros',
+      tip3:           'Máximo 2 minutos — lo justo y necesario',
       cats: {
         gratitud:      'Gratitud',
         recuerdos:     'Recuerdos',
@@ -78,18 +103,38 @@ const TRANSLATIONS = {
         buenos_dias:   'Buenos días',
         sin_categoria: 'Sin categoría',
       },
-      tapToRecord:  'Toca para grabar',
-      recording:    'Grabando… toca para parar',
-      micDenied:    'Permiso de micrófono denegado',
-      micError:     'No se pudo acceder al micrófono',
-      readyToSend:  'Grabación lista — revisa antes de enviar',
-      linkFirst:    'Necesitas tener pareja vinculada para enviar cápsulas',
-      sent:         'Cápsula enviada ✓',
-      recordNew:    'Grabar nueva',
+      tapToRecord:    'Toca para grabar',
+      recording:      'Grabando… toca para parar',
+      micDenied:      'Permiso de micrófono denegado',
+      micError:       'No se pudo acceder al micrófono',
+      readyToSend:    'Grabación lista — revisa antes de enviar',
+      linkFirst:      'Necesitas tener pareja vinculada para enviar cápsulas',
+      sent:           'Cápsula enviada ✓',
+      recordNew:      'Grabar nueva',
+      newCapsule:     'Nueva cápsula',
+      maxDuration:    'máximo 02:00',
+      preview:        'Vista previa',
+      sendBtn:        'Enviar cápsula',
+      sentYou:        'te envió una cápsula de voz',
+      loading:        'Cargando audio...',
+      replyBtn:       'Responder con cápsula',
+      recordFirst:    'Graba un audio primero',
+      sendError:      'Error al enviar la cápsula',
+      loadError:      'No se pudo cargar el audio',
+      playError:      'Error al reproducir',
+      ready:          'Listo para reproducir',
     },
 
     // ── Tareas ────────────────────────────────────────────────────
     tasks: {
+      title:            'Tareas Conjuntas',
+      statPending:      'Pendientes',
+      statDoneToday:    'Hechas hoy',
+      statNew:          'Nuevas',
+      pendingTitle:     'Pendientes',
+      viewAll:          'Ver todas',
+      recentlyCompleted:'Completadas recientemente',
+      newTaskBtn:       'Nueva Tarea',
       noPending:        '¡Sin tareas pendientes!',
       noCompleted:      'Aún no hay tareas completadas',
       noCouple:         'Sin pareja vinculada',
@@ -108,38 +153,76 @@ const TRANSLATIONS = {
       priorityMedium:   'Media',
       priorityLow:      'Baja',
       namePlaceholder:  'Nombre de la tarea...',
+      nameRequired:     'Escribe el nombre de la tarea',
       newTask:          'Nueva Tarea',
       priority:         'Prioridad',
       assignTo:         'Asignar a',
       createTask:       'Crear Tarea',
       partner:          'Pareja',
+      created:          'Tarea creada ✓',
+      createError:      'Error al crear tarea',
     },
 
     // ── Ruleta ────────────────────────────────────────────────────
     roulette: {
-      noPlans:      'Sin planes para esa combinación. Prueba con menos filtros.',
-      closestPlan:  'No hay planes exactos, mostrando el más cercano',
-      dateBooked:   '¡Cita anotada! Que la disfruten 🎉',
-      linkFirst:    'Vincula tu pareja para guardar la cita',
-      dateSaved:    '¡Cita guardada! Que la disfruten 🎉',
-      dateSavedBtn: 'Cita anotada',
-      dateSaveBtn2: 'Cita guardada',
-      accept:       'Aceptar esta cita',
-      saveError:    'Error al guardar la cita',
+      title:       'Ruleta de citas',
+      subtitle:    'Crea tu cita perfecta',
+      selectStyle: 'Selecciona el estilo',
+      discoverDate:'Descubre tu cita',
+      spin:        'GIRAR',
+      duration:    'DURACIÓN',
+      express:     'Express (<1h)',
+      standard:    'Estándar (2-3h)',
+      long:        'Larga duración',
+      cost:        'COSTO',
+      free:        'Gratis',
+      affordable:  'Económico',
+      premium:     'Premium',
+      mood:        'ESTADO DE ÁNIMO',
+      relaxed:     'Relajado',
+      energetic:   'Energético',
+      romantic:    'Romántico',
+      todayDate:   '¡Tu cita de hoy!',
+      noPlans:     'Sin planes para esa combinación. Prueba con menos filtros.',
+      closestPlan: 'No hay planes exactos, mostrando el más cercano',
+      dateBooked:  '¡Cita anotada! Que la disfruten 🎉',
+      linkFirst:   'Vincula tu pareja para guardar la cita',
+      dateSaved:   '¡Cita guardada! Que la disfruten 🎉',
+      dateSavedBtn:'Cita anotada',
+      dateSaveBtn2:'Cita guardada',
+      accept:      'Aceptar esta cita',
+      saveError:   'Error al guardar la cita',
+      match:       '¡Match!',
+      matchMsg:    '¡A los dos les interesa!',
+      matchBtn:    '¡Genial! 🎉',
+      catSensorial:'Sensorial',
+      catSensual:  'Sensual',
+      catRomantico:'Romántico',
+      catAventura: 'Aventura',
+      catJuego:    'Juego',
+      catMasaje:   'Masaje',
+      catRolPlay:  'Rol',
+      catExterior: 'Aventura',
+      catSorpresa: 'Sorpresa',
+      catDesafio:  'Desafío',
+      catConexion: 'Conexión',
     },
 
     // ── Notas ─────────────────────────────────────────────────────
     notes: {
-      linkFirst:  'Vincula tu pareja para ver el historial',
-      empty:      'Aún no hay reflexiones guardadas.<br/>Responde la pregunta diaria para empezar.',
-      subtitle:   'entrada',
-      subtitlePl: 'entradas',
+      title:          'Historial de Reflexiones',
+      defaultSubtitle:'Últimos 30 días',
+      linkFirst:      'Vincula tu pareja para ver el historial',
+      empty:          'Aún no hay reflexiones guardadas.<br/>Responde la pregunta diaria para empezar.',
+      subtitle:       'entrada',
+      subtitlePl:     'entradas',
       subtitleSuffix: '· últimos 30 días',
-      loadError:  'Error al cargar el historial',
+      loadError:      'Error al cargar el historial',
     },
 
     // ── Ajustes ───────────────────────────────────────────────────
     settings: {
+      title:            'Ajustes',
       myProfile:        'Mi Perfil',
       name:             'Nombre',
       edit:             'Editar',
@@ -177,6 +260,12 @@ const TRANSLATIONS = {
       signOutError:     'Error al cerrar sesión',
       deleteConfirm:    '¿Seguro? Toca de nuevo para confirmar',
       deleteInfo:       'Para eliminar tu cuenta contacta a soporte@emotia.app',
+      together:         'Juntos desde hace',
+      months:           'mes',
+      monthsPlural:     'meses',
+      days:             'día',
+      daysPlural:       'días',
+      and:              'y',
     },
 
     // ── Router ────────────────────────────────────────────────────
@@ -187,28 +276,39 @@ const TRANSLATIONS = {
     },
   },
 
-  // ══════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════
   // ENGLISH
-  // ══════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════
   en: {
-    // ── Common ────────────────────────────────────────────────────
     copy:       'Copy',
     codeCopied: 'Code copied ✓',
 
     // ── Home ─────────────────────────────────────────────────────
     home: {
-      noCouple:       'No partner linked',
-      yourCode:       'Your code:',
-      noEmotion:      'Not registered',
-      pending:        'pending',
-      completedToday: 'completed today',
-      entry:          'entry',
-      entries:        'entries',
-      partnerStatus:  'registered their mood',
+      settingsBtn:      'Settings',
+      emotionalState:   'Emotional State',
+      reflectionModule: 'Reflection Module',
+      questionOfDay:    'Question of the Day',
+      writeReflection:  'Write your reflection here',
+      taskActivity:     'Task Activity',
+      streak:           'Streak',
+      days:             'days',
+      savedNotes:       'Saved Notes',
+      noCouple:         'No partner linked',
+      yourCode:         'Your code:',
+      noEmotion:        'Not registered',
+      pending:          'pending',
+      completedToday:   'completed today',
+      entry:            'entry',
+      entries:          'entries',
+      partnerStatus:    'registered their mood',
     },
 
     // ── Check-in ─────────────────────────────────────────────────
     checkin: {
+      title:         'How are you feeling today?',
+      support:       'SUPPORT',
+      confirmBtn:    'Confirm status',
       selectEmotion: 'Select how you feel',
       linkFirst:     'Link your account with your partner first',
       saved:         'Status saved:',
@@ -223,36 +323,46 @@ const TRANSLATIONS = {
       inLove:       { name: 'In love',      support: 'Express it. Words and gestures are also romantic.' },
       excited:      { name: 'Excited',      support: 'Spread that energy! Tell your partner what has you feeling this way.' },
       peaceful:     { name: 'Peaceful',     support: 'Inner calm makes you more present for those you love.' },
-      affectionate: { name: 'Affectionate', support: 'A hug or a small gesture today can make your partner\'s day.' },
-      thoughtful:   { name: 'Thoughtful',   support: 'Sharing what\'s on your mind can clear things up.' },
-      sad:          { name: 'Sad',          support: 'It\'s valid to feel this way. Do you want your partner to know?' },
+      affectionate: { name: 'Affectionate', support: "A hug or a small gesture today can make your partner's day." },
+      thoughtful:   { name: 'Thoughtful',   support: "Sharing what's on your mind can clear things up." },
+      sad:          { name: 'Sad',          support: "It's valid to feel this way. Do you want your partner to know?" },
       anxious:      { name: 'Anxious',      support: 'Anxiety passes. Breathe and share how you feel.' },
-      angry:        { name: 'Angry',        support: 'It\'s okay to feel angry. Share it calmly when you can.' },
+      angry:        { name: 'Angry',        support: "It's okay to feel angry. Share it calmly when you can." },
       exhausted:    { name: 'Exhausted',    support: 'You need rest. Your partner can support you.' },
-      worried:      { name: 'Worried',      support: 'You\'re not alone. Sharing what worries you helps.' },
+      worried:      { name: 'Worried',      support: "You're not alone. Sharing what worries you helps." },
       grateful:     { name: 'Grateful',     support: 'Tell your partner something you appreciate about them today.' },
       mischievous:  { name: 'Mischievous',  support: 'That spark is energy to connect with your partner in a special way.' },
-      overwhelmed:  { name: 'Overwhelmed',  support: 'Take it easy. One step at a time, and you don\'t have to do it alone.' },
+      overwhelmed:  { name: 'Overwhelmed',  support: "Take it easy. One step at a time, and you don't have to do it alone." },
       motivated:    { name: 'Motivated',    support: 'Use that energy for something that brings you closer as a couple.' },
     },
 
     // ── Reflection ───────────────────────────────────────────────
     reflection: {
-      dateLabel:        'Question of the day',
-      writeFirst:       'Write your reflection before saving',
-      linkFirst:        'Link your partner to save reflections',
-      noQuestion:       'No question available today',
-      saved:            'Reflection saved ✓',
-      saveError:        'Error saving',
-      notAnsweredYet:   'hasn\'t answered yet',
-      saveToSee:        'Save your reflection to see',
-      reactionSaved:    'Reaction saved',
-      reactionError:    'Error saving reaction',
-      updateBtn:        'Update reflection',
+      title:          'Reflection',
+      badge:          'Reflection',
+      saveBtnText:    'Save reflection',
+      placeholder:    'Write your reflection here...',
+      dateLabel:      'Question of the day',
+      writeFirst:     'Write your reflection before saving',
+      linkFirst:      'Link your partner to save reflections',
+      noQuestion:     'No question available today',
+      saved:          'Reflection saved ✓',
+      saveError:      'Error saving',
+      notAnsweredYet: "hasn't answered yet",
+      saveToSee:      'Save your reflection to see',
+      reactionSaved:  'Reaction saved',
+      reactionError:  'Error saving reaction',
+      updateBtn:      'Update reflection',
     },
 
     // ── Capsules ─────────────────────────────────────────────────
     capsules: {
+      title:          'Capsules',
+      whatToRecord:   'What do you want to record?',
+      beforeRecording:'Before recording',
+      tip1:           'Eliminate distractions around you',
+      tip2:           'Speak from the heart, without filters',
+      tip3:           'Maximum 2 minutes — just what\'s needed',
       cats: {
         gratitud:      'Gratitude',
         recuerdos:     'Memories',
@@ -264,18 +374,38 @@ const TRANSLATIONS = {
         buenos_dias:   'Good morning',
         sin_categoria: 'Uncategorized',
       },
-      tapToRecord:  'Tap to record',
-      recording:    'Recording… tap to stop',
-      micDenied:    'Microphone permission denied',
-      micError:     'Could not access microphone',
-      readyToSend:  'Recording ready — review before sending',
-      linkFirst:    'You need a linked partner to send capsules',
-      sent:         'Capsule sent ✓',
-      recordNew:    'Record new',
+      tapToRecord:    'Tap to record',
+      recording:      'Recording… tap to stop',
+      micDenied:      'Microphone permission denied',
+      micError:       'Could not access microphone',
+      readyToSend:    'Recording ready — review before sending',
+      linkFirst:      'You need a linked partner to send capsules',
+      sent:           'Capsule sent ✓',
+      recordNew:      'Record new',
+      newCapsule:     'New capsule',
+      maxDuration:    'max 02:00',
+      preview:        'Preview',
+      sendBtn:        'Send capsule',
+      sentYou:        'sent you a voice capsule',
+      loading:        'Loading audio...',
+      replyBtn:       'Reply with capsule',
+      recordFirst:    'Record an audio first',
+      sendError:      'Error sending capsule',
+      loadError:      'Could not load audio',
+      playError:      'Error playing audio',
+      ready:          'Ready to play',
     },
 
     // ── Tasks ────────────────────────────────────────────────────
     tasks: {
+      title:            'Shared Tasks',
+      statPending:      'Pending',
+      statDoneToday:    'Done today',
+      statNew:          'New',
+      pendingTitle:     'Pending',
+      viewAll:          'View all',
+      recentlyCompleted:'Recently completed',
+      newTaskBtn:       'New Task',
       noPending:        'No pending tasks!',
       noCompleted:      'No completed tasks yet',
       noCouple:         'No partner linked',
@@ -294,28 +424,65 @@ const TRANSLATIONS = {
       priorityMedium:   'Medium',
       priorityLow:      'Low',
       namePlaceholder:  'Task name...',
+      nameRequired:     'Write the task name',
       newTask:          'New Task',
       priority:         'Priority',
       assignTo:         'Assign to',
       createTask:       'Create Task',
       partner:          'Partner',
+      created:          'Task created ✓',
+      createError:      'Error creating task',
     },
 
     // ── Roulette ─────────────────────────────────────────────────
     roulette: {
-      noPlans:      'No plans for that combination. Try fewer filters.',
-      closestPlan:  'No exact plans found, showing the closest match',
-      dateBooked:   'Date booked! Enjoy it 🎉',
-      linkFirst:    'Link your partner to save the date',
-      dateSaved:    'Date saved! Enjoy it 🎉',
-      dateSavedBtn: 'Date booked',
-      dateSaveBtn2: 'Date saved',
-      accept:       'Accept this date',
-      saveError:    'Error saving date',
+      title:       'Date roulette',
+      subtitle:    'Create your perfect date',
+      selectStyle: 'Select the style',
+      discoverDate:'Discover your date',
+      spin:        'SPIN',
+      duration:    'DURATION',
+      express:     'Express (<1h)',
+      standard:    'Standard (2-3h)',
+      long:        'Long duration',
+      cost:        'COST',
+      free:        'Free',
+      affordable:  'Affordable',
+      premium:     'Premium',
+      mood:        'MOOD',
+      relaxed:     'Relaxed',
+      energetic:   'Energetic',
+      romantic:    'Romantic',
+      todayDate:   "Today's date!",
+      noPlans:     'No plans for that combination. Try fewer filters.',
+      closestPlan: 'No exact plans found, showing the closest match',
+      dateBooked:  'Date booked! Enjoy it 🎉',
+      linkFirst:   'Link your partner to save the date',
+      dateSaved:   'Date saved! Enjoy it 🎉',
+      dateSavedBtn:'Date booked',
+      dateSaveBtn2:'Date saved',
+      accept:      'Accept this date',
+      saveError:   'Error saving date',
+      match:       'Match!',
+      matchMsg:    'You both like it!',
+      matchBtn:    'Great! 🎉',
+      catSensorial:'Sensory',
+      catSensual:  'Sensual',
+      catRomantico:'Romantic',
+      catAventura: 'Adventure',
+      catJuego:    'Game',
+      catMasaje:   'Massage',
+      catRolPlay:  'Role play',
+      catExterior: 'Outdoor',
+      catSorpresa: 'Surprise',
+      catDesafio:  'Challenge',
+      catConexion: 'Connection',
     },
 
     // ── Notes ────────────────────────────────────────────────────
     notes: {
+      title:          'Reflection History',
+      defaultSubtitle:'Last 30 days',
       linkFirst:      'Link your partner to see the history',
       empty:          'No reflections saved yet.<br/>Answer the daily question to get started.',
       subtitle:       'entry',
@@ -326,6 +493,7 @@ const TRANSLATIONS = {
 
     // ── Settings ─────────────────────────────────────────────────
     settings: {
+      title:            'Settings',
       myProfile:        'My Profile',
       name:             'Name',
       edit:             'Edit',
@@ -363,6 +531,12 @@ const TRANSLATIONS = {
       signOutError:     'Error signing out',
       deleteConfirm:    'Are you sure? Tap again to confirm',
       deleteInfo:       'To delete your account contact support@emotia.app',
+      together:         'Together for',
+      months:           'month',
+      monthsPlural:     'months',
+      days:             'day',
+      daysPlural:       'days',
+      and:              'and',
     },
 
     // ── Router ───────────────────────────────────────────────────
@@ -381,7 +555,7 @@ export function getLang() {
 
 /**
  * Traduce una clave punteada al idioma activo.
- * Ejemplo: t('checkin.selectEmotion')
+ * Ejemplo: t('checkin.title') → '¿Cómo te sientes hoy?' o 'How are you feeling today?'
  */
 export function t(key) {
   const lang = getLang();
@@ -393,4 +567,29 @@ export function t(key) {
     val = val[k];
   }
   return val ?? key;
+}
+
+/**
+ * Aplica traducciones a todo el DOM actual.
+ * Escanea elementos con data-i18n y data-i18n-placeholder y reemplaza el texto.
+ * Llamar después de inyectar HTML de cada pantalla.
+ */
+export function applyI18n() {
+  // Reemplazar textContent
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    const translation = t(key);
+    if (translation !== key) {
+      el.textContent = translation;
+    }
+  });
+
+  // Reemplazar placeholder de inputs/textareas
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    const translation = t(key);
+    if (translation !== key) {
+      el.placeholder = translation;
+    }
+  });
 }

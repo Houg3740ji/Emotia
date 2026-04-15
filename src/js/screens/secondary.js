@@ -1133,13 +1133,13 @@ function _showMatchAnimation(fantasy, onDismiss) {
   overlay.style.background = 'linear-gradient(135deg, #14213D 0%, #0D9488 100%)';
   overlay.innerHTML = `
     <div class="mb-4 text-7xl" style="animation:bounce 1s infinite">💞</div>
-    <h2 class="text-4xl font-black text-white mb-2">¡Match!</h2>
-    <p class="text-white/70 text-base mb-3">¡A los dos les interesa!</p>
+    <h2 class="text-4xl font-black text-white mb-2">${t('roulette.match')}</h2>
+    <p class="text-white/70 text-base mb-3">${t('roulette.matchMsg')}</p>
     <p class="text-white font-bold text-xl mb-10 px-4">${_esc(fantasy.title || '')}</p>
     <button id="match-ok"
             class="px-10 py-4 bg-white font-bold rounded-full active:scale-95 transition-transform text-base"
             style="color:#14213D">
-      ¡Genial! 🎉
+      ${t('roulette.matchBtn')}
     </button>`;
   document.getElementById('app').appendChild(overlay);
   document.getElementById('match-ok')?.addEventListener('click', () => {
@@ -1250,20 +1250,20 @@ async function initRuleta(router) {
   const couple = await db.getMyCouple().catch(() => null);
 
   const FILTER_GROUPS = [
-    { label: 'TIEMPO', key: 'duration_label', options: [
-      { label: 'Express (<1h)',    value: 'express'  },
-      { label: 'Estándar (2-3h)', value: 'estandar' },
-      { label: 'Larga duración',  value: 'larga'    },
+    { label: t('roulette.duration'), key: 'duration_label', options: [
+      { label: t('roulette.express'),  value: 'express'  },
+      { label: t('roulette.standard'), value: 'estandar' },
+      { label: t('roulette.long'),     value: 'larga'    },
     ]},
-    { label: 'COSTO', key: 'cost_type', options: [
-      { label: 'Gratis',    value: 'free'    },
-      { label: 'Económico', value: 'budget'  },
-      { label: 'Premium',   value: 'premium' },
+    { label: t('roulette.cost'), key: 'cost_type', options: [
+      { label: t('roulette.free'),       value: 'free'    },
+      { label: t('roulette.affordable'), value: 'budget'  },
+      { label: t('roulette.premium'),    value: 'premium' },
     ]},
-    { label: 'AMBIENTE', key: 'mood_type', options: [
-      { label: 'Relajado',   value: 'relaxed'   },
-      { label: 'Energético', value: 'energetic' },
-      { label: 'Romántico',  value: 'romantic'  },
+    { label: t('roulette.mood'), key: 'mood_type', options: [
+      { label: t('roulette.relaxed'),   value: 'relaxed'   },
+      { label: t('roulette.energetic'), value: 'energetic' },
+      { label: t('roulette.romantic'),  value: 'romantic'  },
     ]},
   ];
 
@@ -1277,9 +1277,9 @@ async function initRuleta(router) {
       <!-- Header -->
       <header class="sticky top-0 z-10 bg-[#F5F0E8]/90 backdrop-blur-md px-4 py-4
                      flex flex-col items-center justify-center border-b border-primary/5">
-        <h1 class="font-bold tracking-tight text-2xl">Ruleta de citas</h1>
+        <h1 class="font-bold tracking-tight text-2xl">${t('roulette.title')}</h1>
         <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">
-          Crea tu cita perfecta
+          ${t('roulette.subtitle')}
         </p>
       </header>
 
@@ -1290,7 +1290,7 @@ async function initRuleta(router) {
           <div class="flex items-center gap-2 mb-5">
             <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center
                          justify-center text-xs font-bold flex-shrink-0">1</span>
-            <h2 class="font-bold text-lg">Selecciona el estilo</h2>
+            <h2 class="font-bold text-lg">${t('roulette.selectStyle')}</h2>
           </div>
           <div class="space-y-5">
             ${FILTER_GROUPS.map(g => `
@@ -1324,7 +1324,7 @@ async function initRuleta(router) {
           <div class="flex items-center gap-2 mb-5">
             <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center
                          justify-center text-xs font-bold flex-shrink-0">2</span>
-            <h2 class="font-bold text-lg">Descubre tu cita</h2>
+            <h2 class="font-bold text-lg">${t('roulette.discoverDate')}</h2>
           </div>
           <div class="flex flex-col items-center gap-5">
 
@@ -1355,7 +1355,7 @@ async function initRuleta(router) {
                            active:scale-95 transition-transform select-none"
                     style="box-shadow:0 8px 24px rgba(13,150,139,.32)">
               <span class="material-symbols-outlined mr-2 text-2xl">casino</span>
-              GIRAR
+              ${t('roulette.spin')}
             </button>
           </div>
         </section>
@@ -1365,7 +1365,7 @@ async function initRuleta(router) {
           <div class="flex items-center gap-2 mb-4">
             <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center
                          justify-center text-xs font-bold flex-shrink-0">3</span>
-            <h2 class="font-bold text-lg">¡Tu cita de hoy!</h2>
+            <h2 class="font-bold text-lg">${t('roulette.todayDate')}</h2>
           </div>
           <div id="resultado-card"
                class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4">
@@ -2293,7 +2293,7 @@ function _showNewTaskModal(user, couple, partner, onCreated) {
   // Crear tarea
   document.getElementById('ntm-create')?.addEventListener('click', async () => {
     const title = document.getElementById('ntm-title')?.value?.trim();
-    if (!title) { showToast('Escribe el nombre de la tarea', 'error'); return; }
+    if (!title) { showToast(t('tasks.nameRequired'), 'error'); return; }
 
     const assignedTo = selAssign === 'me'      ? user.id
                      : selAssign === 'partner' ? (partner?.id || null)
@@ -2305,11 +2305,11 @@ function _showNewTaskModal(user, couple, partner, onCreated) {
     try {
       await db.createTask({ coupleId: couple.id, title, priority: selPriority, assignedTo });
       closeModal();
-      showToast('Tarea creada ✓', 'success', 2000);
+      showToast(t('tasks.created'), 'success', 2000);
       await onCreated();
     } catch (err) {
       setButtonLoading(createBtn, false);
-      showToast(err.message || 'Error al crear tarea', 'error');
+      showToast(err.message || t('tasks.createError'), 'error');
     }
   });
 
@@ -2344,7 +2344,7 @@ async function initCapsulaGrabar(router, params) {
           <span class="material-symbols-outlined text-slate-700 text-xl">arrow_back</span>
         </button>
         <div>
-          <h1 class="text-xl font-bold text-slate-900">Nueva cápsula</h1>
+          <h1 class="text-xl font-bold text-slate-900">${t('capsules.newCapsule')}</h1>
           <p class="text-xs text-slate-400 mt-0.5">
             ${(() => { const _c = getCapsuleCats().find(x => x.key === preselectedCat); return _c ? `${_c.emoji} ${_esc(_c.label)}` : t('capsules.cats.sin_categoria'); })()}
           </p>
@@ -2361,7 +2361,7 @@ async function initCapsulaGrabar(router, params) {
             <p id="rec-timer"
                class="text-6xl font-bold tracking-wider tabular-nums"
                style="color:#14213D">00:00</p>
-            <p class="text-xs text-slate-400 mt-1.5 font-medium">máximo 02:00</p>
+            <p class="text-xs text-slate-400 mt-1.5 font-medium">${t('capsules.maxDuration')}</p>
           </div>
 
           <!-- Onda de audio (solo en grabación) -->
@@ -2402,7 +2402,7 @@ async function initCapsulaGrabar(router, params) {
                     style="color:#14213D;font-variation-settings:'FILL' 1">play_arrow</span>
             </button>
             <div class="flex-1 min-w-0">
-              <p class="font-bold text-slate-800 text-sm">Vista previa</p>
+              <p class="font-bold text-slate-800 text-sm">${t('capsules.preview')}</p>
               <p id="rec-preview-dur" class="text-xs text-slate-400 mt-0.5">00:00</p>
             </div>
             <button id="rec-discard"
@@ -2418,7 +2418,7 @@ async function initCapsulaGrabar(router, params) {
                   style="background:#14213D;box-shadow:0 8px 24px rgba(20,33,61,.25)">
             <span class="material-symbols-outlined text-xl"
                   style="font-variation-settings:'FILL' 1">send</span>
-            <span>Enviar cápsula</span>
+            <span>${t('capsules.sendBtn')}</span>
           </button>
         </div>
 
@@ -2563,7 +2563,7 @@ async function initCapsulaGrabar(router, params) {
 
   // ── Enviar cápsula ────────────────────────────────────────────
   sendBtn?.addEventListener('click', async () => {
-    if (!audioBlob) { showToast('Graba un audio primero', 'error'); return; }
+    if (!audioBlob) { showToast(t('capsules.recordFirst'), 'error'); return; }
 
     const couple  = await db.getMyCouple().catch(() => null);
     const partner = couple ? await db.getPartner().catch(() => null) : null;
@@ -2588,7 +2588,7 @@ async function initCapsulaGrabar(router, params) {
       setTimeout(() => router.navigate('/capsulas'), 1500);
     } catch (err) {
       setButtonLoading(sendBtn, false);
-      showToast(err.message || 'Error al enviar la cápsula', 'error');
+      showToast(err.message || t('capsules.sendError'), 'error');
     }
   });
 }
@@ -2679,7 +2679,7 @@ async function initCapsulaReproducir(router, params) {
           </div>
           <div class="text-center">
             <p class="font-bold text-lg text-slate-900">${_esc(senderName)}</p>
-            <p class="text-slate-600 text-sm mt-0.5">te envió una cápsula de voz</p>
+            <p class="text-slate-600 text-sm mt-0.5">${t('capsules.sentYou')}</p>
           </div>
         </div>
 
@@ -2720,7 +2720,7 @@ async function initCapsulaReproducir(router, params) {
             </button>
           </div>
 
-          <p id="pl-status" class="text-center text-xs text-slate-400 font-medium">Cargando audio...</p>
+          <p id="pl-status" class="text-center text-xs text-slate-400 font-medium">${t('capsules.loading')}</p>
         </div>
 
         <!-- Botón responder -->
@@ -2731,7 +2731,7 @@ async function initCapsulaReproducir(router, params) {
                 style="border-color:#14213D;color:#14213D">
           <span class="material-symbols-outlined text-xl"
                 style="font-variation-settings:'FILL' 1">mic</span>
-          <span>Responder con cápsula</span>
+          <span>${t('capsules.replyBtn')}</span>
         </button>
 
       </main>
@@ -2758,10 +2758,10 @@ async function initCapsulaReproducir(router, params) {
     const signedUrl = await storage.refreshAudioUrl(capsule.audio_path);
     audio = new Audio(signedUrl);
     audio.preload = 'metadata';
-    if (statusEl) statusEl.textContent = 'Listo para reproducir';
+    if (statusEl) statusEl.textContent = t('capsules.ready');
   } catch (_) {
-    if (statusEl) statusEl.textContent = 'Error al cargar el audio';
-    showToast('No se pudo cargar el audio', 'error');
+    if (statusEl) statusEl.textContent = t('capsules.loadError');
+    showToast(t('capsules.loadError'), 'error');
     return;
   }
 
@@ -2809,8 +2809,8 @@ async function initCapsulaReproducir(router, params) {
   });
 
   audio.addEventListener('error', () => {
-    if (statusEl) statusEl.textContent = 'Error al reproducir';
-    showToast('Error al reproducir el audio', 'error');
+    if (statusEl) statusEl.textContent = t('capsules.playError');
+    showToast(t('capsules.playError'), 'error');
   });
 
   // ── Play / Pause ─────────────────────────────────────────────
@@ -2824,7 +2824,7 @@ async function initCapsulaReproducir(router, params) {
       try {
         await audio.play();
         if (playIcon) playIcon.textContent = 'pause';
-        if (statusEl) statusEl.textContent = 'Reproduciendo...';
+        if (statusEl) statusEl.textContent = t('capsules.ready');
         animateWave();
         requestAnimationFrame(tickProgress);
       } catch (_) {
@@ -2834,7 +2834,7 @@ async function initCapsulaReproducir(router, params) {
       audio.pause();
       stopWave();
       if (playIcon) playIcon.textContent = 'play_arrow';
-      if (statusEl) statusEl.textContent = 'Pausado';
+      if (statusEl) statusEl.textContent = t('capsules.ready');
     }
   });
 
@@ -2908,8 +2908,8 @@ export async function showSettings(router) {
     const months    = Math.floor(totalDays / 30.44);
     const remDays   = Math.round(totalDays - months * 30.44);
     togetherText = months > 0
-      ? `Juntos desde hace ${months} mes${months !== 1 ? 'es' : ''} y ${remDays} día${remDays !== 1 ? 's' : ''}`
-      : `Juntos desde hace ${totalDays} día${totalDays !== 1 ? 's' : ''}`;
+      ? `${t('settings.together')} ${months} ${months !== 1 ? t('settings.monthsPlural') : t('settings.months')} ${t('settings.and')} ${remDays} ${remDays !== 1 ? t('settings.daysPlural') : t('settings.days')}`
+      : `${t('settings.together')} ${totalDays} ${totalDays !== 1 ? t('settings.daysPlural') : t('settings.days')}`;
   }
 
   const code    = profile?.partner_code || '------';

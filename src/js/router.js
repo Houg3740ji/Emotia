@@ -7,7 +7,7 @@
 
 import { auth, db } from '../supabase.js';
 import { hideLoadingOverlay, showToast } from './auth.js';
-import { t } from './i18n.js';
+import { t, applyI18n } from './i18n.js';
 
 // Rutas públicas (no requieren sesión activa)
 // Las rutas 3-5 son parte del flujo de registro: si la confirmación de email
@@ -98,6 +98,9 @@ export const router = {
       app.style.opacity    = '1';
       app.style.transition = 'none';
       app.innerHTML        = content;
+
+      // Aplicar traducciones al DOM recién inyectado
+      applyI18n();
 
       // Tailwind CDN puede necesitar un re-scan tras inyección dinámica
       if (typeof window.tailwind?.refresh === 'function') {
