@@ -199,8 +199,8 @@
     html.dark .border-slate-100                { border-color: rgba(255,255,255,0.07) !important; }
     html.dark .border-slate-200                { border-color: rgba(255,255,255,0.09) !important; }
     html.dark .border-slate-200\/50            { border-color: rgba(255,255,255,0.05) !important; }
-    /* border-slate-200/60: línea bajo el header del home */
-    html.dark .border-slate-200\/60            { border-color: rgba(255,255,255,0.06) !important; }
+    /* border-slate-200/60: línea bajo el header del home → invisible */
+    html.dark .border-slate-200\/60            { border-color: transparent !important; }
     html.dark .border-slate-300                { border-color: rgba(255,255,255,0.12) !important; }
     html.dark .border-navy-dark\/5             { border-color: rgba(255,255,255,0.05) !important; }
     /* divide-slate-100: divisores entre filas en settings */
@@ -222,7 +222,50 @@
     /* ── 7. Sección de la ruleta: fondo crema como inline style ── */
     html.dark [style*="rgba(232,222,209"]      { background: rgba(16,34,32,0.65) !important; }
 
-    /* ── 8. Transición suave al cambiar tema ── */
+    /* ── 8. Sombras: adaptadas al fondo oscuro ── */
+    html.dark .shadow-sm  { box-shadow: 0 1px 4px rgba(0,0,0,0.28) !important; }
+    html.dark .shadow     { box-shadow: 0 2px 8px rgba(0,0,0,0.32) !important; }
+    html.dark .shadow-md  { box-shadow: 0 4px 12px rgba(0,0,0,0.38) !important; }
+    html.dark .shadow-xl  { box-shadow: 0 8px 24px rgba(0,0,0,0.45) !important; }
+    html.dark .shadow-2xl { box-shadow: 0 12px 32px rgba(0,0,0,0.4) !important; }
+
+    /* ── 9. Botón cierre (X) en settings ── */
+    html.dark .bg-slate-200\/80 { background-color: rgba(255,255,255,0.10) !important; }
+
+    /* ── 10. Cápsulas: tips con bg semitransparente ── */
+    html.dark .bg-white\/70  { background-color: rgba(30,55,51,0.65) !important; }
+    html.dark .bg-white\/50  { background-color: rgba(30,55,51,0.50) !important; }
+
+    /* ── 11. Cápsulas: gradientes pastel → versión oscura de cada color ──
+       Cada categoría tiene su propio gradiente oscuro que mantiene la identidad
+       de color pero encaja con la estética premium dark.                      */
+    html.dark [style*="#FEF3C7"] { background: linear-gradient(145deg,#2D1F00,#3C2900) !important; } /* Gratitud - amber */
+    html.dark [style*="#EDE9FE"] { background: linear-gradient(145deg,#1E1040,#2A1554) !important; } /* Recuerdos - violet */
+    html.dark [style*="#FFE4E6"] { background: linear-gradient(145deg,#3D0513,#4A0619) !important; } /* Carta - rose */
+    html.dark [style*="#FEF9C3"] { background: linear-gradient(145deg,#2A1F00,#382700) !important; } /* Humor - yellow */
+    html.dark [style*="#D1FAE5"] { background: linear-gradient(145deg,#002916,#00381E) !important; } /* Ánimo - emerald */
+    html.dark [style*="#F3E8FF"] { background: linear-gradient(145deg,#1A0A30,#220D3F) !important; } /* Canción - purple */
+    html.dark [style*="#E0F2FE"] { background: linear-gradient(145deg,#001A2C,#002035) !important; } /* Confesión - sky */
+    html.dark [style*="#FFEDD5"] { background: linear-gradient(145deg,#2E1200,#3C1800) !important; } /* Buenos días - orange */
+    html.dark [style*="#F1F5F9"] { background: linear-gradient(145deg,#152C29,#1A3330) !important; } /* Sin categoría */
+    /* Texto en tarjetas de cápsula → versión clara del mismo color */
+    html.dark .text-amber-800   { color: #FBB035 !important; }
+    html.dark .text-violet-800  { color: #A78BFA !important; }
+    html.dark .text-rose-800    { color: #FB7185 !important; }
+    html.dark .text-yellow-800  { color: #FCD34D !important; }
+    html.dark .text-emerald-800 { color: #34D399 !important; }
+    html.dark .text-purple-800  { color: #C084FC !important; }
+    html.dark .text-sky-800     { color: #38BDF8 !important; }
+    html.dark .text-orange-800  { color: #FB923C !important; }
+
+    /* ── 12. Íntimo: gradientes del swipe card ── */
+    /* Fondo de imagen sin foto: from-slate-100 to-slate-200 */
+    html.dark .from-slate-100 { --tw-gradient-from: #152C29; }
+    html.dark .to-slate-200   { --tw-gradient-to: #1E3733; }
+    /* Gradiente overlay bottom del card: from-white to-transparent */
+    html.dark .from-white     { --tw-gradient-from: #1E3733; }
+
+    /* ── 13. Transición suave al cambiar tema ── */
     body, #app, input, textarea, select {
       transition: background-color 0.25s ease, color 0.15s ease, border-color 0.2s ease;
     }
