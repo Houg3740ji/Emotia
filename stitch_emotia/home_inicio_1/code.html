@@ -103,24 +103,49 @@
 </div>
 <span class="material-symbols-outlined text-white/20 group-hover:text-white transition-colors">arrow_forward_ios</span>
 </div>
-<div class="bg-navy-custom rounded-2xl p-4 shadow-lg text-white relative overflow-hidden flex flex-col justify-between">
+<div class="bg-navy-custom rounded-2xl p-4 shadow-lg text-white relative overflow-hidden flex flex-col gap-3" id="dual-streak-widget">
+<p class="text-[10px] font-bold text-white/40 uppercase tracking-wider">Rachas</p>
 <div>
-<p class="text-[10px] font-bold text-white/40 uppercase mb-1" data-i18n="home.streak">Racha</p>
-<div class="flex items-baseline gap-1">
-<span class="text-3xl font-bold">—</span>
-<span class="text-xs font-medium text-white/60" data-i18n="home.days">días</span>
+  <div class="flex items-center justify-between mb-1.5">
+    <div class="flex items-center gap-1.5">
+      <span class="text-sm">🫀</span>
+      <span class="text-[9px] font-bold text-white/40 uppercase tracking-wider">Emoción</span>
+    </div>
+    <div class="flex items-center gap-0.5">
+      <span id="streak-emotion-num" class="text-lg font-black leading-none">0</span>
+      <span class="text-[9px] text-white/40">d</span>
+      <span id="streak-emotion-dot" class="size-2 rounded-full bg-white/10 ml-1 shrink-0"></span>
+    </div>
+  </div>
+  <div id="streak-emotion-bars" class="flex gap-0.5">
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+  </div>
 </div>
+<div class="h-px bg-white/10"></div>
+<div>
+  <div class="flex items-center justify-between mb-1.5">
+    <div class="flex items-center gap-1.5">
+      <span class="text-sm">💬</span>
+      <span class="text-[9px] font-bold text-white/40 uppercase tracking-wider">Pregunta</span>
+    </div>
+    <div class="flex items-center gap-0.5">
+      <span id="streak-question-num" class="text-lg font-black leading-none">0</span>
+      <span class="text-[9px] text-white/40">d</span>
+      <span id="streak-question-dot" class="size-2 rounded-full bg-white/10 ml-1 shrink-0"></span>
+    </div>
+  </div>
+  <div id="streak-question-bars" class="flex gap-0.5">
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+    <div class="h-0.5 flex-1 rounded-full bg-white/10"></div>
+  </div>
 </div>
-<div class="mt-4 flex gap-1">
-<div class="h-1 flex-1 bg-primary rounded-full"></div>
-<div class="h-1 flex-1 bg-primary rounded-full"></div>
-<div class="h-1 flex-1 bg-primary rounded-full"></div>
-<div class="h-1 flex-1 bg-primary rounded-full"></div>
-<div class="h-1 flex-1 bg-primary rounded-full"></div>
-<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
-<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
-</div>
-<span class="material-symbols-outlined absolute -bottom-2 -right-2 text-white/5 text-6xl">local_fire_department</span>
 </div>
 <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between">
 <p class="text-[10px] font-bold text-slate-400 uppercase mb-1" data-i18n="home.savedNotes">Notas Guardadas</p>

@@ -12,9 +12,41 @@ import homeRaw from '../../../stitch_emotia/home_inicio_1/code.html?raw';
 const qs  = (sel) => document.querySelector(`#app ${sel}`);
 const qsa = (sel) => document.querySelectorAll(`#app ${sel}`);
 
-// ── Calcular racha de días consecutivos (basada en reflexiones) ──
-async function calcStreak(userId, coupleId) {
+// ── Calcular racha de días consecutivos ──────────────────────
+function _calcStreakFromDates(dates) {
+  let streak = 0;
+  let cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  for (const dateStr of dates) {
+    const d = new Date(dateStr);
+    d.setHours(0, 0, 0, 0);
+    const diff = Math.round((cursor - d) / 86400000);
+    if (diff > 1) break;
+    streak++;
+    cursor = d;
+  }
+  return streak;
+}
+
+async function calcEmotionStreak(userId, coupleId) {
   try {
+    const today = new Date().toISOString().split('T')[0];
+    const { data } = await supabase
+      .from('emotion_checkins')
+      .select('date')
+      .eq('user_id', userId)
+      .eq('couple_id', coupleId)
+      .order('date', { ascending: false })
+      .limit(90);
+    if (!data?.length) return { streak: 0, doneToday: false };
+    const dates = [...new Set(data.map(r => r.date))];
+    return { streak: _calcStreakFromDates(dates), doneToday: dates[0] === today };
+  } catch (_) { return { streak: 0, doneToday: false }; }
+}
+
+async function calcQuestionStreak(userId, coupleId) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase
       .from('question_answers')
       .select('answered_date')
@@ -22,36 +54,20 @@ async function calcStreak(userId, coupleId) {
       .eq('couple_id', coupleId)
       .order('answered_date', { ascending: false })
       .limit(90);
-
-    if (!data?.length) return 0;
-
-    // Deduplicar fechas (puede haber más de una fila por día en edge cases)
+    if (!data?.length) return { streak: 0, doneToday: false };
     const dates = [...new Set(data.map(r => r.answered_date))];
-
-    let streak = 0;
-    let cursor = new Date();
-    cursor.setHours(0,0,0,0);
-
-    for (const dateStr of dates) {
-      const d = new Date(dateStr);
-      d.setHours(0,0,0,0);
-      const diff = Math.round((cursor - d) / 86400000);
-      if (diff > 1) break;   // hueco de más de 1 día → racha rota
-      streak++;
-      cursor = d;
-    }
-    return streak;
-  } catch (_) { return 0; }
+    return { streak: _calcStreakFromDates(dates), doneToday: dates[0] === today };
+  } catch (_) { return { streak: 0, doneToday: false }; }
 }
 
-// ── Renderizar barras de racha (7 barras) ────────────────────
-function renderStreakBars(streak) {
-  const container = qs('.command-grid > div:nth-child(4) .flex.gap-1');
+// ── Renderizar barras mini de racha (5 barras) ────────────────
+function renderMiniStreakBars(containerId, streak) {
+  const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 5; i++) {
     const bar = document.createElement('div');
-    bar.className = `h-1 flex-1 rounded-full ${i < streak ? 'bg-primary' : 'bg-white/10'}`;
+    bar.className = `h-0.5 flex-1 rounded-full ${i < streak ? 'bg-primary' : 'bg-white/10'}`;
     container.appendChild(bar);
   }
 }
@@ -183,20 +199,27 @@ async function initHome(router) {
     }
   }
 
-  // 4d. Racha (basada en reflexiones diarias)
+  // 4d. Rachas duales (emoción + pregunta del día)
   const rachaWidget = widgets[3];
-  if (rachaWidget) {
-    rachaWidget.style.cursor = 'pointer';
-    rachaWidget.addEventListener('click', () => router.navigate('/reflexion'));
+  if (rachaWidget && couple) {
+    try {
+      const [emo, qst] = await Promise.all([
+        calcEmotionStreak(user.id, couple.id),
+        calcQuestionStreak(user.id, couple.id),
+      ]);
 
-    if (couple) {
-      try {
-        const streak   = await calcStreak(user.id, couple.id);
-        const rachaNum = rachaWidget.querySelector('.text-3xl.font-bold');
-        if (rachaNum) rachaNum.textContent = String(streak);
-        renderStreakBars(streak);
-      } catch (_) { /* silencioso */ }
-    }
+      const eNum = rachaWidget.querySelector('#streak-emotion-num');
+      if (eNum) eNum.textContent = String(emo.streak);
+      const eDot = rachaWidget.querySelector('#streak-emotion-dot');
+      if (eDot) eDot.className = `size-2 rounded-full ml-1 shrink-0 ${emo.doneToday ? 'bg-emerald-400' : 'bg-white/10'}`;
+      renderMiniStreakBars('streak-emotion-bars', emo.streak);
+
+      const qNum = rachaWidget.querySelector('#streak-question-num');
+      if (qNum) qNum.textContent = String(qst.streak);
+      const qDot = rachaWidget.querySelector('#streak-question-dot');
+      if (qDot) qDot.className = `size-2 rounded-full ml-1 shrink-0 ${qst.doneToday ? 'bg-emerald-400' : 'bg-white/10'}`;
+      renderMiniStreakBars('streak-question-bars', qst.streak);
+    } catch (_) { /* silencioso */ }
   }
 
   // 4e. Notas guardadas → historial de reflexiones
