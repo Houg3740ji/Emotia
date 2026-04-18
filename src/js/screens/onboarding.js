@@ -49,6 +49,11 @@ async function initScreen1(router) {
 async function initScreen2(router, params) {
   const mode = params?.mode || 'register';
 
+  // ── Flecha atrás → volver a pantalla 1 ─────────────────────
+  const backIcon = [...document.querySelectorAll('#app .material-symbols-outlined')]
+    .find(el => el.textContent.trim() === 'arrow_back_ios_new');
+  backIcon?.closest('div')?.addEventListener('click', () => router.navigate('/onboarding/1'));
+
   // ── Cambiar título según modo ───────────────────────────────
   const title = qs('h1');
   if (title) {
