@@ -82,7 +82,7 @@ async function initScreen2(router, params) {
              focus:border-primary focus:ring-primary text-slate-900
              placeholder:text-slate-400 transition-all border shadow-sm
              focus:shadow-lg focus:shadow-primary/5 pr-14"
-      placeholder="Contraseña (mín. 6 caracteres)"
+      placeholder="Contraseña"
       type="password"
       autocomplete="${mode === 'login' ? 'current-password' : 'new-password'}"
     />
