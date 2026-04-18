@@ -27,7 +27,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     // Persiste la sesión en localStorage entre recargas y reinicios de app
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false, // false en Capacitor (no hay URL de callback OAuth en móvil nativo)
+    detectSessionInUrl: true,
     storage: window.localStorage,
   },
 });
@@ -76,7 +76,7 @@ export const auth = {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'com.emotia.app://auth/callback',
+        redirectTo: window.location.origin,
       },
     });
     if (error) throw error;
