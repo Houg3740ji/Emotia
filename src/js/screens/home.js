@@ -198,14 +198,16 @@ async function initHome(router) {
       ]);
 
       const eNum = rachaWidget.querySelector('#streak-emotion-num');
-      if (eNum) eNum.textContent = String(emo.streak);
-      const eDot = rachaWidget.querySelector('#streak-emotion-dot');
-      if (eDot) eDot.className = `size-2 rounded-full ml-auto ${emo.doneToday ? 'bg-emerald-400' : 'bg-white/10'}`;
+      if (eNum) {
+        eNum.textContent = String(emo.streak);
+        eNum.className = `text-4xl font-black tracking-tight leading-none ${emo.doneToday ? 'text-primary' : 'text-white/20'}`;
+      }
 
       const qNum = rachaWidget.querySelector('#streak-question-num');
-      if (qNum) qNum.textContent = String(qst.streak);
-      const qDot = rachaWidget.querySelector('#streak-question-dot');
-      if (qDot) qDot.className = `size-2 rounded-full ml-auto ${qst.doneToday ? 'bg-emerald-400' : 'bg-white/10'}`;
+      if (qNum) {
+        qNum.textContent = String(qst.streak);
+        qNum.className = `text-4xl font-black tracking-tight leading-none ${qst.doneToday ? 'text-primary' : 'text-white/20'}`;
+      }
     } catch (_) { /* silencioso */ }
   }
 
