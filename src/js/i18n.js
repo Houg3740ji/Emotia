@@ -33,6 +33,22 @@ const TRANSLATIONS = {
       partnerStatus:    'ha registrado su estado',
     },
 
+    // ── Notificaciones ──────────────────────────────────────────
+    notif: {
+      questionTitle:   'Pregunta del día',
+      questionBody:    'Ya tienes una nueva pregunta esperándote',
+      moodTitle:       '¿Cómo te sientes hoy?',
+      moodBody:        'Registra tu estado emocional del día',
+      streakTitle:     '¡Tu racha está en peligro!',
+      streakQuestion:  'Responde la pregunta del día antes de medianoche',
+      streakMood:      'Registra tu estado emocional antes de medianoche',
+      partnerMood:     'ha registrado su estado emocional',
+      partnerQuestion: 'ha respondido la pregunta del día',
+      partnerTask:     'ha añadido una tarea nueva',
+      partnerMatch:    '¡Tenéis un match! 🔥',
+      partnerCapsule:  'te ha enviado una cápsula de voz',
+    },
+
     // ── Check-in ─────────────────────────────────────────────────
     checkin: {
       title:          '¿Cómo te sientes hoy?',
@@ -343,6 +359,22 @@ const TRANSLATIONS = {
       entry:            'entry',
       entries:          'entries',
       partnerStatus:    'registered their mood',
+    },
+
+    // ── Notifications ────────────────────────────────────────────
+    notif: {
+      questionTitle:   'Question of the day',
+      questionBody:    'A new question is waiting for you',
+      moodTitle:       'How are you feeling today?',
+      moodBody:        'Log your emotional state for today',
+      streakTitle:     'Your streak is at risk!',
+      streakQuestion:  'Answer today\'s question before midnight',
+      streakMood:      'Log your mood before midnight',
+      partnerMood:     'logged their emotional state',
+      partnerQuestion: 'answered the question of the day',
+      partnerTask:     'added a new task',
+      partnerMatch:    'You have a match! 🔥',
+      partnerCapsule:  'sent you a voice capsule',
     },
 
     // ── Check-in ─────────────────────────────────────────────────

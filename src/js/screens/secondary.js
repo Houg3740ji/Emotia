@@ -3141,7 +3141,6 @@ export async function showSettings(router) {
           ${[
             ['notifications', t('settings.dailyQuestion')],
             ['mood',          t('settings.emotionalCheckin')],
-            ['mic',           t('settings.audioCapsules')],
           ].map(([icon, label]) => `
             <div class="flex items-center justify-between px-4 py-3.5">
               <div class="flex items-center gap-3">

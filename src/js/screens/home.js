@@ -6,6 +6,12 @@ import { auth, db, supabase } from '../../supabase.js';
 import { getTimeGreeting, showToast } from '../auth.js';
 import { showSettings } from './secondary.js';
 import { t, getLang } from '../i18n.js';
+import {
+  requestNotifPermissions,
+  scheduleDailyReminders,
+  scheduleStreakWarnings,
+  notifyPartnerActivity,
+} from '../notifications.js';
 
 import homeRaw from '../../../stitch_emotia/home_inicio_1/code.html?raw';
 
@@ -232,27 +238,112 @@ async function initHome(router) {
   const ajustesBtn = qs('button[class*="rounded-xl"][class*="bg-slate-100"]');
   ajustesBtn?.addEventListener('click', () => showSettings(router));
 
-  // ── 6. Real-time: escuchar check-ins de la pareja ────────────
+  // ── 6. Notificaciones ────────────────────────────────────────
   if (couple) {
+    // Pedir permiso y programar recordatorios diarios (una vez por sesión)
+    const granted = await requestNotifPermissions();
+    if (granted) {
+      const today = new Date().toISOString().split('T')[0];
+
+      // Comprobar si ya hizo check-in y respondió la pregunta hoy
+      const [checkins, answers] = await Promise.allSettled([
+        db.getTodayCheckins(couple.id),
+        supabase.from('question_answers')
+          .select('answered_date')
+          .eq('user_id', user.id)
+          .eq('couple_id', couple.id)
+          .eq('answered_date', today)
+          .limit(1),
+      ]);
+
+      const moodDone     = checkins.value?.some?.(c => c.user_id === user.id) ?? false;
+      const questionDone = (answers.value?.data?.length ?? 0) > 0;
+
+      scheduleDailyReminders(t);
+      scheduleStreakWarnings({ questionDone, moodDone }, t);
+    }
+  }
+
+  // ── 7. Real-time: actividad de la pareja ─────────────────────
+  if (couple) {
+    const partnerName = partner?.name || 'Tu pareja';
+
     const channel = supabase
-      .channel(`home-checkins-${couple.id}`)
+      .channel(`home-partner-${couple.id}`)
+
+      // Estado emocional de la pareja
       .on('postgres_changes', {
-        event:  'INSERT',
-        schema: 'public',
-        table:  'emotion_checkins',
+        event: 'INSERT', schema: 'public', table: 'emotion_checkins',
         filter: `couple_id=eq.${couple.id}`,
       }, (payload) => {
-        // Si es la pareja quien registró, actualizar su widget
-        if (payload.new?.user_id !== user.id) {
-          const partnerCard = qs('.command-grid > div:nth-child(1)');
-          if (partnerCard) {
-            showToast(`${partner?.name || 'Tu pareja'} ${t('home.partnerStatus')} ${payload.new.emoji}`, 'neutral', 3000);
-          }
+        if (payload.new?.user_id === user.id) return;
+        const emoji = payload.new?.emoji ?? '';
+        showToast(`${partnerName} ${t('home.partnerStatus')} ${emoji}`, 'neutral', 3000);
+        notifyPartnerActivity(
+          `${partnerName} ${emoji}`,
+          t('notif.partnerMood'),
+        );
+      })
+
+      // Respuesta a la pregunta del día
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'question_answers',
+        filter: `couple_id=eq.${couple.id}`,
+      }, (payload) => {
+        if (payload.new?.user_id === user.id) return;
+        notifyPartnerActivity(
+          partnerName,
+          t('notif.partnerQuestion'),
+        );
+      })
+
+      // Tarea nueva añadida por la pareja
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'couple_tasks',
+        filter: `couple_id=eq.${couple.id}`,
+      }, (payload) => {
+        if (payload.new?.assigned_to === user.id || payload.new?.created_by === user.id) return;
+        notifyPartnerActivity(
+          partnerName,
+          t('notif.partnerTask'),
+        );
+      })
+
+      // Match en modo íntimo (ambos han dado right a la misma fantasía)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'fantasy_swipes',
+        filter: `couple_id=eq.${couple.id}`,
+      }, async (payload) => {
+        if (payload.new?.user_id === user.id) return;
+        if (payload.new?.direction !== 'right') return;
+        // Verificar si el usuario actual también la tiene en right (match real)
+        const { data } = await supabase
+          .from('fantasy_swipes')
+          .select('id')
+          .eq('couple_id', couple.id)
+          .eq('user_id', user.id)
+          .eq('fantasy_id', payload.new.fantasy_id)
+          .eq('direction', 'right')
+          .limit(1);
+        if (data?.length) {
+          notifyPartnerActivity('✨ Emotia', t('notif.partnerMatch'));
         }
       })
+
+      // Cápsula de audio recibida
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'audio_capsules',
+        filter: `couple_id=eq.${couple.id}`,
+      }, (payload) => {
+        if (payload.new?.receiver_id !== user.id) return;
+        notifyPartnerActivity(
+          partnerName,
+          t('notif.partnerCapsule'),
+        );
+      })
+
       .subscribe();
 
-    // Limpiar suscripción al salir
     window._emotiaChannel = channel;
   }
 }

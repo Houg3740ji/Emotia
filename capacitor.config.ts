@@ -27,6 +27,11 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
+    LocalNotifications: {
+      smallIcon: 'ic_stat_icon',
+      iconColor: '#0d968b',
+      sound: null,
+    },
     Keyboard: {
       resize: 'body',
       style: 'LIGHT',
