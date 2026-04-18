@@ -267,6 +267,7 @@ async function initHome(router) {
   // ── 7. Real-time: actividad de la pareja ─────────────────────
   if (couple) {
     const partnerName = partner?.name || 'Tu pareja';
+    const partnerNotifsOn = () => localStorage.getItem('emotia_notif_partner') !== 'false';
 
     const channel = supabase
       .channel(`home-partner-${couple.id}`)
@@ -279,10 +280,7 @@ async function initHome(router) {
         if (payload.new?.user_id === user.id) return;
         const emoji = payload.new?.emoji ?? '';
         showToast(`${partnerName} ${t('home.partnerStatus')} ${emoji}`, 'neutral', 3000);
-        notifyPartnerActivity(
-          `${partnerName} ${emoji}`,
-          t('notif.partnerMood'),
-        );
+        if (partnerNotifsOn()) notifyPartnerActivity(`${partnerName} ${emoji}`, t('notif.partnerMood'));
       })
 
       // Respuesta a la pregunta del día
@@ -291,10 +289,7 @@ async function initHome(router) {
         filter: `couple_id=eq.${couple.id}`,
       }, (payload) => {
         if (payload.new?.user_id === user.id) return;
-        notifyPartnerActivity(
-          partnerName,
-          t('notif.partnerQuestion'),
-        );
+        if (partnerNotifsOn()) notifyPartnerActivity(partnerName, t('notif.partnerQuestion'));
       })
 
       // Tarea nueva añadida por la pareja
@@ -303,10 +298,7 @@ async function initHome(router) {
         filter: `couple_id=eq.${couple.id}`,
       }, (payload) => {
         if (payload.new?.assigned_to === user.id || payload.new?.created_by === user.id) return;
-        notifyPartnerActivity(
-          partnerName,
-          t('notif.partnerTask'),
-        );
+        if (partnerNotifsOn()) notifyPartnerActivity(partnerName, t('notif.partnerTask'));
       })
 
       // Match en modo íntimo (ambos han dado right a la misma fantasía)
@@ -316,7 +308,6 @@ async function initHome(router) {
       }, async (payload) => {
         if (payload.new?.user_id === user.id) return;
         if (payload.new?.direction !== 'right') return;
-        // Verificar si el usuario actual también la tiene en right (match real)
         const { data } = await supabase
           .from('fantasy_swipes')
           .select('id')
@@ -325,9 +316,7 @@ async function initHome(router) {
           .eq('fantasy_id', payload.new.fantasy_id)
           .eq('direction', 'right')
           .limit(1);
-        if (data?.length) {
-          notifyPartnerActivity('✨ Emotia', t('notif.partnerMatch'));
-        }
+        if (data?.length && partnerNotifsOn()) notifyPartnerActivity('✨ Emotia', t('notif.partnerMatch'));
       })
 
       // Cápsula de audio recibida
@@ -336,10 +325,7 @@ async function initHome(router) {
         filter: `couple_id=eq.${couple.id}`,
       }, (payload) => {
         if (payload.new?.receiver_id !== user.id) return;
-        notifyPartnerActivity(
-          partnerName,
-          t('notif.partnerCapsule'),
-        );
+        if (partnerNotifsOn()) notifyPartnerActivity(partnerName, t('notif.partnerCapsule'));
       })
 
       .subscribe();

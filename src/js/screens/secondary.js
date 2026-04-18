@@ -3149,6 +3149,21 @@ export async function showSettings(router) {
               </div>
               ${toggleHtml(true)}
             </div>`).join('')}
+          <div class="flex items-center justify-between px-4 py-3.5">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-slate-400">favorite</span>
+              <p class="text-sm font-medium text-slate-700">${t('settings.partnerActivity')}</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="toggle-partner-notif" class="sr-only peer"
+                ${localStorage.getItem('emotia_notif_partner') !== 'false' ? 'checked' : ''} />
+              <div class="w-11 h-6 bg-slate-200 rounded-full peer
+                          peer-checked:after:translate-x-full peer-checked:after:border-white
+                          after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                          after:bg-white after:border-gray-300 after:border after:rounded-full
+                          after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
         </div>
 
         <!-- Preferencias -->
@@ -3292,6 +3307,11 @@ export async function showSettings(router) {
   // Desvincular pareja (solo informativo)
   document.getElementById('st-unlink')?.addEventListener('click', () => {
     showToast(t('settings.unlinkInfo'), 'neutral', 3000);
+  });
+
+  // Toggle: notificaciones de actividad de pareja
+  document.getElementById('toggle-partner-notif')?.addEventListener('change', (e) => {
+    localStorage.setItem('emotia_notif_partner', e.target.checked ? 'true' : 'false');
   });
 
   // Selector de idioma — cambia idioma y re-renderiza la pantalla actual
