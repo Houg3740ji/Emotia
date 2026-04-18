@@ -60,17 +60,6 @@ async function calcQuestionStreak(userId, coupleId) {
   } catch (_) { return { streak: 0, doneToday: false }; }
 }
 
-// ── Renderizar barras mini de racha (5 barras) ────────────────
-function renderMiniStreakBars(containerId, streak) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
-    const bar = document.createElement('div');
-    bar.className = `h-0.5 flex-1 rounded-full ${i < streak ? 'bg-primary' : 'bg-white/10'}`;
-    container.appendChild(bar);
-  }
-}
 
 // ── Banner para usuario sin pareja vinculada ─────────────────
 function insertNoCoupleBar(partnerCode) {
@@ -211,14 +200,12 @@ async function initHome(router) {
       const eNum = rachaWidget.querySelector('#streak-emotion-num');
       if (eNum) eNum.textContent = String(emo.streak);
       const eDot = rachaWidget.querySelector('#streak-emotion-dot');
-      if (eDot) eDot.className = `size-2 rounded-full ml-1 shrink-0 ${emo.doneToday ? 'bg-emerald-400' : 'bg-white/10'}`;
-      renderMiniStreakBars('streak-emotion-bars', emo.streak);
+      if (eDot) eDot.className = `size-2 rounded-full ml-auto ${emo.doneToday ? 'bg-emerald-400' : 'bg-white/10'}`;
 
       const qNum = rachaWidget.querySelector('#streak-question-num');
       if (qNum) qNum.textContent = String(qst.streak);
       const qDot = rachaWidget.querySelector('#streak-question-dot');
-      if (qDot) qDot.className = `size-2 rounded-full ml-1 shrink-0 ${qst.doneToday ? 'bg-emerald-400' : 'bg-white/10'}`;
-      renderMiniStreakBars('streak-question-bars', qst.streak);
+      if (qDot) qDot.className = `size-2 rounded-full ml-auto ${qst.doneToday ? 'bg-emerald-400' : 'bg-white/10'}`;
     } catch (_) { /* silencioso */ }
   }
 
