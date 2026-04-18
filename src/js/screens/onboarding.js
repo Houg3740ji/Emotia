@@ -29,6 +29,8 @@ const qsa = (sel) => document.querySelectorAll(`#app ${sel}`);
 // PANTALLA 1 — Bienvenida
 // ════════════════════════════════════════════════════════════
 async function initScreen1(router) {
+  document.getElementById('app').style.background = '#fdfaf5';
+
   // "Empezar" → pantalla de registro
   const startBtn = qs('button.bg-primary, button[class*="bg-primary"]');
   if (startBtn) {

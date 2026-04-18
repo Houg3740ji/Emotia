@@ -97,6 +97,7 @@ export const router = {
       app.className        = `screen-enter ${bodyClass}`;
       app.style.opacity    = '1';
       app.style.transition = 'none';
+      app.style.background = '';
       app.innerHTML        = content;
 
       // Aplicar traducciones al DOM recién inyectado
