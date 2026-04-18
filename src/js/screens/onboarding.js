@@ -49,6 +49,8 @@ async function initScreen1(router) {
 // PANTALLA 2 — Autenticación (registro / login)
 // ════════════════════════════════════════════════════════════
 async function initScreen2(router, params) {
+  document.getElementById('app').style.background = '#fdfaf5';
+
   const mode = params?.mode || 'register';
 
   // ── Flecha atrás → volver a pantalla 1 ─────────────────────
