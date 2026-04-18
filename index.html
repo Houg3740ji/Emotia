@@ -281,6 +281,24 @@
   <!-- Sistema de toasts -->
   <div id="toast" style="display:none;"></div>
 
+  <!-- Tab bar persistente — nunca se re-renderiza al navegar -->
+  <nav id="tab-bar"
+       class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[340px] bg-white/95 backdrop-blur-md border border-slate-200/50 rounded-full px-8 py-3 flex items-center justify-around z-50 shadow-xl shadow-slate-200/50"
+       style="display:none">
+    <a class="flex items-center justify-center text-primary" href="javascript:void(0)" data-tab="0">
+      <span class="material-symbols-outlined text-2xl fill-icon">home</span>
+    </a>
+    <a class="flex items-center justify-center text-slate-400" href="javascript:void(0)" data-tab="1">
+      <span class="material-symbols-outlined text-2xl">checklist</span>
+    </a>
+    <a class="flex items-center justify-center text-slate-400" href="javascript:void(0)" data-tab="2">
+      <span class="material-symbols-outlined text-2xl">auto_awesome</span>
+    </a>
+    <a class="flex items-center justify-center text-slate-400" href="javascript:void(0)" data-tab="3">
+      <span class="material-symbols-outlined text-2xl">person</span>
+    </a>
+  </nav>
+
   <!-- Contenedor principal — el router inyecta las pantallas aquí -->
   <div id="app"></div>
 

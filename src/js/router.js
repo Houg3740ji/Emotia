@@ -115,8 +115,7 @@ export const router = {
         history.pushState({ path }, '', hashPath);
       }
 
-      // ── Conectar tab bar inmediatamente (síncrono) ───────────
-      // Debe ir ANTES del init() para que los links no queden como href="#"
+      // ── Tab bar persistente: mostrar/ocultar y sincronizar ───
       this.wireTabBar();
       this._syncTabBar(path);
 
@@ -182,58 +181,38 @@ export const router = {
   /** Devuelve los parámetros de la navegación actual */
   getParams() { return this._params; },
 
-  /**
-   * Sincroniza el estado activo del tab bar según la ruta actual.
-   * Itera nav.children (incluye el botón FAB) para que los índices
-   * coincidan con el orden real del HTML: a·a·button·a·a
-   */
+  // Rutas que muestran el tab bar
+  _TAB_ROUTES: new Set(['/home', '/capsulas', '/capsulas/grabar', '/intimo', '/ruleta']),
+
+  // Qué índice corresponde a cada ruta (4 tabs: home, capsulas, intimo, ruleta)
+  _TAB_INDEX: { '/home': 0, '/capsulas': 1, '/capsulas/grabar': 1, '/intimo': 2, '/ruleta': 3 },
+
   _syncTabBar(path) {
-    // Índices sobre nav.children: 0=home, 1=capsulas, 2=FAB(button), 3=intimo, 4=ruleta
-    const TAB_INDEX = {
-      '/home':            0,
-      '/capsulas':        1,
-      '/capsulas/grabar': 1,
-      '/intimo':          3,
-      '/ruleta':          4,
-    };
-    const nav = document.querySelector('#app nav');
+    const nav = document.getElementById('tab-bar');
     if (!nav) return;
 
-    const activeIdx = TAB_INDEX[path] ?? -1;
+    // Mostrar u ocultar según la ruta
+    nav.style.display = this._TAB_ROUTES.has(path) ? '' : 'none';
+
+    const activeIdx = this._TAB_INDEX[path] ?? -1;
     Array.from(nav.children).forEach((el, i) => {
-      if (el.tagName === 'BUTTON') return; // FAB — sin estado activo
       el.classList.toggle('text-primary',   i === activeIdx);
       el.classList.toggle('text-slate-400', i !== activeIdx);
       const icon = el.querySelector('.material-symbols-outlined');
-      if (icon) {
-        icon.classList.toggle('fill-icon', i === activeIdx);
-      }
+      if (icon) icon.classList.toggle('fill-icon', i === activeIdx);
     });
   },
 
-  /**
-   * Conecta los elementos del tab bar al router.
-   * Usa nav.children (a·a·button·a·a) para respetar el orden real del HTML.
-   * Mapa: 0=home, 1=capsulas, 2=FAB(sin acción), 3=intimo, 4=ruleta
-   */
   wireTabBar() {
-    const nav = document.querySelector('#app nav');
-    if (!nav || nav.dataset.wired) return;  // guard: evitar doble-registro
+    const nav = document.getElementById('tab-bar');
+    if (!nav || nav.dataset.wired) return;
     nav.dataset.wired = '1';
 
-    const ROUTE_BY_INDEX = ['/home', '/capsulas', null, '/intimo', '/ruleta'];
-
+    const ROUTES = ['/home', '/capsulas', '/intimo', '/ruleta'];
     Array.from(nav.children).forEach((el, i) => {
-      if (el.tagName === 'BUTTON') {
-        // FAB central — sin acción asignada por ahora
-        return;
-      }
-      const route = ROUTE_BY_INDEX[i];
-      if (!route) return;
-      el.href = 'javascript:void(0)';
       el.addEventListener('click', (e) => {
         e.preventDefault();
-        this.navigate(route);
+        this.navigate(ROUTES[i]);
       });
     });
   },
