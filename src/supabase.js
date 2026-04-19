@@ -27,7 +27,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     // Persiste la sesión en localStorage entre recargas y reinicios de app
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
+    detectSessionInUrl: false,
     storage: window.localStorage,
   },
 });
