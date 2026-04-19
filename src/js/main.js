@@ -29,7 +29,7 @@ async function init() {
       router.navigate('/onboarding/1');
     }
 
-    if (event === 'SIGNED_IN' && (!router.currentRoute || router.currentRoute.startsWith('/onboarding/2'))) {
+    if (event === 'SIGNED_IN' && router.currentRoute?.startsWith('/onboarding/2')) {
       // Vino de OAuth (Google/Apple) o de email/contraseña → completar flujo
       cleanupRealtime();
       await router.start();
