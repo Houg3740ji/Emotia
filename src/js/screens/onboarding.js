@@ -38,7 +38,7 @@ async function initScreen1(router) {
   }
 
   // "Ya tengo una cuenta" → pantalla de login
-  const loginBtn = qs('button.text-slate-500');
+  const loginBtn = qs('#login-btn') || qs('button.text-slate-400');
   if (loginBtn) {
     loginBtn.addEventListener('click', () => router.navigate('/onboarding/2', { mode: 'login' }));
   }
