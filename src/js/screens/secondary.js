@@ -788,7 +788,7 @@ async function _intimoDescubrir(container, couple, user) {
                              text-primary text-[10px] font-bold uppercase tracking-wider mb-2">
                   ${_esc(_categoryLabel(cur.category))}
                 </span>` : ''}
-                <h2 class="text-2xl font-bold text-slate-900 leading-tight">
+                <h2 class="font-playfair text-2xl text-slate-900 leading-tight">
                   ${_esc(cur.title || '')}
                 </h2>
               </div>
@@ -1185,7 +1185,7 @@ function _showFantasySheet(fantasy) {
                      text-[10px] font-bold uppercase tracking-wider">
           ${_esc(_categoryLabel(fantasy.category))}
         </span>` : ''}
-        <h2 class="text-2xl font-bold text-slate-900">${_esc(fantasy.title || '')}</h2>
+        <h2 class="font-playfair text-2xl text-slate-900">${_esc(fantasy.title || '')}</h2>
         <p class="text-slate-600 text-sm leading-relaxed">${_esc(fantasy.description || '')}</p>
         <div class="flex gap-3 flex-wrap">
           ${fantasy.duration_label ? `
@@ -1818,7 +1818,7 @@ function _ruletaShowResult(plan, couple) {
     <div class="flex items-start gap-3">
       <span class="text-4xl flex-shrink-0 mt-0.5">${emoji}</span>
       <div class="flex-1 min-w-0">
-        <h3 class="font-bold text-xl text-slate-900 leading-snug">${_esc(_planTitle)}</h3>
+        <h3 class="font-playfair text-xl text-slate-900 leading-snug">${_esc(_planTitle)}</h3>
         ${_planDesc
           ? `<p class="text-slate-500 text-sm mt-1.5 leading-relaxed">${_esc(_planDesc)}</p>`
           : ''}
