@@ -506,7 +506,7 @@ async function initIntimo(router) {
 
       <header class="pt-12 pb-2 px-6 flex items-center justify-center sticky top-0 z-10
                      bg-[#F5F0E8]/90 backdrop-blur-md">
-        <h1 class="font-bold tracking-tight text-4xl text-slate-900">${t('intimo.title')}</h1>
+        <h1 class="font-gloria tracking-tight text-4xl text-slate-900">${t('intimo.title')}</h1>
       </header>
 
       <!-- Tabs -->
@@ -1307,7 +1307,7 @@ async function initRuleta(router) {
       <!-- Header -->
       <header class="sticky top-0 z-10 bg-[#F5F0E8]/90 backdrop-blur-md px-4 py-4
                      flex flex-col items-center justify-center">
-        <h1 class="font-bold tracking-tight text-2xl">${t('roulette.title')}</h1>
+        <h1 class="font-gloria tracking-tight text-2xl">${t('roulette.title')}</h1>
         <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">
           ${t('roulette.subtitle')}
         </p>

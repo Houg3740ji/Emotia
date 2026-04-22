@@ -7,7 +7,27 @@
       "Bash(npx vite:*)",
       "Skill(update-config)",
       "Bash(bash -c 'git add -A && git diff --cached --quiet || git commit -m \"\"\"\"test\"\"\"\" && git push origin main')",
-      "Bash(echo \"Exit: $?\")"
+      "Bash(echo \"Exit: $?\")",
+      "Bash(supabase functions:*)",
+      "Bash(grep -E \"\\\\.js$|^d\")",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const fs=require\\('fs'\\);let c=fs.readFileSync\\('src/js/screens/secondary.js','utf8'\\);const i=c.indexOf\\('\\\\n\\\\n              \\\\${cur._isAI'\\);const j=c.indexOf\\(\\\\\"}'}\\\\\",i\\)+3;console.log\\('from:',i,'to:',j\\);console.log\\(JSON.stringify\\(c.slice\\(i,j\\)\\)\\);\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);let c=fs.readFileSync\\('src/js/screens/secondary.js','utf8'\\);const i=c.indexOf\\('_isAI ?'\\);console.log\\(i\\);console.log\\(JSON.stringify\\(c.slice\\(i-20,i+200\\)\\)\\);\")",
+      "mcp__claude_ai_Supabase__deploy_edge_function",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "Bash(grep -l \"dark:\" \"C:\\\\Users\\\\Hugo\\\\Desktop\\\\App de Psicologia Test N4\\\\src\\\\js\\\\screens\"/*.js)",
+      "Bash(node -e \"const crypto=require\\('crypto'\\);const{publicKey,privateKey}=crypto.generateKeyPairSync\\('ec',{namedCurve:'P-256'}\\);const pub=publicKey.export\\({type:'spki',format:'der'}\\);const priv=privateKey.export\\({type:'pkcs8',format:'der'}\\);const pubRaw=pub.slice\\(-65\\);const privRaw=priv.slice\\(-32\\);console.log\\('VAPID_PUBLIC='+Buffer.from\\(pubRaw\\).toString\\('base64url'\\)\\);console.log\\('VAPID_PRIVATE='+Buffer.from\\(privRaw\\).toString\\('base64url'\\)\\);\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(sed -n '126,142p' \"c:/Users/Hugo/Desktop/App de Psicologia Test N4/stitch_emotia/home_inicio_1/code.html\")",
+      "Bash(sed -n '150,173p' \"c:/Users/Hugo/Desktop/App de Psicologia Test N4/stitch_emotia/c_psulas_men_refinado_ios/code.html\")",
+      "Bash(sed -n '120,138p' \"c:/Users/Hugo/Desktop/App de Psicologia Test N4/stitch_emotia/ntimo_descubrir_t_tulo_ajustado/code.html\")",
+      "Bash(sed -n '127,147p' \"c:/Users/Hugo/Desktop/App de Psicologia Test N4/stitch_emotia/ruleta_de_citas_men_refinado_ios/code.html\")",
+      "Bash(npm install *)",
+      "Bash(ipconfig)"
     ]
   }
 }
