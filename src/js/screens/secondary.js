@@ -1306,7 +1306,7 @@ async function initRuleta(router) {
 
       <!-- Header -->
       <header class="sticky top-0 z-10 bg-[#F5F0E8]/90 backdrop-blur-md px-4 py-4
-                     flex flex-col items-center justify-center border-b border-primary/5">
+                     flex flex-col items-center justify-center">
         <h1 class="font-bold tracking-tight text-2xl">${t('roulette.title')}</h1>
         <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">
           ${t('roulette.subtitle')}
@@ -1342,7 +1342,7 @@ async function initRuleta(router) {
         </section>
 
         <!-- Paso 2: Ruleta -->
-        <section class="px-4 py-6" style="background:rgba(232,222,209,.4)">
+        <section class="px-4 py-6">
           <style>
             @keyframes _btn-pulse {
               0%,100%{box-shadow:0 8px 24px rgba(13,150,139,.32)}
