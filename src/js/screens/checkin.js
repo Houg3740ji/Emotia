@@ -253,16 +253,36 @@ function _updatePartnerCard(partner, partnerCheckin, userHasDone) {
 
 // ── Centra la tarjeta de pareja cuando no hay selección ──────
 function _centerPartnerCard(centered) {
+  const gridEl      = document.querySelector('#app .grid.grid-cols-2.gap-5');
   const partnerCard = document.querySelector('#app .aspect-square.bg-white');
-  if (!partnerCard) return;
+  const apoyoCard   = document.querySelector('#app .bg-soft-teal');
+
   if (centered) {
-    partnerCard.classList.add('col-span-2');
-    partnerCard.style.maxWidth = 'calc(50% - 10px)';
-    partnerCard.style.margin = '0 auto';
+    // Solo mostrar tarjeta pareja — flex centrado, tamaño natural de una columna
+    if (gridEl) {
+      gridEl.style.display         = 'flex';
+      gridEl.style.justifyContent  = 'center';
+    }
+    if (partnerCard) {
+      partnerCard.style.width       = 'calc(50% - 10px)';
+      partnerCard.style.aspectRatio = '';
+      partnerCard.style.minHeight   = '';
+    }
   } else {
-    partnerCard.classList.remove('col-span-2');
-    partnerCard.style.maxWidth = '';
-    partnerCard.style.margin = '';
+    // Ambas tarjetas visibles — volver al grid, quitar aspect-square para que se igualen
+    if (gridEl) {
+      gridEl.style.display        = '';
+      gridEl.style.justifyContent = '';
+    }
+    if (partnerCard) {
+      partnerCard.style.width       = '';
+      partnerCard.style.aspectRatio = 'auto';
+      partnerCard.style.minHeight   = '130px';
+    }
+    if (apoyoCard) {
+      apoyoCard.style.aspectRatio = 'auto';
+      apoyoCard.style.minHeight   = '130px';
+    }
   }
 }
 
