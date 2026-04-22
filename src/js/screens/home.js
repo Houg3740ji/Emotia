@@ -137,8 +137,10 @@ async function initHome(router) {
 
         if (myCheckin) {
           if (emotionSpan) emotionSpan.textContent = myCheckin.emotion_name;
-          const iconDiv = emotionWidget.querySelector('.material-symbols-outlined');
-          if (iconDiv) iconDiv.textContent = myCheckin.emoji;
+          const iconContainer = emotionWidget.querySelector('.size-14.rounded-2xl');
+          if (iconContainer) {
+            iconContainer.innerHTML = `<span style="font-size:1.75rem;line-height:1;display:flex;align-items:center;justify-content:center;">${myCheckin.emoji}</span>`;
+          }
         } else {
           if (emotionSpan) emotionSpan.textContent = t('home.noEmotion');
         }
