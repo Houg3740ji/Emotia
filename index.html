@@ -126,6 +126,17 @@
   </style>
 
   <style>
+    @font-face {
+      font-family: 'GloriaHallelujah';
+      src: url('/GloriaHallelujah-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    .font-gloria {
+      font-family: 'GloriaHallelujah', cursive !important;
+    }
+
     *, *::before, *::after { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
     body { min-height: 100dvh; }
@@ -281,7 +292,7 @@
 <body>
   <!-- Pantalla de carga mientras se verifica sesión -->
   <div id="loading-overlay">
-    <span style="font-size:2rem;font-weight:900;color:#0d968b;letter-spacing:-0.05em">Emotia</span>
+    <span class="font-gloria" style="font-size:2.2rem;color:#0d968b;">Emotia</span>
     <div class="loading-spinner"></div>
   </div>
 

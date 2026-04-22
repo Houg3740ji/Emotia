@@ -14,5 +14,6 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    allowedHosts: ['pessimism-uncurious-twisted.ngrok-free.dev'],
   },
 });
