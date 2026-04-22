@@ -500,8 +500,7 @@ async function initIntimo(router) {
   const user = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
-  const couple = await db.getMyCouple().catch(() => null);
-
+  // Mostrar estructura inmediatamente; couple carga después en background
   app.innerHTML = `
     <div class="min-h-screen flex flex-col bg-[#F5F0E8] font-display text-slate-900">
 
@@ -535,7 +534,9 @@ async function initIntimo(router) {
   window.tailwind?.refresh?.();
   router.wireTabBar();
 
-  // Tab switching
+  // couple carga en background; switchTab lo captura por referencia
+  let couple = null;
+
   const switchTab = async (tab) => {
     document.querySelectorAll('#app .intimo-tab').forEach(btn => {
       const on = btn.dataset.tab === tab;
@@ -561,6 +562,8 @@ async function initIntimo(router) {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab))
   );
 
+  // Cargar couple y mostrar tab inicial
+  couple = await db.getMyCouple().catch(() => null);
   await switchTab('descubrir');
 }
 
@@ -1274,7 +1277,7 @@ async function initRuleta(router) {
   const user = session?.user ?? null;
   if (!user) return router.navigate('/onboarding/1');
 
-  const couple = await db.getMyCouple().catch(() => null);
+  let couple = null; // carga en background tras mostrar la UI
 
   const FILTER_GROUPS = [
     { label: t('roulette.duration'), key: 'duration_label', options: [
@@ -1484,6 +1487,9 @@ async function initRuleta(router) {
     spinning = false;
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
   });
+
+  // Cargar couple en background (listo antes de que el usuario pulse GIRAR)
+  couple = await db.getMyCouple().catch(() => null);
 }
 
 // ── Selecciona el mejor conjunto de planes según filtros activos ──

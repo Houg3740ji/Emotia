@@ -92,18 +92,10 @@ export const router = {
       const { html, init } = route;
       const { bodyClass, content } = extractScreen(html);
 
+      // ── Inyectar y mostrar inmediatamente ────────────────────
       const app = document.getElementById('app');
-
-      // ── Snapshot: congelar la pantalla actual mientras carga la nueva ──
-      // La anterior se queda visible encima como overlay; la nueva carga debajo.
-      const prev = app.cloneNode(true);
-      prev.removeAttribute('id');
-      prev.style.cssText = 'position:fixed;inset:0;z-index:500;pointer-events:none;overflow:hidden;';
-      document.body.appendChild(prev);
-
-      // Preparar nueva pantalla (invisible, debajo del snapshot)
-      app.className        = `${bodyClass}`;
-      app.style.opacity    = '0';
+      app.className        = `screen-enter ${bodyClass}`;
+      app.style.opacity    = '1';
       app.style.transition = 'none';
       app.style.background = '';
       app.innerHTML        = content;
@@ -128,21 +120,9 @@ export const router = {
       this.wireTabBar();
       this._syncTabBar(path);
 
-      // ── Cuando init() termina: cross-fade snapshot→nueva pantalla ──
-      const reveal = () => {
-        app.style.transition = 'opacity 0.15s ease';
-        app.style.opacity    = '1';
-        prev.style.transition = 'opacity 0.15s ease';
-        prev.style.opacity    = '0';
-        setTimeout(() => prev.remove(), 160);
-      };
+      // ── init() corre en segundo plano; ya rellenará los datos ─
       if (typeof init === 'function') {
-        init(this, params).then(reveal).catch(err => {
-          console.error('[Router] Error en init:', err);
-          reveal();
-        });
-      } else {
-        reveal();
+        init(this, params).catch(err => console.error('[Router] Error en init:', err));
       }
 
     } catch (err) {
