@@ -530,40 +530,10 @@ async function initIntimo(router) {
       <!-- Contenido de tab -->
       <div id="intimo-content" class="flex-1 flex flex-col overflow-hidden pb-36"></div>
 
-      <!-- Nav fija -->
-      <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-sm px-6 z-30">
-        <nav class="bg-white rounded-full py-2 px-4 flex items-center justify-between h-16"
-             style="box-shadow:0 10px 40px -10px rgba(0,0,0,.12)">
-          <a data-nav="/home" class="flex flex-1 items-center justify-center cursor-pointer">
-            <span class="material-symbols-outlined text-slate-400 text-3xl">home</span>
-          </a>
-          <a data-nav="/capsulas" class="flex flex-1 items-center justify-center cursor-pointer">
-            <span class="material-symbols-outlined text-slate-400 text-3xl">checklist</span>
-          </a>
-          <div class="px-2">
-            <button class="w-12 h-12 rounded-full flex items-center justify-center
-                           text-white active:scale-95 transition-transform"
-                    style="background:#0D9488;box-shadow:0 4px 12px rgba(13,148,136,.3)">
-              <span class="material-symbols-outlined text-3xl">add</span>
-            </button>
-          </div>
-          <a data-nav="/intimo" class="flex flex-1 items-center justify-center cursor-pointer">
-            <span class="material-symbols-outlined text-3xl"
-                  style="color:#0D9488;font-variation-settings:'FILL' 1">auto_awesome</span>
-          </a>
-          <a data-nav="/ruleta" class="flex flex-1 items-center justify-center cursor-pointer">
-            <span class="material-symbols-outlined text-slate-400 text-3xl">person</span>
-          </a>
-        </nav>
-      </div>
     </div>`;
 
   window.tailwind?.refresh?.();
-
-  // Nav
-  document.querySelectorAll('#app [data-nav]').forEach(el =>
-    el.addEventListener('click', () => router.navigate(el.dataset.nav))
-  );
+  router.wireTabBar();
 
   // Tab switching
   const switchTab = async (tab) => {
@@ -1431,44 +1401,10 @@ async function initRuleta(router) {
 
       </main>
 
-      <!-- Nav fija -->
-      <div class="fixed bottom-5 left-0 right-0 z-20 px-8">
-        <div class="max-w-[310px] mx-auto h-14 bg-white rounded-full
-                    flex items-center justify-between px-2"
-             style="box-shadow:0 8px 30px rgba(0,0,0,.08)">
-          <a data-nav="/home"
-             class="flex flex-1 flex-col items-center justify-center cursor-pointer text-slate-400">
-            <span class="material-symbols-outlined text-xl">home</span>
-          </a>
-          <a data-nav="/capsulas"
-             class="flex flex-1 flex-col items-center justify-center cursor-pointer text-slate-400">
-            <span class="material-symbols-outlined text-xl">checklist</span>
-          </a>
-          <div class="flex flex-1 justify-center">
-            <button class="w-10 h-10 bg-primary rounded-full flex items-center justify-center
-                           text-white shadow-md active:scale-95 transition-transform">
-              <span class="material-symbols-outlined text-xl">add</span>
-            </button>
-          </div>
-          <a data-nav="/intimo"
-             class="flex flex-1 flex-col items-center justify-center cursor-pointer text-slate-400">
-            <span class="material-symbols-outlined text-xl">auto_awesome</span>
-          </a>
-          <a data-nav="/ruleta"
-             class="flex flex-1 flex-col items-center justify-center cursor-pointer text-primary">
-            <span class="material-symbols-outlined text-xl"
-                  style="font-variation-settings:'FILL' 1">person</span>
-          </a>
-        </div>
-      </div>
     </div>`;
 
   window.tailwind?.refresh?.();
-
-  // Nav
-  document.querySelectorAll('#app [data-nav]').forEach(el =>
-    el.addEventListener('click', () => router.navigate(el.dataset.nav))
-  );
+  router.wireTabBar();
 
   // Init rueda
   _ruletaInitWheel();
