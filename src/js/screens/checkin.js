@@ -67,6 +67,12 @@ async function initCheckin(router) {
   // ── Ocultar tarjeta de apoyo hasta que se seleccione emoción negativa
   if (apoyoCard && selectedIdx < 0) apoyoCard.style.display = 'none';
 
+  // ── Sin selección: ocultar h2 y centrar tarjeta de pareja ───
+  if (selectedIdx < 0) {
+    if (emotionName) emotionName.style.display = 'none';
+    _centerPartnerCard(true);
+  }
+
   // ── Tarjeta de pareja cuando no hay pareja vinculada ────────
   if (!couple) {
     _updatePartnerCardNone();
@@ -167,8 +173,12 @@ function _selectEmoji(items, emotionNameEl, apoyoCardEl, idx) {
   // Actualizar nombre de emoción
   const emotion = EMOTIONS[idx];
   if (emotionNameEl && emotion) {
+    emotionNameEl.style.display = '';
     emotionNameEl.textContent = t(`emotions.${emotion.id}.name`);
   }
+
+  // Restaurar tarjeta de pareja a posición normal
+  _centerPartnerCard(false);
 
   // Mostrar/ocultar tarjeta de apoyo
   if (apoyoCardEl && emotion) {
@@ -238,6 +248,21 @@ function _updatePartnerCard(partner, partnerCheckin, userHasDone) {
     if (emojiDot) {
       emojiDot.textContent = '🔒';
     }
+  }
+}
+
+// ── Centra la tarjeta de pareja cuando no hay selección ──────
+function _centerPartnerCard(centered) {
+  const partnerCard = document.querySelector('#app .aspect-square.bg-white');
+  if (!partnerCard) return;
+  if (centered) {
+    partnerCard.classList.add('col-span-2');
+    partnerCard.style.maxWidth = 'calc(50% - 10px)';
+    partnerCard.style.margin = '0 auto';
+  } else {
+    partnerCard.classList.remove('col-span-2');
+    partnerCard.style.maxWidth = '';
+    partnerCard.style.margin = '';
   }
 }
 
