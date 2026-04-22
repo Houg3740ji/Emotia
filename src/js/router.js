@@ -92,10 +92,10 @@ export const router = {
       const { html, init } = route;
       const { bodyClass, content } = extractScreen(html);
 
-      // ── Inyectar HTML y mostrar inmediatamente ───────────────
+      // ── Inyectar HTML oculto hasta que init() cargue los datos reales ──
       const app = document.getElementById('app');
       app.className        = `screen-enter ${bodyClass}`;
-      app.style.opacity    = '1';
+      app.style.opacity    = '0';
       app.style.transition = 'none';
       app.style.background = '';
       app.innerHTML        = content;
@@ -120,9 +120,18 @@ export const router = {
       this.wireTabBar();
       this._syncTabBar(path);
 
-      // ── Ejecutar init en segundo plano (actualiza datos en el DOM) ──
+      // ── Ejecutar init y mostrar la pantalla al terminar ──────
+      const reveal = () => {
+        app.style.transition = 'opacity 0.18s ease';
+        app.style.opacity    = '1';
+      };
       if (typeof init === 'function') {
-        init(this, params).catch(err => console.error('[Router] Error en init:', err));
+        init(this, params).then(reveal).catch(err => {
+          console.error('[Router] Error en init:', err);
+          reveal();
+        });
+      } else {
+        reveal();
       }
 
     } catch (err) {
