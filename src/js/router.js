@@ -92,9 +92,17 @@ export const router = {
       const { html, init } = route;
       const { bodyClass, content } = extractScreen(html);
 
-      // ── Inyectar HTML oculto hasta que init() cargue los datos reales ──
       const app = document.getElementById('app');
-      app.className        = `screen-enter ${bodyClass}`;
+
+      // ── Snapshot: congelar la pantalla actual mientras carga la nueva ──
+      // La anterior se queda visible encima como overlay; la nueva carga debajo.
+      const prev = app.cloneNode(true);
+      prev.removeAttribute('id');
+      prev.style.cssText = 'position:fixed;inset:0;z-index:500;pointer-events:none;overflow:hidden;';
+      document.body.appendChild(prev);
+
+      // Preparar nueva pantalla (invisible, debajo del snapshot)
+      app.className        = `${bodyClass}`;
       app.style.opacity    = '0';
       app.style.transition = 'none';
       app.style.background = '';
@@ -120,10 +128,13 @@ export const router = {
       this.wireTabBar();
       this._syncTabBar(path);
 
-      // ── Ejecutar init y mostrar la pantalla al terminar ──────
+      // ── Cuando init() termina: cross-fade snapshot→nueva pantalla ──
       const reveal = () => {
-        app.style.transition = 'opacity 0.18s ease';
+        app.style.transition = 'opacity 0.15s ease';
         app.style.opacity    = '1';
+        prev.style.transition = 'opacity 0.15s ease';
+        prev.style.opacity    = '0';
+        setTimeout(() => prev.remove(), 160);
       };
       if (typeof init === 'function') {
         init(this, params).then(reveal).catch(err => {
