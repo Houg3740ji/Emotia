@@ -6,6 +6,7 @@
  */
 
 import { getLang } from './i18n.js';
+import { haptic } from './haptics.js';
 
 // ── Validación ──────────────────────────────────────────────
 
@@ -63,13 +64,22 @@ export function showToast(message, type = 'neutral', duration = 3000) {
     error:   'bg-red-600 text-white',
   };
 
-  toast.innerHTML = `<div class="toast-pill ${colors[type] || colors.neutral}">${message}</div>`;
+  const pill = document.createElement('div');
+  pill.className = `toast-pill toast-enter ${colors[type] || colors.neutral}`;
+  pill.textContent = message;
+  toast.innerHTML = '';
+  toast.appendChild(pill);
   toast.style.display = 'block';
   toast.style.opacity = '1';
+
+  if (type === 'error') haptic.error();
+  else if (type === 'success') haptic.success();
+
   clearTimeout(toast._timer);
   toast._timer = setTimeout(() => {
+    toast.style.transition = 'opacity 0.25s ease';
     toast.style.opacity = '0';
-    setTimeout(() => { toast.style.display = 'none'; toast.style.opacity = '1'; }, 300);
+    setTimeout(() => { toast.style.display = 'none'; toast.style.opacity = '1'; toast.style.transition = ''; }, 260);
   }, duration);
 }
 

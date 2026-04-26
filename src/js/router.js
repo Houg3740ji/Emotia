@@ -8,6 +8,7 @@
 import { auth, db } from '../supabase.js';
 import { hideLoadingOverlay, showToast } from './auth.js';
 import { t, applyI18n } from './i18n.js';
+import { haptic } from './haptics.js';
 
 // Rutas públicas (no requieren sesión activa)
 // Las rutas 3-5 son parte del flujo de registro: si la confirmación de email
@@ -213,6 +214,14 @@ export const router = {
     Array.from(nav.children).forEach((el, i) => {
       el.addEventListener('click', (e) => {
         e.preventDefault();
+        haptic.light();
+        const icon = el.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.classList.remove('tab-bounce');
+          void icon.offsetWidth;
+          icon.classList.add('tab-bounce');
+          icon.addEventListener('animationend', () => icon.classList.remove('tab-bounce'), { once: true });
+        }
         this.navigate(ROUTES[i]);
       });
     });

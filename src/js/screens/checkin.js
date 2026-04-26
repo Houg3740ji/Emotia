@@ -5,6 +5,7 @@
 import { auth, db } from '../../supabase.js';
 import { showToast, setButtonLoading } from '../auth.js';
 import { t } from '../i18n.js';
+import { haptic } from '../haptics.js';
 
 import checkinRaw from '../../../stitch_emotia/check_in_emojis_con_contenedores_ampliados/code.html?raw';
 
@@ -94,6 +95,7 @@ async function initCheckin(router) {
   // ── Click en cada emoji ──────────────────────────────────────
   items.forEach((item, i) => {
     item.addEventListener('click', () => {
+      haptic.light();
       selectedIdx = i;
       _selectEmoji(items, emotionName, apoyoCard, i);
       if (confirmBtn) {
@@ -125,6 +127,7 @@ async function initCheckin(router) {
 
       const emotion = EMOTIONS[selectedIdx];
       const emotionName = t(`emotions.${emotion.id}.name`);
+      haptic.medium();
       setButtonLoading(confirmBtn, true);
 
       try {
@@ -133,6 +136,15 @@ async function initCheckin(router) {
           emoji:       emotion.emoji,
           emotionName: emotionName,
         });
+
+        haptic.success();
+        // Emoji vuela hacia arriba al confirmar
+        const selectedItem = items[selectedIdx];
+        if (selectedItem) {
+          selectedItem.style.transition = 'transform 0.4s ease-in, opacity 0.4s ease-in';
+          selectedItem.style.transform  = 'translateY(-40px) scale(1.4)';
+          selectedItem.style.opacity    = '0';
+        }
 
         showToast(`${t('checkin.saved')} ${emotion.emoji} ${emotionName}`, 'success', 2000);
 
@@ -159,21 +171,27 @@ async function initCheckin(router) {
 function _selectEmoji(items, emotionNameEl, apoyoCardEl, idx) {
   // Quitar selección anterior
   items.forEach(item => {
-    item.classList.remove('emoji-selected', 'border-primary', 'bg-primary\\/5');
+    item.classList.remove('emoji-selected', 'border-primary', 'bg-primary\\/5', 'emoji-spring');
     item.classList.add('border-transparent');
   });
 
-  // Aplicar selección
+  // Aplicar selección con spring bounce
   const selected = items[idx];
   if (selected) {
     selected.classList.add('emoji-selected', 'border-primary');
     selected.classList.remove('border-transparent');
+    void selected.offsetWidth; // force reflow para reiniciar animación
+    selected.classList.add('emoji-spring');
+    selected.addEventListener('animationend', () => selected.classList.remove('emoji-spring'), { once: true });
   }
 
-  // Actualizar nombre de emoción
+  // Actualizar nombre de emoción con fade-in
   const emotion = EMOTIONS[idx];
   if (emotionNameEl && emotion) {
     emotionNameEl.style.display = '';
+    emotionNameEl.classList.remove('emotion-reveal');
+    void emotionNameEl.offsetWidth;
+    emotionNameEl.classList.add('emotion-reveal');
     emotionNameEl.textContent = t(`emotions.${emotion.id}.name`);
   }
 

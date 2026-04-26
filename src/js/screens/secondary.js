@@ -10,6 +10,7 @@ import { auth, db, supabase, storage } from '../../supabase.js';
 import { showToast, setButtonLoading } from '../auth.js';
 import { aiGenerate, buildContext } from '../ai.js';
 import { t, getLang } from '../i18n.js';
+import { haptic } from '../haptics.js';
 
 import reflexionRaw from '../../../stitch_emotia/m_dulo_de_reflexi_n_refinado_v2/code.html?raw';
 import capsulasRaw  from '../../../stitch_emotia/c_psulas_men_refinado_ios/code.html?raw';
@@ -839,8 +840,22 @@ async function _intimoDescubrir(container, couple, user) {
         </div>
       </div>`;
 
-    const doDiscard = () => _animateCardOut('left',  () => _recordSwipe('left',  cur, couple, state, renderStack));
-    const doLike    = () => _animateCardOut('right', () => _recordSwipe('right', cur, couple, state, renderStack));
+    const doDiscard = () => {
+      haptic.light();
+      _animateCardOut('left', () => _recordSwipe('left', cur, couple, state, renderStack));
+    };
+    const doLike = () => {
+      haptic.medium();
+      // heart-beat en el icono del botón like
+      const likeIcon = document.querySelector('#btn-like .material-symbols-outlined');
+      if (likeIcon) {
+        likeIcon.classList.remove('heart-beat');
+        void likeIcon.offsetWidth;
+        likeIcon.classList.add('heart-beat');
+        likeIcon.addEventListener('animationend', () => likeIcon.classList.remove('heart-beat'), { once: true });
+      }
+      _animateCardOut('right', () => _recordSwipe('right', cur, couple, state, renderStack));
+    };
 
     _wireSwipe(document.getElementById('swipe-card'), { onLike: doLike, onDiscard: doDiscard });
     document.getElementById('btn-discard')?.addEventListener('click', doDiscard);
@@ -1144,13 +1159,15 @@ async function _recordSwipe(direction, fantasy, couple, state, renderStack) {
   renderStack();
 }
 
-// ── Overlay de match ─────────────────────────────────────────
+// ── Overlay de match con confetti ────────────────────────────
 function _showMatchAnimation(fantasy, onDismiss) {
+  haptic.match();
+
   const overlay = document.createElement('div');
-  overlay.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center px-8 text-center';
+  overlay.className = 'fixed inset-0 z-50 flex flex-col items-center justify-center px-8 text-center overflow-hidden';
   overlay.style.background = 'linear-gradient(135deg, #14213D 0%, #0D9488 100%)';
   overlay.innerHTML = `
-    <div class="mb-4 text-7xl" style="animation:bounce 1s infinite">💞</div>
+    <div class="match-float mb-4 text-7xl">💞</div>
     <h2 class="text-4xl font-bold text-white mb-2">${t('roulette.match')}</h2>
     <p class="text-white/70 text-base mb-3">${t('roulette.matchMsg')}</p>
     <p class="text-white font-bold text-xl mb-10 px-4">${_esc(fantasy.title || '')}</p>
@@ -1159,8 +1176,31 @@ function _showMatchAnimation(fantasy, onDismiss) {
             style="color:#14213D">
       ${t('roulette.matchBtn')}
     </button>`;
+
   document.getElementById('app').appendChild(overlay);
+
+  // Confetti burst
+  const COLORS = ['#FCD34D','#F472B6','#34D399','#60A5FA','#A78BFA','#FB923C','#FFFFFF'];
+  for (let i = 0; i < 32; i++) {
+    const p = document.createElement('div');
+    p.className = 'match-particle';
+    const angle = (Math.random() * 360) * (Math.PI / 180);
+    const dist  = 80 + Math.random() * 180;
+    p.style.cssText = `
+      left:50%; top:40%;
+      background:${COLORS[Math.floor(Math.random() * COLORS.length)]};
+      --tx:${Math.cos(angle) * dist}px;
+      --ty:${Math.sin(angle) * dist}px;
+      --rot:${Math.random() * 720 - 360}deg;
+      animation-delay:${Math.random() * 0.15}s;
+      animation-duration:${0.9 + Math.random() * 0.4}s;
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+    `;
+    overlay.appendChild(p);
+  }
+
   document.getElementById('match-ok')?.addEventListener('click', () => {
+    haptic.light();
     overlay.remove();
     onDismiss();
   });
@@ -1412,9 +1452,10 @@ async function initRuleta(router) {
   // Init rueda
   _ruletaInitWheel();
 
-  // Filter chips — toggle único por grupo
+  // Filter chips — toggle único por grupo con bounce
   document.querySelectorAll('#app .filter-chip').forEach(btn => {
     btn.addEventListener('click', () => {
+      haptic.light();
       const group   = btn.dataset.group;
       const value   = btn.dataset.value;
       const already = activeFilters[group] === value;
@@ -1431,6 +1472,10 @@ async function initRuleta(router) {
         activeFilters[group] = value;
         btn.classList.add('bg-primary', 'text-white', 'border-primary', 'font-bold', 'shadow-sm');
         btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200', 'font-medium');
+        btn.classList.remove('chip-bounce');
+        void btn.offsetWidth;
+        btn.classList.add('chip-bounce');
+        btn.addEventListener('animationend', () => btn.classList.remove('chip-bounce'), { once: true });
       }
     });
   });
@@ -1803,6 +1848,10 @@ function _ruletaShowResult(plan, couple) {
   if (!section || !card) return;
 
   section.classList.remove('hidden');
+  // Slide-up con spring al mostrar el resultado
+  card.classList.remove('slide-up-spring');
+  void card.offsetWidth;
+  card.classList.add('slide-up-spring');
 
   const emoji = _dateEmoji(plan.mood_type);
   const lang  = getLang();
@@ -1868,9 +1917,10 @@ function _ruletaShowResult(plan, couple) {
   // Aceptar cita → guardar en BD (solo si el plan tiene id; si es IA temporal, solo confirmar)
   document.getElementById('accept-date-btn')?.addEventListener('click', async () => {
     const btn = document.getElementById('accept-date-btn');
+    haptic.medium();
 
     if (!plan.id) {
-      // Plan generado por IA sin BD — confirmar visualmente sin INSERT
+      haptic.success();
       showToast(t('roulette.dateBooked'), 'success', 2500);
       if (btn) {
         btn.disabled = true;
@@ -1889,6 +1939,7 @@ function _ruletaShowResult(plan, couple) {
     setButtonLoading(btn, true);
     try {
       await db.acceptDatePlan(couple.id, plan.id);
+      haptic.success();
       showToast(t('roulette.dateSaved'), 'success', 2500);
       if (btn) {
         btn.disabled = true;
@@ -2154,17 +2205,27 @@ function _wireTaskActions(user, reload) {
       const taskId = card?.dataset.taskId;
       if (!taskId) return;
 
-      card.style.transition = 'all 0.3s ease';
-      card.style.opacity    = '0.4';
-      card.style.transform  = 'scale(0.97)';
+      // Check icon pop dentro del botón
+      haptic.success();
+      btn.innerHTML = `<span class="material-symbols-outlined text-primary text-sm check-pop"
+                             style="font-variation-settings:'FILL' 1">check</span>`;
+      btn.style.borderColor = '#0d968b';
+      btn.style.background  = '#e0f2f1';
+
+      // Collapse de la card tras el check
+      setTimeout(() => {
+        card.classList.add('task-completing');
+      }, 280);
 
       try {
         await db.completeTask(taskId);
         showToast(t('tasks.completed'), 'success', 1500);
-        await reload();
+        setTimeout(() => reload(), 450);
       } catch (err) {
-        card.style.opacity   = '';
-        card.style.transform = '';
+        card.classList.remove('task-completing');
+        btn.innerHTML = '';
+        btn.style.borderColor = '';
+        btn.style.background  = '';
         showToast(err.message || t('tasks.completeError'), 'error');
       }
     });
@@ -2321,9 +2382,16 @@ function _showNewTaskModal(user, couple, partner, onCreated) {
 
     try {
       await db.createTask({ coupleId: couple.id, title, priority: selPriority, assignedTo });
+      haptic.success();
       closeModal();
       showToast(t('tasks.created'), 'success', 2000);
       await onCreated();
+      // slide-in para la primera card recién añadida
+      const firstCard = document.querySelector('#app .task-card');
+      if (firstCard) {
+        firstCard.classList.add('task-slide-in');
+        firstCard.addEventListener('animationend', () => firstCard.classList.remove('task-slide-in'), { once: true });
+      }
     } catch (err) {
       setButtonLoading(createBtn, false);
       showToast(err.message || t('tasks.createError'), 'error');
@@ -2521,6 +2589,13 @@ async function initCapsulaGrabar(router, params) {
         };
 
         mediaRecorder.start(100);
+        haptic.medium();
+
+        // Pulso de activación en el botón
+        mainBtn.classList.remove('rec-activate');
+        void mainBtn.offsetWidth;
+        mainBtn.classList.add('rec-activate');
+        mainBtn.addEventListener('animationend', () => mainBtn.classList.remove('rec-activate'), { once: true });
 
         // UI: estado grabando
         document.getElementById('rec-ring-outer')?.classList.remove('hidden');
@@ -2600,6 +2675,9 @@ async function initCapsulaGrabar(router, params) {
         audioUrl:        path,          // guardamos el path, no la URL firmada que expira
         durationSeconds: secondsElapsed,
       });
+      haptic.success();
+      // Flash verde de éxito en el botón enviar
+      sendBtn.classList.add('success-flash');
       showToast(t('capsules.sent'), 'success', 2500);
       previewAudio?.pause();
       setTimeout(() => router.navigate('/capsulas'), 1500);
