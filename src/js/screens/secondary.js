@@ -221,7 +221,7 @@ function _renderPartnerSection(partner, partnerAnswer, userHasAnswered, question
       <div id="partner-section" class="relative rounded-2xl overflow-hidden">
         <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm
                     blur-sm select-none pointer-events-none">
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+          <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-3">
             ${_esc(partnerName.toUpperCase())}
           </p>
           <p class="text-navy text-base leading-relaxed">
@@ -262,7 +262,7 @@ function _renderPartnerSection(partner, partnerAnswer, userHasAnswered, question
   el.outerHTML = `
     <div id="partner-section" class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm
                                      transition-opacity duration-500" style="opacity:0">
-      <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+      <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-3">
         ${_esc(partnerName.toUpperCase())}
       </p>
       <p class="text-navy text-base leading-relaxed">${_esc(partnerAnswer.answer_text)}</p>
@@ -426,7 +426,7 @@ function _showCapsulaListSheet(cat, capsules, router) {
       <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <div class="flex items-center gap-2">
           <span class="text-2xl">${cat.emoji}</span>
-          <h3 class="text-lg font-bold text-slate-900">${_esc(cat.label)}</h3>
+          <h3 class="text-lg font-semibold text-slate-900">${_esc(cat.label)}</h3>
           <span class="text-xs text-slate-400 font-medium">${capsules.length} cápsula${capsules.length !== 1 ? 's' : ''}</span>
         </div>
         <button id="clm-close" class="text-slate-400 active:scale-90 transition-transform p-1">
@@ -506,7 +506,7 @@ async function initIntimo(router) {
 
       <header class="pt-12 pb-2 px-6 flex items-center justify-center sticky top-0 z-10
                      bg-[#F5F0E8]/90 backdrop-blur-md">
-        <h1 class="font-extrabold tracking-tight text-4xl text-slate-900">${t('intimo.title')}</h1>
+        <h1 class="font-bold tracking-tight text-4xl text-slate-900">${t('intimo.title')}</h1>
       </header>
 
       <!-- Tabs -->
@@ -785,7 +785,7 @@ async function _intimoDescubrir(container, couple, user) {
               <div class="absolute bottom-5 left-5 right-5">
                 ${cur.category ? `
                 <span class="inline-flex items-center px-3 py-1 rounded-full bg-white/85
-                             text-primary text-[10px] font-bold uppercase tracking-wider mb-2">
+                             text-primary text-[10px] font-medium uppercase tracking-wider mb-2">
                   ${_esc(_categoryLabel(cur.category))}
                 </span>` : ''}
                 <h2 class="font-playfair text-2xl text-slate-900 leading-tight">
@@ -868,7 +868,7 @@ async function _intimoMatches(container, couple) {
     container.innerHTML = `
       <div class="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-16">
         <span class="text-5xl">💫</span>
-        <p class="font-bold text-lg text-slate-700">${t('intimo.noMatchesYet')}</p>
+        <p class="font-semibold text-lg text-slate-700">${t('intimo.noMatchesYet')}</p>
         <p class="text-sm text-slate-400">${t('intimo.whenBothLike')}</p>
       </div>`;
     return;
@@ -876,7 +876,7 @@ async function _intimoMatches(container, couple) {
 
   container.innerHTML = `
     <div class="px-5 py-3">
-      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[.15em] mb-4">
+      <p class="text-[10px] font-medium text-slate-400 uppercase tracking-[.15em] mb-4">
         ${matches.length} match${matches.length !== 1 ? 'es' : ''} ${t('intimo.matchesCommon')}
       </p>
       <div class="grid grid-cols-2 gap-3">
@@ -895,12 +895,12 @@ async function _intimoMatches(container, couple) {
                 ${_fantasyEmoji(f.category)}
               </span>
               <span class="absolute top-2 right-2 bg-green-500 text-white text-[9px]
-                           font-bold px-2 py-0.5 rounded-full z-20">
+                           font-semibold px-2 py-0.5 rounded-full z-20">
                 Match
               </span>
             </div>
             <div class="p-3">
-              <p class="font-bold text-sm text-slate-800 leading-snug line-clamp-2">
+              <p class="font-semibold text-sm text-slate-800 leading-snug line-clamp-2">
                 ${_esc(f.title || '')}
               </p>
               ${f.intensity_label
@@ -997,7 +997,7 @@ async function _intimoHistorial(container, couple) {
 
     container.innerHTML = `
       <div class="px-5 py-3">
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[.15em] mb-4">
+        <p class="text-[10px] font-medium text-slate-400 uppercase tracking-[.15em] mb-4">
           ${matchIds.length} match${matchIds.length !== 1 ? 'es' : ''} ${t('intimo.matchesMutual')}
         </p>
         <div class="flex flex-col gap-3">
@@ -1151,7 +1151,7 @@ function _showMatchAnimation(fantasy, onDismiss) {
   overlay.style.background = 'linear-gradient(135deg, #14213D 0%, #0D9488 100%)';
   overlay.innerHTML = `
     <div class="mb-4 text-7xl" style="animation:bounce 1s infinite">💞</div>
-    <h2 class="text-4xl font-black text-white mb-2">${t('roulette.match')}</h2>
+    <h2 class="text-4xl font-bold text-white mb-2">${t('roulette.match')}</h2>
     <p class="text-white/70 text-base mb-3">${t('roulette.matchMsg')}</p>
     <p class="text-white font-bold text-xl mb-10 px-4">${_esc(fantasy.title || '')}</p>
     <button id="match-ok"
@@ -1307,7 +1307,7 @@ async function initRuleta(router) {
       <!-- Header -->
       <header class="sticky top-0 z-10 bg-[#F5F0E8]/90 backdrop-blur-md px-4 py-4
                      flex flex-col items-center justify-center">
-        <h1 class="font-extrabold tracking-tight text-2xl">${t('roulette.title')}</h1>
+        <h1 class="font-bold tracking-tight text-2xl">${t('roulette.title')}</h1>
         <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">
           ${t('roulette.subtitle')}
         </p>
@@ -1320,7 +1320,7 @@ async function initRuleta(router) {
           <div class="flex items-center gap-2 mb-5">
             <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center
                          justify-center text-xs font-bold flex-shrink-0">1</span>
-            <h2 class="font-bold text-lg">${t('roulette.selectStyle')}</h2>
+            <h2 class="font-semibold text-lg">${t('roulette.selectStyle')}</h2>
           </div>
           <div class="space-y-5">
             ${FILTER_GROUPS.map(g => `

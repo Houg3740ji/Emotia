@@ -208,13 +208,13 @@ async function initHome(router) {
       const eNum = rachaWidget.querySelector('#streak-emotion-num');
       if (eNum) {
         eNum.textContent = String(emo.streak);
-        eNum.className = `text-2xl font-black leading-none ${emo.doneToday ? 'text-primary' : 'text-white/20'}`;
+        eNum.className = `text-2xl font-bold leading-none ${emo.doneToday ? 'text-primary' : 'text-white/20'}`;
       }
 
       const qNum = rachaWidget.querySelector('#streak-question-num');
       if (qNum) {
         qNum.textContent = String(qst.streak);
-        qNum.className = `text-2xl font-black leading-none ${qst.doneToday ? 'text-primary' : 'text-white/20'}`;
+        qNum.className = `text-2xl font-bold leading-none ${qst.doneToday ? 'text-primary' : 'text-white/20'}`;
       }
     } catch (_) { /* silencioso */ }
   }
