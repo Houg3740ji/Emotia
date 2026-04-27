@@ -3003,6 +3003,9 @@ function _attachSystemListener() {
 _attachSystemListener();
 
 export async function showSettings(router) {
+  // Evitar doble apertura si el usuario toca dos veces rápido
+  if (document.getElementById('settings-overlay')) return;
+
   const session = await auth.getSession().catch(() => null);
   const user    = session?.user ?? null;
   if (!user) return;
@@ -3077,8 +3080,6 @@ export async function showSettings(router) {
   overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-end;background:rgba(0,0,0,0);transition:background 0.3s';
 
   overlay.innerHTML = `
-    <div id="st-backdrop" style="position:absolute;inset:0"></div>
-
     <div id="st-sheet"
          class="relative w-full bg-[#F5F0E8] rounded-t-3xl overflow-hidden font-display"
          style="max-height:92vh;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1)">
@@ -3249,12 +3250,18 @@ export async function showSettings(router) {
 
   function closeSheet() {
     overlay.style.background = 'rgba(0,0,0,0)';
-    document.getElementById('st-sheet').style.transform = 'translateY(100%)';
+    const sheet = document.getElementById('st-sheet');
+    if (sheet) sheet.style.transform = 'translateY(100%)';
     setTimeout(() => overlay.remove(), 380);
   }
 
-  document.getElementById('st-close').addEventListener('click', closeSheet);
-  document.getElementById('st-backdrop').addEventListener('click', closeSheet);
+  // Cerrar al pulsar el botón X
+  document.getElementById('st-close')?.addEventListener('click', closeSheet);
+
+  // Cerrar al tocar el área oscura fuera del sheet (robusto en móvil)
+  overlay.addEventListener('click', (e) => {
+    if (!e.target.closest('#st-sheet')) closeSheet();
+  });
 
   // Copiar código
   document.getElementById('st-copy-code')?.addEventListener('click', async () => {
