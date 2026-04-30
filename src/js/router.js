@@ -121,6 +121,10 @@ export const router = {
       this.wireTabBar();
       this._syncTabBar(path);
 
+      // Restaurar el tab bar a tamaño completo en cada navegación
+      const tabNav = document.getElementById('tab-bar');
+      tabNav?._tabRestore?.();
+
       // ── init() corre en segundo plano; ya rellenará los datos ─
       if (typeof init === 'function') {
         init(this, params).catch(err => console.error('[Router] Error en init:', err));
@@ -225,6 +229,61 @@ export const router = {
         this.navigate(ROUTES[i]);
       });
     });
+
+    // Inicializar comportamiento idle (solo una vez)
+    this._initTabIdleBehavior(nav);
+  },
+
+  // ── Efecto Instagram: minimiza el tab bar cuando no se usa ───
+  _initTabIdleBehavior(nav) {
+    const IDLE_MS   = 3400;  // tiempo de inactividad antes de minimizar
+    const SCALE_MIN = 0.80;  // escala minimizada
+    const OPAC_MIN  = 0.48;  // opacidad minimizada
+    let timer       = null;
+    let minimized   = false;
+
+    const minimize = () => {
+      if (minimized || nav.style.display === 'none') return;
+      minimized = true;
+      // Easing suave para entrar en segundo plano
+      nav.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.5s ease, box-shadow 0.5s ease';
+      nav.style.transform  = `translateX(-50%) scale(${SCALE_MIN})`;
+      nav.style.opacity    = String(OPAC_MIN);
+      nav.style.boxShadow  = '0 2px 12px rgba(0,0,0,0.06)';
+    };
+
+    const restore = () => {
+      minimized = false;
+      // Spring bounce al volver a primer plano
+      nav.style.transition = 'transform 0.52s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s ease, box-shadow 0.35s ease';
+      nav.style.transform  = 'translateX(-50%) scale(1)';
+      nav.style.opacity    = '1';
+      nav.style.boxShadow  = '';
+      clearTimeout(timer);
+      timer = setTimeout(minimize, IDLE_MS);
+    };
+
+    const onActivity = () => {
+      if (nav.style.display === 'none') return;
+      if (minimized) {
+        restore();
+      } else {
+        clearTimeout(timer);
+        timer = setTimeout(minimize, IDLE_MS);
+      }
+    };
+
+    // Cualquier interacción con la pantalla reactiva el tab bar
+    document.addEventListener('touchstart', onActivity, { passive: true });
+    document.addEventListener('touchend',   onActivity, { passive: true });
+    document.addEventListener('scroll',     onActivity, { passive: true, capture: true });
+    document.addEventListener('click',      onActivity, { passive: true });
+
+    // Exponer la función de restauración para que el router la llame al navegar
+    nav._tabRestore = restore;
+
+    // Primer timer: dar 1.5 s de margen antes de minimizar por primera vez
+    timer = setTimeout(minimize, IDLE_MS + 1500);
   },
 };
 
