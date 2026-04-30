@@ -132,18 +132,24 @@ export const router = {
 
     } catch (err) {
       console.error('[Router] Error cargando pantalla:', path, err);
-      // Mostrar error mínimo al usuario
-      document.getElementById('app').innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;height:100vh;padding:2rem;text-align:center;">
-          <div>
-            <p style="color:#dc2626;font-weight:700;margin-bottom:0.5rem;">${t('router.loadError')}</p>
-            <p style="color:#64748b;font-size:0.875rem;">${err.message || t('router.unknownError')}</p>
-            <button onclick="window.location.reload()" style="margin-top:1rem;padding:0.5rem 1.5rem;background:#0d968b;color:white;border:none;border-radius:9999px;cursor:pointer;font-weight:600;">
-              ${t('router.retry')}
-            </button>
+      try {
+        const errName = err?.name || 'Error';
+        const errMsg  = err?.message || 'sin mensaje';
+        const errStack = (err?.stack || '').split('\n').slice(0, 4).join('\n');
+        document.getElementById('app').innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:center;height:100vh;padding:2rem;text-align:center;">
+            <div style="max-width:360px;width:100%">
+              <p style="color:#dc2626;font-weight:700;margin-bottom:0.5rem;">${t('router.loadError')}</p>
+              <p style="color:#64748b;font-size:0.875rem;margin-bottom:0.5rem;">${errName}: ${errMsg}</p>
+              <pre style="color:#94a3b8;font-size:0.65rem;text-align:left;background:#f1f5f9;padding:0.75rem;border-radius:0.5rem;overflow:auto;margin-bottom:1rem;white-space:pre-wrap;word-break:break-all;">${errStack}</pre>
+              <p style="color:#94a3b8;font-size:0.7rem;margin-bottom:0.75rem;">Ruta: ${path}</p>
+              <button onclick="window.location.reload()" style="padding:0.5rem 1.5rem;background:#0d968b;color:white;border:none;border-radius:9999px;cursor:pointer;font-weight:600;">
+                ${t('router.retry')}
+              </button>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } catch (_) { /* fallback si el DOM no está disponible */ }
     }
   },
 
