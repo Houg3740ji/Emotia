@@ -173,13 +173,6 @@ export const router = {
         return this.navigate('/onboarding/3');
       }
 
-      // Verificar si tiene pareja vinculada
-      const couple = await db.getMyCouple();
-      if (!couple) {
-        hideLoadingOverlay();
-        return this.navigate('/onboarding/5');
-      }
-
       hideLoadingOverlay();
       return this.navigate('/home');
 

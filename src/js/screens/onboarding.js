@@ -368,10 +368,10 @@ async function initScreen4(router) {
   });
 
   // Saltar
-  skipBtn?.addEventListener('click', () => router.navigate('/onboarding/5'));
+  skipBtn?.addEventListener('click', () => router.navigate('/home'));
 
   // Continuar (con o sin foto)
-  continueBtn?.addEventListener('click', () => router.navigate('/onboarding/5'));
+  continueBtn?.addEventListener('click', () => router.navigate('/home'));
 }
 
 function _showAvatar(previewImg, iconEl, url) {

@@ -246,6 +246,21 @@ export const db = {
   },
 
   /**
+   * Elimina el vínculo de pareja (borra la fila de couples).
+   */
+  async unlinkPartner() {
+    const user = await auth.getUser();
+    if (!user) throw new Error('No autenticado');
+    const couple = await db.getMyCouple();
+    if (!couple) throw new Error('No hay pareja vinculada');
+    const { error } = await supabase
+      .from('couples')
+      .delete()
+      .eq('id', couple.id);
+    if (error) throw error;
+  },
+
+  /**
    * Actualiza la fecha de aniversario de la pareja.
    */
   async updateAnniversary(coupleId, anniversaryDate) {

@@ -3319,21 +3319,49 @@ export async function showSettings(router) {
   // Vincular pareja
   document.getElementById('st-link-btn')?.addEventListener('click', async () => {
     const input       = document.getElementById('st-partner-input');
+    const btn         = document.getElementById('st-link-btn');
     const partnerCode = input?.value.trim().toUpperCase();
     if (!partnerCode || partnerCode.length !== 6)
       return showToast(t('settings.codeLength'), 'error');
+    const origText = btn?.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
     try {
       await db.linkWithPartner(partnerCode);
       showToast(t('settings.partnerLinked'), 'success', 2500);
       closeSheet();
-    } catch (_) {
-      showToast(t('settings.codeNotFound'), 'error');
+      setTimeout(() => router.navigate('/home'), 450);
+    } catch (err) {
+      if (btn) { btn.disabled = false; btn.textContent = origText; }
+      const msg = (err.message?.includes('not found') || err.message?.includes('no encontrado'))
+        ? t('settings.codeNotFound')
+        : err.message || t('settings.codeNotFound');
+      showToast(msg, 'error');
     }
   });
 
-  // Desvincular pareja (solo informativo)
-  document.getElementById('st-unlink')?.addEventListener('click', () => {
-    showToast(t('settings.unlinkInfo'), 'neutral', 3000);
+  // Desvincular pareja — confirmación en 2 pasos
+  let _unlinkStep = 0;
+  let _unlinkTimer = null;
+  document.getElementById('st-unlink')?.addEventListener('click', async () => {
+    _unlinkStep++;
+    clearTimeout(_unlinkTimer);
+    if (_unlinkStep === 1) {
+      showToast('¿Seguro? Pulsa de nuevo para desvincularte', 'error', 3500);
+      _unlinkTimer = setTimeout(() => { _unlinkStep = 0; }, 4000);
+      return;
+    }
+    _unlinkStep = 0;
+    const btn = document.getElementById('st-unlink');
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    try {
+      await db.unlinkPartner();
+      showToast('Pareja desvinculada', 'neutral', 2500);
+      closeSheet();
+      setTimeout(() => router.navigate('/home'), 450);
+    } catch (err) {
+      if (btn) { btn.disabled = false; btn.textContent = t('settings.unlink'); }
+      showToast(err.message || 'Error al desvincular', 'error');
+    }
   });
 
   // Toggle: notificaciones de actividad de pareja
