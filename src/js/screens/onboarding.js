@@ -233,62 +233,138 @@ function _translateAuthError(msg) {
 
 
 // ════════════════════════════════════════════════════════════
-// PANTALLA 3 — Nombre + Fecha de aniversario
+// PANTALLA 3 — Foto + Nombre + Fecha de aniversario
 // ════════════════════════════════════════════════════════════
 async function initScreen3(router) {
-  const nameInput    = qs('input[placeholder="Nombre"]');
-  const dateInput    = qs('input[placeholder="DD/MM/AAAA"]');
-  const previewEl    = qs('.text-primary.font-medium.text-xs');
-  const togetherEl   = qs('.text-primary.font-bold');
-  const continueBtn  = qs('button.bg-primary');
+  const nameInput   = qs('input[placeholder="Nombre"]');
+  const dateInput   = qs('input[placeholder="DD/MM/AAAA"]');
+  const previewEl   = qs('.text-primary.font-medium.text-xs');
+  const togetherEl  = qs('.text-primary.font-bold');
+  const continueBtn = qs('button.bg-primary');
 
   if (!nameInput || !continueBtn) return;
 
-  // Prellenar con datos existentes si los hay
+  // ── Eliminar el recuadro negro del focus (Tailwind forms plugin) ──
+  const noRing = document.createElement('style');
+  noRing.textContent = `
+    #app input.text-input-giant:focus {
+      outline: none !important;
+      box-shadow: none !important;
+      --tw-ring-shadow: 0 0 transparent !important;
+    }
+    #app input.text-input-giant { -webkit-appearance: none; appearance: none; }
+  `;
+  document.head.appendChild(noRing);
+
+  // ── Prellenar con datos existentes ──────────────────────────
+  let existingAvatarUrl = null;
   try {
     const profile = await db.getMyProfile();
     if (profile?.name) {
       nameInput.value = profile.name;
+      _scaleNameFont(nameInput);
       if (previewEl) previewEl.textContent = `Hola, ${profile.name} 👋`;
     }
+    if (profile?.avatar_url) existingAvatarUrl = profile.avatar_url;
   } catch (_) { /* silencioso */ }
 
-  // Limpiar valores hardcodeados
+  // Limpiar valor hardcodeado del Stitch
   if (dateInput?.value === '12/11/2021') dateInput.value = '';
 
-  // ── Live preview del nombre ─────────────────────────────────
+  // ── Avatar: click en el círculo → selector de foto ──────────
+  const avatarCircle = qs('.size-20.rounded-full');
+  if (avatarCircle) {
+    if (existingAvatarUrl) _s3AvatarPreview(avatarCircle, existingAvatarUrl);
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg,image/png,image/webp';
+    fileInput.style.display = 'none';
+    document.getElementById('app').appendChild(fileInput);
+
+    avatarCircle.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      _s3AvatarPreview(avatarCircle, URL.createObjectURL(file));
+      try {
+        const url = await storage.uploadAvatar(file);
+        await db.updateMyProfile({ avatar_url: url });
+        showToast('Foto guardada ✓', 'success', 1500);
+      } catch (_) {
+        showToast('Error al subir la foto', 'error');
+      }
+    });
+  }
+
+  // ── Nombre: preview en vivo + font adaptativo ────────────────
   nameInput.addEventListener('input', () => {
     const val = nameInput.value.trim();
     if (previewEl) previewEl.textContent = val ? `Hola, ${val} 👋` : '';
+    _scaleNameFont(nameInput);
   });
 
-  // ── Cálculo automático "lleváis juntos X" ───────────────────
-  dateInput?.addEventListener('input', () => {
-    const iso = parseDateInput(dateInput.value);
-    if (iso && togetherEl) {
-      const together = timeTogether(iso);
-      togetherEl.textContent = together;
-      togetherEl.closest('p').style.display = 'flex';
-    } else if (togetherEl?.closest('p')) {
-      togetherEl.closest('p').style.display = 'none';
-    }
-  });
+  // ── Fecha: picker nativo iOS (ruleta) + teclado manual ───────
+  let selectedIsoDate = null;
 
-  // Formatear automáticamente la fecha mientras escribe (DD/MM/AAAA)
-  dateInput?.addEventListener('keyup', () => {
-    let val = dateInput.value.replace(/\D/g, '');
-    if (val.length > 2)  val = val.slice(0,2) + '/' + val.slice(2);
-    if (val.length > 5)  val = val.slice(0,5) + '/' + val.slice(5);
-    if (val.length > 10) val = val.slice(0,10);
-    dateInput.value = val;
-  });
+  if (dateInput) {
+    // Input nativo type="date" invisible superpuesto — da la ruleta de Apple en iOS
+    const nativePicker = document.createElement('input');
+    nativePicker.type = 'date';
+    nativePicker.style.cssText =
+      'position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;';
+    // Limitar al día de hoy como máximo
+    nativePicker.max = new Date().toISOString().split('T')[0];
+
+    const dateWrapper = dateInput.closest('.relative.group') || dateInput.parentElement;
+    dateWrapper.style.position = 'relative';
+    dateWrapper.appendChild(nativePicker);
+
+    // Cuando el usuario elige fecha en la ruleta
+    nativePicker.addEventListener('change', () => {
+      const iso = nativePicker.value; // YYYY-MM-DD
+      if (!iso) return;
+      selectedIsoDate = iso;
+      const [y, m, d] = iso.split('-');
+      dateInput.value = `${d}/${m}/${y}`;
+      _updateTogetherLabel(togetherEl, iso);
+    });
+
+    // Teclado manual (DD/MM/AAAA) — para quien prefiera escribir
+    dateInput.addEventListener('keydown', (e) => {
+      // Si el usuario empieza a escribir, quitar el picker superpuesto
+      // para que el teclado no compita con él
+      if (e.key.length === 1 || e.key === 'Backspace') {
+        nativePicker.style.display = 'none';
+      }
+    });
+    dateInput.addEventListener('blur', () => {
+      // Restaurar picker al perder foco
+      nativePicker.style.display = '';
+      const iso = parseDateInput(dateInput.value);
+      if (iso) {
+        selectedIsoDate = iso;
+        _updateTogetherLabel(togetherEl, iso);
+        nativePicker.value = iso;
+      } else if (togetherEl?.closest('p')) {
+        togetherEl.closest('p').style.display = 'none';
+      }
+    });
+    dateInput.addEventListener('keyup', () => {
+      let val = dateInput.value.replace(/\D/g, '');
+      if (val.length > 2)  val = val.slice(0, 2) + '/' + val.slice(2);
+      if (val.length > 5)  val = val.slice(0, 5) + '/' + val.slice(5);
+      if (val.length > 10) val = val.slice(0, 10);
+      dateInput.value = val;
+    });
+  }
 
   // ── Continuar ───────────────────────────────────────────────
   continueBtn.addEventListener('click', async () => {
     clearAllErrors();
-
-    const name = nameInput.value.trim();
-    const isoDate = dateInput?.value ? parseDateInput(dateInput.value) : null;
+    const name    = nameInput.value.trim();
+    const isoDate = selectedIsoDate || (dateInput?.value ? parseDateInput(dateInput.value) : null);
 
     if (!validateName(name)) {
       showFieldError(nameInput, 'El nombre debe tener al menos 2 caracteres');
@@ -296,20 +372,42 @@ async function initScreen3(router) {
     }
 
     setButtonLoading(continueBtn, true);
-
     try {
-      // Guardar nombre en Supabase
       await db.updateMyProfile({ name });
-
-      // Guardar fecha de aniversario en localStorage (se aplica al crear pareja en paso 5)
       if (isoDate) localStorage.setItem('emotia_anniversary', isoDate);
-
       router.navigate('/home');
     } catch (err) {
       setButtonLoading(continueBtn, false);
       showToast(err.message || 'Error al guardar', 'error');
     }
   });
+}
+
+// ── Helpers de pantalla 3 ─────────────────────────────────────
+function _scaleNameFont(input) {
+  const len = input.value.length;
+  input.style.fontSize = len > 18 ? '28px' : len > 13 ? '38px' : len > 9 ? '46px' : '';
+}
+
+function _s3AvatarPreview(circleEl, url) {
+  const icon = circleEl.querySelector('.material-symbols-outlined');
+  let img = circleEl.querySelector('img');
+  if (!img) {
+    img = document.createElement('img');
+    img.className = 'w-full h-full object-cover';
+    img.alt = 'Foto de perfil';
+    circleEl.appendChild(img);
+  }
+  img.src = url;
+  if (icon) icon.style.display = 'none';
+}
+
+function _updateTogetherLabel(togetherEl, isoDate) {
+  if (!togetherEl) return;
+  const together = timeTogether(isoDate);
+  togetherEl.textContent = together;
+  const p = togetherEl.closest('p');
+  if (p) p.style.display = 'flex';
 }
 
 
