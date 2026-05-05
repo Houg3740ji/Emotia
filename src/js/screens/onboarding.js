@@ -304,7 +304,7 @@ async function initScreen3(router) {
       // Guardar fecha de aniversario en localStorage (se aplica al crear pareja en paso 5)
       if (isoDate) localStorage.setItem('emotia_anniversary', isoDate);
 
-      router.navigate('/onboarding/4');
+      router.navigate('/home');
     } catch (err) {
       setButtonLoading(continueBtn, false);
       showToast(err.message || 'Error al guardar', 'error');
